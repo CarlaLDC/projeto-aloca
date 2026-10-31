@@ -1,0 +1,93 @@
+<div class="movements-shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/visao-geral" aria-label="Aloca início">aloca.</a>
+    <p class="brand-caption">GESTÃO DE RECURSOS</p>
+    <nav aria-label="Navegação principal">
+      <a routerLink="/visao-geral">▦ <span>Visão geral</span></a>
+      <a routerLink="/disponibilidade">◷ <span>Disponibilidade</span></a>
+      <a routerLink="/minhas-reservas">▤ <span>Minhas reservas</span></a>
+      <a routerLink="/aprovacoes">✓ <span>Aprovações</span></a>
+      <a routerLink="/retiradas-devolucoes" class="active" aria-current="page">⇄ <span>Retiradas e devoluções</span></a>
+      <span>Administração</span>
+      <span>Relatórios</span>
+    </nav>
+    <div class="profile">
+      <p>Unidade Santo Amaro</p>
+      <p><strong>Ana Martins</strong><br>Responsável / Administrador</p>
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <span>UNIDADE SANTO AMARO</span>
+      <div><span>Notificações <b class="notification-count">3</b></span><span class="separator">·</span><span>Ana Martins</span></div>
+    </header>
+
+    <section class="page-heading">
+      <p class="eyebrow">CONTROLE DE MATERIAIS</p>
+      <h1>Retiradas e devoluções</h1>
+      <p>Acompanhe a movimentação dos materiais e registre cada retirada e devolução.</p>
+    </section>
+
+    <section class="stats-grid" aria-label="Resumo de movimentações">
+      <article class="stat-card"><span class="stat-icon amber">↗</span><div><strong>{{ waitingCount().toString().padStart(2, '0') }}</strong><span>Aguardando retirada</span></div></article>
+      <article class="stat-card"><span class="stat-icon blue">◷</span><div><strong>{{ inUseCount().toString().padStart(2, '0') }}</strong><span>Materiais em uso</span></div></article>
+      <article class="stat-card"><span class="stat-icon rose">↙</span><div><strong>{{ returnCount().toString().padStart(2, '0') }}</strong><span>Devoluções pendentes</span></div></article>
+    </section>
+
+    <section class="list-panel">
+      <div class="panel-heading">
+        <div><h2>Movimentações de materiais</h2><p>Consulte os registros e atualize a situação dos itens.</p></div>
+        <span class="panel-count">{{ filteredMovements().length }} registros</span>
+      </div>
+
+      <label class="search-field">
+        <span aria-hidden="true">⌕</span>
+        <input type="search" placeholder="Buscar por material, responsável ou reserva" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" aria-label="Buscar movimentações">
+      </label>
+
+      <div class="filters" aria-label="Filtrar por situação">
+        @for (filter of filters; track filter) {
+          <button type="button" [class.selected]="selectedStatus() === filter" [attr.aria-pressed]="selectedStatus() === filter" (click)="setFilter(filter)">{{ filter }}</button>
+        }
+      </div>
+
+      @if (filteredMovements().length) {
+        <div class="movement-list">
+          @for (movement of filteredMovements(); track movement.id) {
+            <article class="movement-card">
+              <div class="movement-main">
+                <div class="item-symbol" aria-hidden="true">▣</div>
+                <div class="movement-info">
+                  <div class="item-title-line"><h3>{{ movement.item }}</h3><span class="category">{{ movement.category }}</span></div>
+                  <p class="movement-meta">{{ movement.id }} <span>·</span> Reserva {{ movement.reservation }}</p>
+                  <div class="movement-details">
+                    <span><small>RESPONSÁVEL</small>{{ movement.requester }}</span>
+                    <span><small>DESTINO</small>{{ movement.destination }}</span>
+                  </div>
+                  <div class="movement-times"><span>Retirada: <strong>{{ movement.pickup }}</strong></span><span>Devolução prevista: <strong>{{ movement.due }}</strong></span></div>
+                </div>
+              </div>
+              <div class="movement-action">
+                @if (movement.status === 'Aguardando retirada') {
+                  <span class="status waiting">{{ movement.status }}</span>
+                  <button class="action-button" type="button" (click)="registerPickup(movement.id)">Registrar retirada <span>→</span></button>
+                } @else if (movement.status === 'Em uso' || movement.status === 'Devolução pendente') {
+                  <span class="status" [class.in-use]="movement.status === 'Em uso'" [class.overdue]="movement.status === 'Devolução pendente'">{{ movement.status }}</span>
+                  <button class="action-button" type="button" (click)="registerReturn(movement.id)">Registrar devolução <span>→</span></button>
+                } @else {
+                  <span class="status returned">Devolvido</span>
+                  <span class="protocol">Protocolo {{ movement.protocol }}</span>
+                }
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="empty-state"><span>⌕</span><h3>Nenhuma movimentação encontrada</h3><p>Altere os filtros ou tente outro termo de busca.</p><button type="button" (click)="searchTerm.set(''); selectedStatus.set('Todos')">Limpar filtros</button></div>
+      }
+      <p class="data-note"><span>i</span> Os registros exibidos são demonstrativos. As ações atualizam a tela localmente e não persistem no servidor.</p>
+    </section>
+    @if (feedback()) { <p class="feedback" role="status">{{ feedback() }}</p> }
+  </main>
+</div>
