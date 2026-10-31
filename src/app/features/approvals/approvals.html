@@ -78,10 +78,10 @@
       <p>Informe a justificativa para rejeitar a reserva RES-0249.</p>
       <form (ngSubmit)="reject()">
         <label for="rejection-reason">Justificativa</label>
-        <textarea id="rejection-reason" name="rejectionReason" [(ngModel)]="rejectionReason" required maxlength="500" rows="4"></textarea>
+        <textarea id="rejection-reason" name="rejectionReason" [ngModel]="rejectionReason()" (ngModelChange)="rejectionReason.set($event)" required maxlength="500" rows="4"></textarea>
         <div class="dialog-actions">
           <button class="secondary" type="button" (click)="closeRejection()">Voltar</button>
-          <button class="primary" type="submit" [disabled]="!rejectionReason.trim()">Confirmar rejeição</button>
+          <button class="primary" type="submit" [disabled]="!rejectionReason().trim()">Confirmar rejeição</button>
         </div>
       </form>
     </section>
