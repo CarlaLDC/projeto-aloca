@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { Login } from './features/login/login';
 import { Overview } from './features/overview/overview';
+import { NewReservation } from './features/new-reservation/new-reservation';
 import { Availability } from './features/availability/availability';
 
 export const routes: Routes = [
@@ -8,5 +9,6 @@ export const routes: Routes = [
   { path: 'login', component: Login, title: 'Entrar | Aloca' },
   { path: 'visao-geral', component: Overview, title: 'Visão geral | Aloca' },
   { path: 'disponibilidade', component: Availability, title: 'Disponibilidade | Aloca' },
+  { path: 'nova-reserva', component: NewReservation, title: 'Nova reserva | Aloca' },
   { path: '**', redirectTo: 'visao-geral' }
 ];

@@ -101,7 +101,7 @@
               </div>
               <div class="resource-action">
                 <span class="availability-status" [class.unavailable]="resource.status === 'Ocupado'"><i></i>{{ resource.status }}</span>
-                <button type="button" [disabled]="resource.status === 'Ocupado'" class="reserve-button">Solicitar reserva <span>→</span></button>
+                <button type="button" [disabled]="resource.status === 'Ocupado'" [routerLink]="resource.status === 'Ocupado' ? null : '/nova-reserva'" class="reserve-button">Solicitar reserva <span>→</span></button>
               </div>
             </article>
           }
