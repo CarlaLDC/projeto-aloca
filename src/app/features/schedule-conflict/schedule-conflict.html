@@ -1,0 +1,67 @@
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/visao-geral" aria-label="Aloca início">aloca<span>.</span></a>
+    <p class="brand-caption">GESTÃO DE RECURSOS</p>
+    <nav class="main-nav" aria-label="Navegação principal">
+      <a class="nav-item" routerLink="/visao-geral"><span class="nav-icon" aria-hidden="true">▦</span>Visão geral</a>
+      <a class="nav-item" routerLink="/disponibilidade"><span class="nav-icon" aria-hidden="true">◷</span>Disponibilidade</a>
+      <a class="nav-item active" routerLink="/nova-reserva" aria-current="page"><span class="nav-icon" aria-hidden="true">▤</span>Minhas reservas</a>
+      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">✓</span>Aprovações</a>
+      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">▧</span>Materiais</a>
+      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">⚙</span>Administração</a>
+      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">▥</span>Relatórios</a>
+    </nav>
+    <div class="sidebar-profile"><span>Unidade Santo Amaro</span><strong>Ana Martins</strong><small>Solicitante</small></div>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <span class="unit-label">UNIDADE SANTO AMARO</span>
+      <div class="topbar-actions"><span>Notificações <span class="notification-count">3</span></span><span class="topbar-divider">·</span><span>Ana Martins <span class="user-avatar">AM</span></span></div>
+    </header>
+
+    <div class="breadcrumb"><a routerLink="/nova-reserva">Nova reserva</a><span>/</span><span>Conflito de horário</span></div>
+    <section class="page-heading">
+      <p class="eyebrow">VALIDAÇÃO DE DISPONIBILIDADE</p>
+      <h1>Conflito de horário</h1>
+      <p class="welcome-line">Encontramos uma sobreposição na agenda do recurso selecionado.</p>
+    </section>
+
+    <section class="conflict-banner" role="alert">
+      <span class="alert-icon">!</span>
+      <div><strong>Este horário não está disponível</strong><p>O recurso já possui uma reserva que coincide com o período solicitado. Escolha outro horário ou recurso para continuar.</p></div>
+    </section>
+
+    <section class="details-card">
+      <div class="section-heading"><div><p class="eyebrow">RESERVA SOLICITADA</p><h2>Confira os detalhes do conflito</h2></div><span class="conflict-tag"><i></i>Conflito identificado</span></div>
+      <div class="details-grid">
+        <div><span>Atividade</span><strong>{{ conflict.activity }}</strong></div>
+        <div><span>Recurso</span><strong>{{ conflict.resource }}</strong></div>
+        <div><span>Localização</span><strong>{{ conflict.location }}</strong></div>
+        <div><span>Data</span><strong>{{ conflict.date }}</strong></div>
+      </div>
+      <div class="timeline">
+        <div class="timeline-row"><span class="timeline-label">Seu horário</span><strong>{{ conflict.requestedTime }}</strong><div class="timeline-track"><span class="requested-range"></span></div></div>
+        <div class="timeline-row"><span class="timeline-label">Reserva existente</span><strong>{{ conflict.conflictingTime }}</strong><div class="timeline-track"><span class="existing-range"></span></div></div>
+      </div>
+      <p class="overlap-note"><strong>Sobreposição:</strong> 1 hora do período solicitado coincide com outra reserva.</p>
+    </section>
+
+    <section class="alternatives-section">
+      <div class="alternatives-heading"><div><p class="eyebrow">SUGESTÕES</p><h2>Horários e recursos alternativos</h2><p>Opções demonstrativas para ajudar você a continuar.</p></div><span class="suggestion-count">3 opções</span></div>
+      <div class="alternatives-list">
+        @for (option of alternatives; track option.date + option.time + option.resource) {
+          <article class="alternative-card">
+            <div class="calendar-icon"><strong>{{ option.date.split(' ')[0] }}</strong><span>{{ option.date.split(' ')[1] }}</span></div>
+            <div class="alternative-info"><span class="alternative-day">{{ option.day }}</span><h3>{{ option.resource }}</h3><p>{{ option.time }}</p></div>
+            <span class="available-label"><i></i>{{ option.status }}</span>
+            <a class="choose-button" routerLink="/nova-reserva">Escolher opção <span>→</span></a>
+          </article>
+        }
+      </div>
+      <p class="demo-note"><span>i</span> As informações desta tela são ilustrativas. A confirmação de disponibilidade depende da integração com o serviço de reservas.</p>
+    </section>
+
+    <div class="page-actions"><a class="secondary-button" routerLink="/nova-reserva">← Voltar e editar reserva</a><a class="text-button" routerLink="/disponibilidade">Consultar disponibilidade</a></div>
+  </main>
+</div>
