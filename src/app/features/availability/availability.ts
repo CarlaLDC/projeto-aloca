@@ -67,6 +67,10 @@ export class Availability {
       .format(new Date(`${this.selectedDate()}T12:00:00`));
   }
 
+  toDateInputValueForToday(): string {
+    return this.toDateInputValue(new Date());
+  }
+
   private toDateInputValue(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
