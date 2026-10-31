@@ -8,6 +8,7 @@ import { MyReservations } from './features/my-reservations/my-reservations';
 import { ReservationDetail } from './features/reservation-detail/reservation-detail';
 import { Approvals } from './features/approvals/approvals';
 import { WithdrawalsReturns } from './features/withdrawals-returns/withdrawals-returns';
+import { Reports } from './features/reports/reports';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'login' },
@@ -19,6 +20,7 @@ export const routes: Routes = [
   { path: 'aprovacoes', component: Approvals, title: 'Aprovações | Aloca' },
   { path: 'retiradas-devolucoes', component: WithdrawalsReturns, title: 'Retiradas e devoluções | Aloca' },
   { path: 'conflito-horario', component: ScheduleConflict, title: 'Conflito de horário | Aloca' },
+  { path: 'relatorios', component: Reports, title: 'Relatórios | Aloca' },
   { path: 'detalhe-auditoria', pathMatch: 'full', redirectTo: 'detalhe-auditoria/RES-0248' },
   { path: 'detalhe-auditoria/:id', component: ReservationDetail, title: 'Detalhe e auditoria | Aloca' },
   { path: '**', redirectTo: 'visao-geral' }
