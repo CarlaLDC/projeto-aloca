@@ -1,6 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 
 type ResourceType = 'Todos' | 'Salas' | 'Laboratórios' | 'Equipamentos';
 
@@ -18,7 +19,7 @@ interface Resource {
 @Component({
   selector: 'app-availability',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './availability.html',
   styleUrl: './availability.css'
 })
