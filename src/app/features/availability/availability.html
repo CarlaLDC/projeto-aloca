@@ -1,0 +1,120 @@
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/visao-geral" aria-label="Aloca início">aloca<span>.</span></a>
+    <p class="brand-caption">GESTÃO DE RECURSOS</p>
+    <nav class="main-nav" aria-label="Navegação principal">
+      <a class="nav-item" routerLink="/visao-geral"><span class="nav-icon" aria-hidden="true">▦</span>Visão geral</a>
+      <a class="nav-item active" routerLink="/disponibilidade" aria-current="page"><span class="nav-icon" aria-hidden="true">◷</span>Disponibilidade</a>
+      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">▤</span>Minhas reservas</a>
+      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">✓</span>Aprovações</a>
+      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">▧</span>Materiais</a>
+      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">⚙</span>Administração</a>
+      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">▥</span>Relatórios</a>
+    </nav>
+    <div class="sidebar-profile"><span>Unidade Santo Amaro</span><strong>Ana Martins</strong><small>Solicitante</small></div>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <span class="unit-label">UNIDADE SANTO AMARO</span>
+      <div class="topbar-actions">
+        <button class="notifications" type="button" aria-label="3 notificações">Notificações <span class="notification-count">3</span></button>
+        <span class="topbar-divider">·</span>
+        <button class="user-menu" type="button">Ana Martins <span class="user-avatar">AM</span></button>
+      </div>
+    </header>
+
+    <section class="page-heading">
+      <div>
+        <p class="eyebrow">CONSULTA DE RECURSOS</p>
+        <h1>Disponibilidade</h1>
+        <p class="welcome-line">Encontre salas, laboratórios e equipamentos livres para sua atividade.</p>
+      </div>
+    </section>
+
+    <section class="summary-grid" aria-label="Resumo de disponibilidade">
+      <article class="summary-card">
+        <span class="summary-icon">✓</span>
+        <div><strong>{{ availableCount() }}</strong><span>Recursos disponíveis</span></div>
+      </article>
+      <article class="summary-card">
+        <span class="summary-icon muted">◷</span>
+        <div><strong>{{ occupiedCount() }}</strong><span>Ocupados no momento</span></div>
+      </article>
+      <article class="summary-card">
+        <span class="summary-icon muted">▦</span>
+        <div><strong>{{ resources.length }}</strong><span>Total de recursos</span></div>
+      </article>
+    </section>
+
+    <section class="filter-card" aria-label="Filtros de disponibilidade">
+      <div class="filter-heading">
+        <div><h2>Encontre um recurso</h2><p>Selecione uma data e refine sua busca.</p></div>
+        <span class="filter-label">FILTROS</span>
+      </div>
+      <div class="filter-controls">
+        <label class="search-field">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Buscar por nome ou localização" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" aria-label="Buscar recurso">
+        </label>
+        <label class="date-field">
+          <span>Data</span>
+          <input type="date" [ngModel]="selectedDate()" (ngModelChange)="selectedDate.set($event)" aria-label="Data da disponibilidade">
+        </label>
+      </div>
+      <div class="type-filters" aria-label="Tipo de recurso">
+        @for (type of types; track type) {
+          <button type="button" class="filter-chip" [class.selected]="selectedType() === type" [attr.aria-pressed]="selectedType() === type" (click)="setType(type)">{{ type }}</button>
+        }
+      </div>
+    </section>
+
+    <section class="results-section">
+      <div class="results-heading">
+        <div>
+          <p class="eyebrow">RESULTADOS</p>
+          <h2>Recursos encontrados</h2>
+          <p class="results-date">{{ formattedDate }}</p>
+        </div>
+        <div class="view-switch" aria-label="Modo de visualização">
+          <button type="button" [class.active]="selectedView() === 'lista'" [attr.aria-pressed]="selectedView() === 'lista'" (click)="selectedView.set('lista')">☷ <span>Lista</span></button>
+          <button type="button" [class.active]="selectedView() === 'horarios'" [attr.aria-pressed]="selectedView() === 'horarios'" (click)="selectedView.set('horarios')">▦ <span>Horários</span></button>
+        </div>
+      </div>
+
+      <div class="date-navigation">
+        <button type="button" aria-label="Dia anterior" (click)="changeDate(-1)">‹</button>
+        <strong>{{ formattedDate }}</strong>
+        <button type="button" aria-label="Próximo dia" (click)="changeDate(1)">›</button>
+        <button type="button" class="today-button" (click)="selectedDate.set(toDateInputValueForToday())">Hoje</button>
+      </div>
+
+      @if (filteredResources().length) {
+        <div class="resource-list" [class.schedule-view]="selectedView() === 'horarios'">
+          @for (resource of filteredResources(); track resource.id) {
+            <article class="resource-card">
+              <div class="resource-symbol" aria-hidden="true">{{ resource.type === 'Salas' ? '▤' : resource.type === 'Laboratórios' ? '⌘' : '▣' }}</div>
+              <div class="resource-info">
+                <div class="resource-title-line"><h3>{{ resource.name }}</h3><span class="resource-type">{{ resource.type }}</span></div>
+                <p class="resource-location"><span aria-hidden="true">⌖</span> {{ resource.location }}</p>
+                <div class="resource-details"><span>♙ Capacidade: {{ resource.capacity }}</span><span>◷ {{ resource.availableFrom }} – {{ resource.availableUntil }}</span></div>
+              </div>
+              <div class="resource-action">
+                <span class="availability-status" [class.unavailable]="resource.status === 'Ocupado'"><i></i>{{ resource.status }}</span>
+                <button type="button" [disabled]="resource.status === 'Ocupado'" class="reserve-button">Solicitar reserva <span>→</span></button>
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <div class="empty-state">
+          <span>⌕</span>
+          <h3>Nenhum recurso encontrado</h3>
+          <p>Tente alterar os filtros ou buscar por outro termo.</p>
+          <button type="button" (click)="searchTerm.set(''); selectedType.set('Todos')">Limpar filtros</button>
+        </div>
+      }
+      <p class="data-note"><span>i</span> Os horários exibidos são demonstrativos e serão atualizados quando a consulta estiver conectada ao sistema de reservas.</p>
+    </section>
+  </main>
+</div>
