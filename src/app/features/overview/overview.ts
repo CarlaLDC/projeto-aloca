@@ -1,3 +1,5 @@
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -9,6 +11,7 @@ import { CommonModule } from '@angular/common';
   styleUrl: './overview.css'
 })
 export class Overview {
+  private readonly router = inject(Router);
   readonly reservationDialogOpen = signal(false);
   readonly reservationSent = signal(false);
   readonly selectedSection = signal('Visão geral');
@@ -34,8 +37,7 @@ export class Overview {
   }).format(new Date());
 
   openReservation(): void {
-    this.reservationSent.set(false);
-    this.reservationDialogOpen.set(true);
+    void this.router.navigate(['/nova-reserva']);
   }
 
   closeReservation(): void {

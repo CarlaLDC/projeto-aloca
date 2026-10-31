@@ -1,0 +1,40 @@
+<div class="reservation-shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/visao-geral" aria-label="Aloca início">aloca.</a>
+    <p class="brand-caption">GESTÃO DE RECURSOS</p>
+    <nav aria-label="Navegação principal">
+      <a routerLink="/visao-geral">Visão geral</a>
+      <a routerLink="/disponibilidade">Disponibilidade</a>
+      <a class="active" routerLink="/nova-reserva" aria-current="page">Minhas reservas</a>
+      <span>Aprovações</span><span>Materiais</span><span>Administração</span><span>Relatórios</span>
+    </nav>
+    <div class="profile"><p>Unidade Santo Amaro</p><p>Ana Martins<br>Solicitante</p></div>
+  </aside>
+  <main>
+    <header class="topbar"><span>UNIDADE SANTO AMARO</span><span>Notificações 3 <span class="separator">•</span> Ana Martins</span></header>
+    <h1>Nova reserva</h1>
+    <ol class="steps" aria-label="Etapas da reserva"><li>1. Atividade</li><li>2. Recursos e horário</li><li [attr.aria-current]="reviewing() ? 'step' : null">3. Revisão</li></ol>
+    @if (!reviewing()) {
+      <form #reservationForm="ngForm" (ngSubmit)="review(reservationForm)" novalidate>
+        <section class="form-card" aria-labelledby="reservation-title">
+          <h2 id="reservation-title">Dados da reserva</h2>
+          <label class="field">Atividade<input name="activity" [(ngModel)]="activity" required maxlength="150" autocomplete="off"></label>
+          <fieldset class="field"><legend>Data · Início · Término</legend><div class="schedule"><input aria-label="Data" type="date" name="date" [(ngModel)]="date" [min]="today" required><input aria-label="Início" type="time" name="start" [(ngModel)]="start" required><input aria-label="Término" type="time" name="end" [(ngModel)]="end" required></div></fieldset>
+          <label class="field">Sala<select name="room" [(ngModel)]="room" required>@for (item of rooms; track item) {<option [value]="item">{{ item }}</option>}</select></label>
+          <label class="field">Professor<select name="teacher" [(ngModel)]="teacher" required>@for (item of teachers; track item) {<option [value]="item">{{ item }}</option>}</select></label>
+          <label class="field">Materiais<select name="material" [(ngModel)]="material">@for (item of materials; track item) {<option [value]="item">{{ item }}</option>}</select></label>
+        </section>
+        @if (restricted) {<aside class="notice"><h2>Recurso restrito</h2><p>O Laboratório 02 exige aprovação do responsável. Você receberá uma notificação após a análise.</p></aside>}
+        @if (error()) {<p class="error" role="alert">{{ error() }}</p>}
+        <button class="primary" type="submit">Revisar e solicitar</button>
+      </form>
+    } @else {
+      <section class="form-card review" aria-labelledby="review-title" aria-live="polite">
+        <h2 id="review-title">{{ completed() ? 'Revisão concluída' : 'Revise sua reserva' }}</h2>
+        <dl><dt>Atividade</dt><dd>{{ activity }}</dd><dt>Data · Início · Término</dt><dd>{{ date.split('-').reverse().join('/') }} · {{ start }} – {{ end }}</dd><dt>Sala</dt><dd>{{ room }}</dd><dt>Professor</dt><dd>{{ teacher }}</dd><dt>Materiais</dt><dd>{{ material }}</dd></dl>
+        <p class="demo-note">Demonstração: os dados ainda não são enviados ao serviço de reservas. A disponibilidade e a aprovação serão verificadas após a integração.</p>
+        @if (!completed()) {<div class="actions"><button type="button" class="secondary" (click)="reviewing.set(false)">Voltar e editar</button><button type="button" class="primary" (click)="confirm()">Concluir demonstração</button></div>} @else {<a class="primary" routerLink="/visao-geral">Voltar à visão geral</a>}
+      </section>
+    }
+  </main>
+</div>
