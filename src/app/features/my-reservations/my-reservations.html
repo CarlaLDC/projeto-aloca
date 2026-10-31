@@ -47,7 +47,7 @@
         </div>
         @for (reservation of reservations; track reservation.id) {
           <div class="reservation-row" role="row">
-            <strong role="cell">#{{ reservation.id }}</strong>
+            <strong role="cell"><a [routerLink]="['/detalhe-auditoria', reservation.id]" [attr.aria-label]="'Abrir reserva ' + reservation.id">#{{ reservation.id }}</a></strong>
             <span role="cell">{{ reservation.resource }}</span>
             <span role="cell">{{ reservation.schedule }}</span>
             <span class="status" [class.approved]="reservation.statusClass === 'approved'"
