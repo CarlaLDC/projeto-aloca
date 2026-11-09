@@ -1,0 +1,24 @@
+Branch: feat/back-materiais
+Ordem de merge no develop: 7 de 9 (back-end)
+
+Tela 09: movimentações criadas na aprovação, retirada, devolução com protocolo e devolução pendente.
+
+Como usar:
+  git checkout develop && git pull
+  git checkout -B feat/back-materiais   # recria a branch a partir do develop atualizado
+  # descompacte este zip na raiz do repositório (substitui os arquivos)
+  git add -A
+  git commit -m "feat(backend): retirada e devolução de materiais (RF-09)"
+  git push -u origin feat/back-materiais --force-with-lease
+
+Abra o PR para develop depois que feat/back-aprovacoes estiver mergeada.
+
+Arquivos:
+  backend/src/main/java/br/com/aloca/dominio/StatusMovimentacao.java
+  backend/src/main/java/br/com/aloca/dominio/Movimentacao.java
+  backend/src/main/java/br/com/aloca/repositorio/MovimentacaoRepositorio.java
+  backend/src/main/java/br/com/aloca/servico/MovimentacaoService.java
+  backend/src/main/java/br/com/aloca/api/MovimentacaoController.java
+  backend/src/main/java/br/com/aloca/api/dto/MovimentacaoDtos.java
+  backend/src/main/java/br/com/aloca/config/DadosMovimentacoes.java
+  backend/src/test/java/br/com/aloca/MaterialApiTest.java
