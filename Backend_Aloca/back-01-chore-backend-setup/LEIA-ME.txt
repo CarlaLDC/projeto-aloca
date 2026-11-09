@@ -1,0 +1,25 @@
+Branch: chore/backend-setup
+Ordem de merge no develop: 1 de 9 (back-end)
+
+Projeto Maven (Java 21, Spring Boot 4.1), configuração do H2 em arquivo, tratamento de erros padrão e job do back-end no GitHub Actions.
+
+Como usar:
+  git checkout develop && git pull
+  git checkout -B chore/backend-setup   # recria a branch a partir do develop atualizado
+  # descompacte este zip na raiz do repositório (substitui os arquivos)
+  git add -A
+  git commit -m "chore(backend): cria projeto Spring Boot com H2, tratamento de erros e CI"
+  git push -u origin chore/backend-setup --force-with-lease
+
+Abra o PR para develop.
+
+Arquivos:
+  backend/pom.xml
+  backend/.gitignore
+  backend/src/main/java/br/com/aloca/AlocaApplication.java
+  backend/src/main/resources/application.properties
+  backend/src/main/java/br/com/aloca/servico/RegraNegocioException.java
+  backend/src/main/java/br/com/aloca/api/TratadorErros.java
+  backend/src/test/resources/application.properties
+  backend/src/test/java/br/com/aloca/AlocaApplicationTest.java
+  .github/workflows/main.yml
