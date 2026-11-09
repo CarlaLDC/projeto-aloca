@@ -1,0 +1,20 @@
+Branch: feat/back-aprovacoes
+Ordem de merge no develop: 6 de 9 (back-end)
+
+Tela 08: GET /api/aprovacoes e POST /api/aprovacoes/{codigo}/aprovar|rejeitar.
+
+Como usar:
+  git checkout develop && git pull
+  git checkout -B feat/back-aprovacoes   # recria a branch a partir do develop atualizado
+  # descompacte este zip na raiz do repositório (substitui os arquivos)
+  git add -A
+  git commit -m "feat(backend): aprovação e rejeição pelo responsável (RF-07)"
+  git push -u origin feat/back-aprovacoes --force-with-lease
+
+Abra o PR para develop depois que feat/back-reservas estiver mergeada.
+
+Arquivos:
+  backend/src/main/java/br/com/aloca/servico/AprovacaoService.java
+  backend/src/main/java/br/com/aloca/api/AprovacaoController.java
+  backend/src/main/java/br/com/aloca/api/dto/AprovacaoDtos.java
+  backend/src/test/java/br/com/aloca/AprovacaoApiTest.java
