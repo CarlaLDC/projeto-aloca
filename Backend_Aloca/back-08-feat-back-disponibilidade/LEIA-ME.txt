@@ -1,0 +1,23 @@
+Branch: feat/back-disponibilidade
+Ordem de merge no develop: 8 de 9 (back-end)
+
+Telas 02 e 03: GET /api/disponibilidade (horários livres, ocupações e manutenções) e GET /api/painel.
+
+Como usar:
+  git checkout develop && git pull
+  git checkout -B feat/back-disponibilidade   # recria a branch a partir do develop atualizado
+  # descompacte este zip na raiz do repositório (substitui os arquivos)
+  git add -A
+  git commit -m "feat(backend): disponibilidade e painel da visão geral (RF-03, RF-14)"
+  git push -u origin feat/back-disponibilidade --force-with-lease
+
+Abra o PR para develop depois que feat/back-materiais estiver mergeada.
+
+Arquivos:
+  backend/src/main/java/br/com/aloca/servico/DisponibilidadeService.java
+  backend/src/main/java/br/com/aloca/api/DisponibilidadeController.java
+  backend/src/main/java/br/com/aloca/api/dto/DisponibilidadeDtos.java
+  backend/src/main/java/br/com/aloca/servico/PainelService.java
+  backend/src/main/java/br/com/aloca/api/PainelController.java
+  backend/src/main/java/br/com/aloca/api/dto/PainelDtos.java
+  backend/src/test/java/br/com/aloca/DisponibilidadeApiTest.java
