@@ -1,0 +1,48 @@
+<main class="login-page">
+  <section class="brand" aria-labelledby="brand-heading">
+    <p class="wordmark">aloca.</p>
+    <h1 id="brand-heading">O lugar certo.<br>Na hora certa.</h1>
+    <p class="brand-description">Salas, docentes e materiais em uma agenda integrada.</p>
+    <span class="badge">Organização de Recursos</span>
+    <aside class="planning" aria-labelledby="planning-heading">
+      <h2 id="planning-heading">Planeje com confiança</h2>
+      <p>Disponibilidade em tempo real, reservas organizadas e decisões rastreáveis.</p>
+      <ol aria-label="Como funciona">
+        <li>01&nbsp; Consulte</li>
+        <li>02&nbsp; Reserve</li>
+        <li>03&nbsp; Acompanhe</li>
+      </ol>
+    </aside>
+  </section>
+  <section class="access" aria-labelledby="login-heading">
+    <p class="eyebrow">BEM-VINDO AO ALOCA</p>
+    <h2 id="login-heading">Entre na sua conta</h2>
+    <p class="intro">Use seu e-mail institucional para continuar.</p>
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input id="email" type="email" formControlName="email" placeholder="nome@instituicao.edu.br"
+          autocomplete="username" inputmode="email" required
+          [attr.aria-invalid]="form.controls.email.touched && form.controls.email.invalid"
+          [attr.aria-describedby]="form.controls.email.touched && form.controls.email.invalid ? 'email-error' : null">
+        @if (form.controls.email.touched && form.controls.email.invalid) {
+          <p class="error" id="email-error">Informe um e-mail válido.</p>
+        }
+      </div>
+      <div class="field">
+        <label for="password">Senha</label>
+        <input id="password" type="password" formControlName="password" placeholder="••••••••••"
+          autocomplete="current-password" required
+          [attr.aria-invalid]="form.controls.password.touched && form.controls.password.invalid"
+          [attr.aria-describedby]="form.controls.password.touched && form.controls.password.invalid ? 'password-error' : null">
+        @if (form.controls.password.touched && form.controls.password.invalid) {
+          <p class="error" id="password-error">Informe sua senha.</p>
+        }
+      </div>
+      <button class="recovery" type="button" (click)="recoverPassword()">Esqueceu sua senha?</button>
+      <button class="submit" type="submit">Entrar</button>
+    </form>
+    <p class="permissions">Seu perfil e suas permissões são definidos pela instituição.</p>
+    <p class="feedback" role="status" aria-live="polite">{{ feedback() }}</p>
+  </section>
+</main>

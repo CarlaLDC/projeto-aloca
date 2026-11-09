@@ -1,0 +1,69 @@
+<div class="app-shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/visao-geral" aria-label="Aloca início">aloca<span>.</span></a>
+    <p class="brand-caption">GESTÃO DE RECURSOS</p>
+    <nav class="main-nav" aria-label="Navegação principal">
+      <a class="nav-item" routerLink="/visao-geral">Visão geral</a>
+      <a class="nav-item" routerLink="/disponibilidade">Disponibilidade</a>
+      <a class="nav-item active" routerLink="/minhas-reservas" aria-current="page">Minhas reservas</a>
+      <a class="nav-item" routerLink="/minhas-reservas">Aprovações</a>
+      <a class="nav-item" routerLink="/minhas-reservas">Materiais</a>
+      <a class="nav-item" routerLink="/minhas-reservas">Administração</a>
+      <a class="nav-item" routerLink="/minhas-reservas">Relatórios</a>
+    </nav>
+    <div class="sidebar-profile">
+      <span>Unidade Santo Amaro</span>
+      <strong>Ana Martins</strong>
+      <small>Solicitante</small>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <span class="unit-label">UNIDADE SANTO AMARO</span>
+      <div class="topbar-actions">
+        <button class="notifications" type="button" aria-label="3 notificações">Notificações <span class="notification-count">3</span></button>
+        <span class="topbar-divider" aria-hidden="true">·</span>
+        <span class="user-menu">Ana Martins</span>
+      </div>
+    </header>
+
+    <section class="page-heading">
+      <h1>Minhas reservas</h1>
+      <p>Acompanhe suas solicitações e gerencie os próximos horários.</p>
+    </section>
+
+    <div class="actions-row">
+      <button class="primary-button" type="button" (click)="newReservation()"><span aria-hidden="true">＋</span> Nova reserva</button>
+    </div>
+
+    <section class="reservations-card" aria-label="Lista de reservas">
+      <div class="reservations-table" role="table" aria-label="Minhas reservas">
+        <div class="reservation-row table-header" role="row">
+          <span role="columnheader">Reserva</span>
+          <span role="columnheader">Recurso</span>
+          <span role="columnheader">Data e horário</span>
+          <span role="columnheader">Status</span>
+        </div>
+        @for (reservation of reservations; track reservation.id) {
+          <div class="reservation-row" role="row">
+            <strong role="cell"><a [routerLink]="['/detalhe-auditoria', reservation.id]" [attr.aria-label]="'Abrir reserva ' + reservation.id">#{{ reservation.id }}</a></strong>
+            <span role="cell">{{ reservation.resource }}</span>
+            <span role="cell">{{ reservation.schedule }}</span>
+            <span class="status" [class.approved]="reservation.statusClass === 'approved'"
+              [class.requested]="reservation.statusClass === 'requested'"
+              [class.completed]="reservation.statusClass === 'completed'"
+              [class.cancelled]="reservation.statusClass === 'cancelled'" role="cell">
+              <span class="status-dot" aria-hidden="true"></span>{{ reservation.status }}
+            </span>
+          </div>
+        }
+      </div>
+    </section>
+
+    <aside class="tip-card">
+      <strong>Gerencie sua reserva</strong>
+      <p>Abra uma reserva para alterar ou cancelar. Reservas já iniciadas permanecem no histórico.</p>
+    </aside>
+  </main>
+</div>
