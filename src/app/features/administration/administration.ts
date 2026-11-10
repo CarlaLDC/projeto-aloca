@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
@@ -9,6 +9,8 @@ export class Administration {
  readonly resources=signal<Resource[]>([{id:1,name:'Laboratório 02',type:'Laboratório',location:'Bloco B · 2º andar',capacity:30,status:'Ativo'},{id:2,name:'Sala 204',type:'Sala de aula',location:'Bloco A · 2º andar',capacity:40,status:'Ativo'},{id:3,name:'Auditório',type:'Auditório',location:'Bloco C · Térreo',capacity:120,status:'Ativo'},{id:4,name:'Laboratório 01',type:'Laboratório',location:'Bloco B · 1º andar',capacity:25,status:'Em manutenção'}]);
  readonly users=signal([{id:1,name:'Ana Martins',email:'ana.martins@aloca.edu.br',role:'Administrador',status:'Ativo'},{id:2,name:'Ricardo Alves',email:'ricardo.alves@aloca.edu.br',role:'Responsável',status:'Ativo'},{id:3,name:'Mariana Costa',email:'mariana.costa@aloca.edu.br',role:'Professor',status:'Ativo'},{id:4,name:'Lucas Ferreira',email:'lucas.ferreira@aloca.edu.br',role:'Solicitante',status:'Inativo'}]);
  readonly blocks=signal([{id:1,resource:'Laboratório 01',reason:'Manutenção dos computadores',start:'2026-10-28',end:'2026-10-31'},{id:2,resource:'Projetor 03',reason:'Revisão técnica',start:'2026-11-03',end:'2026-11-04'}]);
+ readonly activeResourcesCount=computed(()=>this.resources().filter(x=>x.status==='Ativo').length);
+ readonly activeUsersCount=computed(()=>this.users().filter(x=>x.status==='Ativo').length);
  form={name:'',type:'Sala de aula',location:'',capacity:30};
  filteredResources(){const q=this.query().toLowerCase();return this.resources().filter(x=>[x.name,x.type,x.location,x.status].some(v=>v.toLowerCase().includes(q)));}
  filteredUsers(){const q=this.query().toLowerCase();return this.users().filter(x=>[x.name,x.email,x.role,x.status].some(v=>v.toLowerCase().includes(q)));}
