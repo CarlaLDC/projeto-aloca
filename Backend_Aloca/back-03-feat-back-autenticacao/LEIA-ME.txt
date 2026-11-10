@@ -1,0 +1,23 @@
+Branch: feat/back-autenticacao
+Ordem de merge no develop: 3 de 9 (back-end)
+
+POST /api/auth/login, GET /api/auth/me, POST /api/auth/recuperar-senha e regras de acesso por perfil.
+
+Como usar:
+  git checkout develop && git pull
+  git checkout -B feat/back-autenticacao   # recria a branch a partir do develop atualizado
+  # descompacte este zip na raiz do repositório (substitui os arquivos)
+  git add -A
+  git commit -m "feat(backend): login com JWT e acesso por perfil (RF-01)"
+  git push -u origin feat/back-autenticacao --force-with-lease
+
+Abra o PR para develop depois que feat/back-usuarios estiver mergeada.
+
+Arquivos:
+  backend/src/main/java/br/com/aloca/seguranca/SecurityConfig.java
+  backend/src/main/java/br/com/aloca/seguranca/TokenService.java
+  backend/src/main/java/br/com/aloca/seguranca/UsuarioAtual.java
+  backend/src/main/java/br/com/aloca/api/AuthController.java
+  backend/src/main/java/br/com/aloca/api/dto/AuthDtos.java
+  backend/src/test/java/br/com/aloca/ApiTesteBase.java
+  backend/src/test/java/br/com/aloca/AutenticacaoTest.java
