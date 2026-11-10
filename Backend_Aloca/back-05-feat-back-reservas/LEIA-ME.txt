@@ -1,0 +1,37 @@
+Branch: feat/back-reservas
+Ordem de merge no develop: 5 de 9 (back-end)
+
+Telas 04 a 07: criar, alterar e cancelar reservas, conflito com alternativas (409), histórico auditável, notificações e ciclo automático.
+
+Como usar:
+  git checkout develop && git pull
+  git checkout -B feat/back-reservas   # recria a branch a partir do develop atualizado
+  # descompacte este zip na raiz do repositório (substitui os arquivos)
+  git add -A
+  git commit -m "feat(backend): reservas com conflitos, concorrência e histórico (RF-04 a RF-06, RF-10, RF-11)"
+  git push -u origin feat/back-reservas --force-with-lease
+
+Abra o PR para develop depois que feat/back-recursos estiver mergeada.
+
+Arquivos:
+  backend/src/main/java/br/com/aloca/dominio/StatusReserva.java
+  backend/src/main/java/br/com/aloca/dominio/Reserva.java
+  backend/src/main/java/br/com/aloca/dominio/HistoricoReserva.java
+  backend/src/main/java/br/com/aloca/dominio/ConflitoRegistrado.java
+  backend/src/main/java/br/com/aloca/dominio/Notificacao.java
+  backend/src/main/java/br/com/aloca/repositorio/ReservaRepositorio.java
+  backend/src/main/java/br/com/aloca/repositorio/HistoricoReservaRepositorio.java
+  backend/src/main/java/br/com/aloca/repositorio/ConflitoRegistradoRepositorio.java
+  backend/src/main/java/br/com/aloca/repositorio/NotificacaoRepositorio.java
+  backend/src/main/java/br/com/aloca/servico/ReservaService.java
+  backend/src/main/java/br/com/aloca/servico/ReservaEventos.java
+  backend/src/main/java/br/com/aloca/servico/Mapeador.java
+  backend/src/main/java/br/com/aloca/servico/NotificacaoService.java
+  backend/src/main/java/br/com/aloca/servico/CicloReservaAgendador.java
+  backend/src/main/java/br/com/aloca/api/ReservaController.java
+  backend/src/main/java/br/com/aloca/api/NotificacaoController.java
+  backend/src/main/java/br/com/aloca/api/dto/ReservaDtos.java
+  backend/src/main/java/br/com/aloca/api/dto/NotificacaoDtos.java
+  backend/src/main/java/br/com/aloca/config/DadosReservas.java
+  backend/src/test/java/br/com/aloca/ReservaApiTest.java
+  backend/src/test/java/br/com/aloca/ConcorrenciaReservaTest.java
