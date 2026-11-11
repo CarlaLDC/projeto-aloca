@@ -1,0 +1,38 @@
+name: BDD automatizado
+on:
+  push:
+    branches: ['test/bdd-automatizado']
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bdd:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm install --prefix bdd --no-audit --no-fund
+      - run: npx --prefix bdd playwright install --with-deps chromium
+      - name: Iniciar Angular e aguardar disponibilidade
+        run: |
+          npm start -- --host 127.0.0.1 > /tmp/aloca-angular.log 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:4200/login > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/aloca-angular.log
+          exit 1
+      - run: npm test --prefix bdd
+      - name: Guardar relatórios e capturas de falhas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdd-relatorios
+          path: bdd/reports/
+          if-no-files-found: warn
