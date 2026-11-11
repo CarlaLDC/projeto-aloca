@@ -8,19 +8,18 @@
       <a routerLink="/minhas-reservas">▤ <span>Minhas reservas</span></a>
       <a routerLink="/aprovacoes">✓ <span>Aprovações</span></a>
       <a routerLink="/retiradas-devolucoes" class="active" aria-current="page">⇄ <span>Retiradas e devoluções</span></a>
-      <span>Administração</span>
-      <span>Relatórios</span>
+      <a routerLink="/relatorios">▥ <span>Relatórios</span></a>
     </nav>
     <div class="profile">
-      <p>Unidade Santo Amaro</p>
-      <p><strong>Ana Martins</strong><br>Responsável / Administrador</p>
+      <p>{{ auth.unidade() }}</p>
+      <p><strong>{{ auth.nome() }}</strong><br>{{ auth.perfilRotulo() }}</p>
     </div>
   </aside>
 
   <main>
     <header class="topbar">
-      <span>UNIDADE SANTO AMARO</span>
-      <div><span>Notificações <b class="notification-count">3</b></span><span class="separator">·</span><span>Ana Martins</span></div>
+      <span>{{ auth.unidade().toUpperCase() }}</span>
+      <div><span>Notificações <b class="notification-count">{{ auth.naoLidas() }}</b></span><span class="separator">·</span><span>{{ auth.nome() }}</span></div>
     </header>
 
     <section class="page-heading">
@@ -47,46 +46,47 @@
       </label>
 
       <div class="filters" aria-label="Filtrar por situação">
-        @for (filter of filters; track filter) {
-          <button type="button" [class.selected]="selectedStatus() === filter" [attr.aria-pressed]="selectedStatus() === filter" (click)="setFilter(filter)">{{ filter }}</button>
+        @for (filter of filters; track filter.valor) {
+          <button type="button" [class.selected]="selectedStatus() === filter.valor" [attr.aria-pressed]="selectedStatus() === filter.valor" (click)="setFilter(filter.valor)">{{ filter.rotulo }}</button>
         }
       </div>
 
       @if (filteredMovements().length) {
         <div class="movement-list">
-          @for (movement of filteredMovements(); track movement.id) {
+          @for (movement of filteredMovements(); track movement.codigo) {
             <article class="movement-card">
               <div class="movement-main">
                 <div class="item-symbol" aria-hidden="true">▣</div>
                 <div class="movement-info">
-                  <div class="item-title-line"><h3>{{ movement.item }}</h3><span class="category">{{ movement.category }}</span></div>
-                  <p class="movement-meta">{{ movement.id }} <span>·</span> Reserva {{ movement.reservation }}</p>
+                  <div class="item-title-line"><h3>{{ movement.item }}</h3><span class="category">{{ movement.categoria }}</span></div>
+                  <p class="movement-meta">{{ movement.codigo }} <span>·</span> Reserva <a [routerLink]="['/detalhe-auditoria', movement.reserva]">{{ movement.reserva }}</a></p>
                   <div class="movement-details">
-                    <span><small>RESPONSÁVEL</small>{{ movement.requester }}</span>
-                    <span><small>DESTINO</small>{{ movement.destination }}</span>
+                    <span><small>RESPONSÁVEL</small>{{ movement.responsavel }}</span>
+                    <span><small>DESTINO</small>{{ movement.destino }}</span>
                   </div>
-                  <div class="movement-times"><span>Retirada: <strong>{{ movement.pickup }}</strong></span><span>Devolução prevista: <strong>{{ movement.due }}</strong></span></div>
+                  <div class="movement-times"><span>Retirada{{ movement.retiradaEm ? '' : ' prevista' }}: <strong>{{ diaRelativo(movement.retiradaEm ?? movement.retiradaPrevista) }}</strong></span><span>Devolução{{ movement.devolucaoEm ? '' : ' prevista' }}: <strong>{{ diaRelativo(movement.devolucaoEm ?? movement.devolucaoPrevista) }}</strong></span></div>
                 </div>
               </div>
               <div class="movement-action">
-                @if (movement.status === 'Aguardando retirada') {
-                  <span class="status waiting">{{ movement.status }}</span>
-                  <button class="action-button" type="button" (click)="registerPickup(movement.id)">Registrar retirada <span>→</span></button>
-                } @else if (movement.status === 'Em uso' || movement.status === 'Devolução pendente') {
-                  <span class="status" [class.in-use]="movement.status === 'Em uso'" [class.overdue]="movement.status === 'Devolução pendente'">{{ movement.status }}</span>
-                  <button class="action-button" type="button" (click)="registerReturn(movement.id)">Registrar devolução <span>→</span></button>
+                @if (movement.status === 'AGUARDANDO_RETIRADA') {
+                  <span class="status waiting">{{ movement.statusRotulo }}</span>
+                  <button class="action-button" type="button" [disabled]="enviando() === movement.codigo" (click)="registerPickup(movement)">Registrar retirada <span>→</span></button>
+                } @else if (movement.status === 'EM_USO' || movement.status === 'DEVOLUCAO_PENDENTE') {
+                  <span class="status" [class.in-use]="movement.status === 'EM_USO'" [class.overdue]="movement.status === 'DEVOLUCAO_PENDENTE'">{{ movement.statusRotulo }}</span>
+                  <button class="action-button" type="button" [disabled]="enviando() === movement.codigo" (click)="registerReturn(movement)">Registrar devolução <span>→</span></button>
                 } @else {
                   <span class="status returned">Devolvido</span>
-                  <span class="protocol">Protocolo {{ movement.protocol }}</span>
+                  <span class="protocol">Protocolo {{ movement.protocolo }}</span>
                 }
               </div>
             </article>
           }
         </div>
       } @else {
-        <div class="empty-state"><span>⌕</span><h3>Nenhuma movimentação encontrada</h3><p>Altere os filtros ou tente outro termo de busca.</p><button type="button" (click)="searchTerm.set(''); selectedStatus.set('Todos')">Limpar filtros</button></div>
+        <div class="empty-state"><span>⌕</span><h3>{{ dados() ? 'Nenhuma movimentação encontrada' : 'Carregando…' }}</h3><p>Altere os filtros ou tente outro termo de busca.</p><button type="button" (click)="searchTerm.set(''); selectedStatus.set('Todos')">Limpar filtros</button></div>
       }
-      <p class="data-note"><span>i</span> Os registros exibidos são demonstrativos. As ações atualizam a tela localmente e não persistem no servidor.</p>
+      @if (erro()) {<p class="data-note" role="alert"><span>!</span> {{ erro() }}</p>}
+      <p class="data-note"><span>i</span> As movimentações são criadas quando uma reserva com materiais é aprovada. Cada registro guarda o material, a reserva, a data e hora e quem registrou.</p>
     </section>
     @if (feedback()) { <p class="feedback" role="status">{{ feedback() }}</p> }
   </main>

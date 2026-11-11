@@ -5,22 +5,25 @@
     <nav class="main-nav" aria-label="Navegação principal">
       <a class="nav-item" routerLink="/visao-geral"><span class="nav-icon" aria-hidden="true">▦</span>Visão geral</a>
       <a class="nav-item active" routerLink="/disponibilidade" aria-current="page"><span class="nav-icon" aria-hidden="true">◷</span>Disponibilidade</a>
-      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">▤</span>Minhas reservas</a>
-      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">✓</span>Aprovações</a>
-      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">▧</span>Materiais</a>
-      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">⚙</span>Administração</a>
-      <a class="nav-item" href="#" aria-disabled="true"><span class="nav-icon" aria-hidden="true">▥</span>Relatórios</a>
+      <a class="nav-item" routerLink="/minhas-reservas"><span class="nav-icon" aria-hidden="true">▤</span>Minhas reservas</a>
+      @if (auth.possui('RESPONSAVEL')) {
+        <a class="nav-item" routerLink="/aprovacoes"><span class="nav-icon" aria-hidden="true">✓</span>Aprovações</a>
+        <a class="nav-item" routerLink="/retiradas-devolucoes"><span class="nav-icon" aria-hidden="true">▧</span>Materiais</a>
+      }
+      @if (auth.possui('RESPONSAVEL', 'ADMINISTRADOR')) {
+        <a class="nav-item" routerLink="/relatorios"><span class="nav-icon" aria-hidden="true">▥</span>Relatórios</a>
+      }
     </nav>
-    <div class="sidebar-profile"><span>Unidade Santo Amaro</span><strong>Ana Martins</strong><small>Solicitante</small></div>
+    <div class="sidebar-profile"><span>{{ auth.unidade() }}</span><strong>{{ auth.nome() }}</strong><small>{{ auth.perfilRotulo() }}</small></div>
   </aside>
 
   <main class="main-content">
     <header class="topbar">
-      <span class="unit-label">UNIDADE SANTO AMARO</span>
+      <span class="unit-label">{{ auth.unidade().toUpperCase() }}</span>
       <div class="topbar-actions">
-        <button class="notifications" type="button" aria-label="3 notificações">Notificações <span class="notification-count">3</span></button>
+        <a class="notifications" routerLink="/visao-geral">Notificações <span class="notification-count">{{ auth.naoLidas() }}</span></a>
         <span class="topbar-divider">·</span>
-        <button class="user-menu" type="button">Ana Martins <span class="user-avatar">AM</span></button>
+        <button class="user-menu" type="button" title="Sair" (click)="auth.sair()">{{ auth.nome() }} <span class="user-avatar">{{ auth.iniciais() }}</span></button>
       </div>
     </header>
 
@@ -43,7 +46,7 @@
       </article>
       <article class="summary-card">
         <span class="summary-icon muted">▦</span>
-        <div><strong>{{ resources.length }}</strong><span>Total de recursos</span></div>
+        <div><strong>{{ totalCount() }}</strong><span>Total de recursos</span></div>
       </article>
     </section>
 
@@ -59,7 +62,7 @@
         </label>
         <label class="date-field">
           <span>Data</span>
-          <input type="date" [ngModel]="selectedDate()" (ngModelChange)="selectedDate.set($event)" aria-label="Data da disponibilidade">
+          <input type="date" [ngModel]="selectedDate()" (ngModelChange)="setDate($event)" aria-label="Data da disponibilidade">
         </label>
       </div>
       <div class="type-filters" aria-label="Tipo de recurso">
@@ -86,22 +89,34 @@
         <button type="button" aria-label="Dia anterior" (click)="changeDate(-1)">‹</button>
         <strong>{{ formattedDate }}</strong>
         <button type="button" aria-label="Próximo dia" (click)="changeDate(1)">›</button>
-        <button type="button" class="today-button" (click)="selectedDate.set(toDateInputValueForToday())">Hoje</button>
+        <button type="button" class="today-button" (click)="setDate(toDateInputValueForToday())">Hoje</button>
       </div>
 
-      @if (filteredResources().length) {
+      @if (erro()) {
+        <p class="data-note" role="alert"><span>!</span> {{ erro() }} <button type="button" (click)="carregar()">Tentar novamente</button></p>
+      } @else if (carregando() && !resultado()) {
+        <p class="data-note"><span>i</span> Carregando recursos…</p>
+      } @else if (filteredResources().length) {
         <div class="resource-list" [class.schedule-view]="selectedView() === 'horarios'">
           @for (resource of filteredResources(); track resource.id) {
             <article class="resource-card">
-              <div class="resource-symbol" aria-hidden="true">{{ resource.type === 'Salas' ? '▤' : resource.type === 'Laboratórios' ? '⌘' : '▣' }}</div>
+              <div class="resource-symbol" aria-hidden="true">{{ symbol(resource) }}</div>
               <div class="resource-info">
-                <div class="resource-title-line"><h3>{{ resource.name }}</h3><span class="resource-type">{{ resource.type }}</span></div>
-                <p class="resource-location"><span aria-hidden="true">⌖</span> {{ resource.location }}</p>
-                <div class="resource-details"><span>♙ Capacidade: {{ resource.capacity }}</span><span>◷ {{ resource.availableFrom }} – {{ resource.availableUntil }}</span></div>
+                <div class="resource-title-line"><h3>{{ resource.nome }}</h3><span class="resource-type">{{ resource.tipoRotulo }}</span>@if (resource.restrito) {<span class="resource-type">Requer aprovação</span>}</div>
+                <p class="resource-location"><span aria-hidden="true">⌖</span> {{ resource.localizacao }}</p>
+                <div class="resource-details"><span>♙ Capacidade: {{ resource.capacidade }}</span><span>◷ {{ resource.livreDe ? hm(resource.livreDe) + ' – ' + hm(resource.livreAte) : 'Sem horário livre' }}</span></div>
+                @if (selectedView() === 'horarios') {
+                  <ul class="occupations">
+                    @for (o of resource.ocupacoes; track o.inicio + o.motivo) {<li>{{ hm(o.inicio) }}–{{ hm(o.fim) }} · {{ o.motivo }}</li>}
+                    @for (l of resource.janelasLivres; track l.inicio) {<li class="free">{{ hm(l.inicio) }}–{{ hm(l.fim) }} · Livre</li>}
+                  </ul>
+                }
               </div>
               <div class="resource-action">
-                <span class="availability-status" [class.unavailable]="resource.status === 'Ocupado'"><i></i>{{ resource.status }}</span>
-                <button type="button" [disabled]="resource.status === 'Ocupado'" [routerLink]="resource.status === 'Ocupado' ? null : '/nova-reserva'" class="reserve-button">Solicitar reserva <span>→</span></button>
+                <span class="availability-status" [class.unavailable]="resource.status !== 'Disponível'"><i></i>{{ resource.status }}</span>
+                @if (podeReservar) {
+                  <button type="button" [disabled]="!resource.livreDe" [routerLink]="resource.livreDe ? '/nova-reserva' : null" [queryParams]="reservaParams(resource)" class="reserve-button">Solicitar reserva <span>→</span></button>
+                }
               </div>
             </article>
           }
@@ -114,7 +129,7 @@
           <button type="button" (click)="searchTerm.set(''); selectedType.set('Todos')">Limpar filtros</button>
         </div>
       }
-      <p class="data-note"><span>i</span> Os horários exibidos são demonstrativos e serão atualizados quando a consulta estiver conectada ao sistema de reservas.</p>
+      <p class="data-note"><span>i</span> Horários livres calculados a partir das reservas e bloqueios de manutenção cadastrados. Horário de Brasília.</p>
     </section>
   </main>
 </div>

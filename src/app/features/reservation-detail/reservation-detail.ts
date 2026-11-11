@@ -1,10 +1,22 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { DEMO_RESERVATIONS, DemoReservation } from './reservation-data';
+import { ApiService } from '../../core/api.service';
+import { AuthService } from '../../core/auth.service';
+import { ConflitoResposta, OpcoesReserva, ReservaDetalhe } from '../../core/api.models';
+import { dataBr, dataHoraCurta, hm, mensagemErro } from '../../core/formato';
 
-type Draft = Pick<DemoReservation, 'activity' | 'date' | 'start' | 'end' | 'room' | 'teacher' | 'material'>;
+interface Draft {
+  activity: string;
+  date: string;
+  start: string;
+  end: string;
+  room: number | null;
+  teacher: number | null;
+  material: number | null;
+}
 
 @Component({
   selector: 'app-reservation-detail',
@@ -14,36 +26,67 @@ type Draft = Pick<DemoReservation, 'activity' | 'date' | 'start' | 'end' | 'room
   styleUrl: './reservation-detail.css'
 })
 export class ReservationDetail {
-  readonly reservation = signal<DemoReservation | null>(null);
+  private readonly api = inject(ApiService);
+  readonly auth = inject(AuthService);
+
+  readonly reservation = signal<ReservaDetalhe | null>(null);
+  readonly loading = signal(true);
+  readonly notFound = signal('');
+  readonly options = signal<OpcoesReserva | null>(null);
   readonly action = signal<'edit' | 'cancel' | null>(null);
   readonly error = signal('');
   readonly feedback = signal('');
+  readonly sending = signal(false);
   readonly dialog = viewChild<ElementRef<HTMLDialogElement>>('actionDialog');
-  draft: Draft = { activity: '', date: '', start: '', end: '', room: '', teacher: '', material: '' };
+  readonly hm = hm;
+  readonly dataBr = dataBr;
+  readonly dataHoraCurta = dataHoraCurta;
+  draft: Draft = { activity: '', date: '', start: '', end: '', room: null, teacher: null, material: null };
   reason = '';
 
   constructor() {
     inject(ActivatedRoute).paramMap.pipe(takeUntilDestroyed()).subscribe(params => {
-      const item = DEMO_RESERVATIONS.find(reservation => reservation.id === params.get('id'));
-      this.reservation.set(item ? { ...item, history: item.history.map(event => ({ ...event })) } : null);
       this.feedback.set('');
       this.closeDialog();
+      this.carregar(params.get('id') ?? '');
     });
   }
 
   get canManage(): boolean {
-    const status = this.reservation()?.status;
-    return status === 'Aprovada' || status === 'Solicitada';
+    return this.reservation()?.podeGerenciar ?? false;
+  }
+
+  get materiais(): string {
+    const lista = this.reservation()?.materiais ?? [];
+    return lista.length ? lista.map(m => m.nome).join(', ') : 'Sem materiais';
+  }
+
+  carregar(codigo: string): void {
+    this.loading.set(true);
+    this.notFound.set('');
+    this.api.reserva(codigo).subscribe({
+      next: r => { this.reservation.set(r); this.loading.set(false); },
+      error: e => {
+        this.reservation.set(null);
+        this.loading.set(false);
+        this.notFound.set(mensagemErro(e, 'Não há dados para o código informado.'));
+      }
+    });
   }
 
   openAction(action: 'edit' | 'cancel'): void {
     const item = this.reservation();
     if (!item || !this.canManage) return;
-    this.draft = { activity: item.activity, date: item.date, start: item.start, end: item.end,
-      room: item.room, teacher: item.teacher, material: item.material };
+    this.draft = {
+      activity: item.atividade, date: item.data, start: hm(item.inicio), end: hm(item.fim),
+      room: item.espaco.id, teacher: item.professor?.id ?? null, material: item.materiais[0]?.id ?? null
+    };
     this.reason = '';
     this.error.set('');
     this.action.set(action);
+    if (action === 'edit' && !this.options()) {
+      this.api.opcoesReserva().subscribe({ next: o => this.options.set(o), error: e => this.error.set(mensagemErro(e)) });
+    }
     this.dialog()?.nativeElement.showModal();
   }
 
@@ -55,27 +98,47 @@ export class ReservationDetail {
 
   save(form: NgForm): void {
     const item = this.reservation();
-    if (!item || !this.canManage || !this.action()) return;
-    if (form.invalid || (this.action() === 'edit' && (!this.draft.activity.trim() || !this.draft.room.trim())) ||
-        (this.action() === 'cancel' && !this.reason.trim())) {
+    const action = this.action();
+    if (!item || !this.canManage || !action || this.sending()) return;
+    if (form.invalid || (action === 'edit' && (!this.draft.activity.trim() || this.draft.room === null)) ||
+        (action === 'cancel' && !this.reason.trim())) {
       form.control.markAllAsTouched();
       this.error.set('Preencha os campos obrigatórios.');
       return;
     }
-    if (this.action() === 'edit' && this.draft.end <= this.draft.start) {
+    if (action === 'edit' && this.draft.end <= this.draft.start) {
       this.error.set('O término deve ser posterior ao início.');
       return;
     }
-    const editing = this.action() === 'edit';
-    const date = new Intl.DateTimeFormat('pt-BR', {
-      timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
-    }).format(new Date());
-    const updated = editing ? { ...item, ...this.draft } : { ...item, status: 'Cancelada' as const, statusClass: 'cancelled' };
-    this.reservation.set({ ...updated, history: [...item.history, {
-      date, actor: item.requester, action: editing ? 'Alterada · simulação' : 'Cancelada · simulação',
-      description: editing ? 'Dados alterados nesta demonstração' : this.reason.trim()
-    }] });
-    this.feedback.set(editing ? 'Alteração simulada. Nenhum dado foi enviado ao servidor.' : 'Cancelamento simulado. Nenhum dado foi enviado ao servidor.');
-    this.closeDialog();
+    this.sending.set(true);
+    const pedido = action === 'edit'
+      ? this.api.alterarReserva(item.codigo, {
+          atividade: this.draft.activity.trim(), data: this.draft.date, inicio: this.draft.start, fim: this.draft.end,
+          espacoId: Number(this.draft.room), professorId: this.draft.teacher === null ? null : Number(this.draft.teacher),
+          materialIds: this.draft.material === null ? [] : [Number(this.draft.material)]
+        })
+      : this.api.cancelarReserva(item.codigo, this.reason.trim());
+    pedido.subscribe({
+      next: atualizada => {
+        this.sending.set(false);
+        this.reservation.set(atualizada);
+        this.feedback.set(action === 'edit'
+          ? (atualizada.status === 'SOLICITADA' ? 'Alteração salva. A reserva aguarda nova aprovação do responsável.' : 'Alteração salva.')
+          : 'Reserva cancelada.');
+        this.closeDialog();
+        this.auth.atualizarNotificacoes();
+      },
+      error: (e: unknown) => {
+        this.sending.set(false);
+        if (e instanceof HttpErrorResponse && e.status === 409 && (e.error as ConflitoResposta)?.alternativas) {
+          const c = e.error as ConflitoResposta;
+          const sugestao = c.alternativas[0];
+          this.error.set(c.mensagem + (sugestao
+            ? ` Sugestão: ${sugestao.espaco}, ${dataBr(sugestao.data)} das ${hm(sugestao.inicio)} às ${hm(sugestao.fim)}.` : ''));
+          return;
+        }
+        this.error.set(mensagemErro(e));
+      }
+    });
   }
 }

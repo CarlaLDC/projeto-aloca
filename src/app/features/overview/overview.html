@@ -1,66 +1,62 @@
 <div class="app-shell">
   <aside class="sidebar">
-    <a class="brand" href="/" aria-label="Aloca início">aloca<span>.</span></a>
+    <a class="brand" routerLink="/visao-geral" aria-label="Aloca início">aloca<span>.</span></a>
     <p class="brand-caption">GESTÃO DE RECURSOS</p>
     <nav class="main-nav" aria-label="Navegação principal">
       @for (item of navigation; track item.label) {
-        <button type="button" class="nav-item" [class.active]="selectedSection() === item.label" (click)="selectSection(item.label)">
+        <a class="nav-item" [class.active]="item.rota === '/visao-geral'" [attr.aria-current]="item.rota === '/visao-geral' ? 'page' : null" [routerLink]="item.rota">
           <span class="nav-icon" aria-hidden="true">{{ item.icon }}</span>{{ item.label }}
-        </button>
+        </a>
       }
     </nav>
-    <div class="sidebar-profile"><span>Unidade Santo Amaro</span><strong>Ana Martins</strong><small>Solicitante</small></div>
+    <div class="sidebar-profile"><span>{{ auth.unidade() }}</span><strong>{{ auth.nome() }}</strong><small>{{ auth.perfilRotulo() }}</small></div>
   </aside>
   <main class="main-content">
     <header class="topbar">
-      <span class="unit-label">UNIDADE SANTO AMARO</span>
+      <span class="unit-label">{{ auth.unidade().toUpperCase() }}</span>
       <div class="topbar-actions">
-        <button class="notifications" type="button" aria-label="3 notificações">Notificações <span class="notification-count">3</span></button>
+        <div class="notifications-wrap">
+          <button class="notifications" type="button" [attr.aria-expanded]="notificacoesAbertas()" (click)="alternarNotificacoes()">Notificações <span class="notification-count">{{ auth.naoLidas() }}</span></button>
+          @if (notificacoesAbertas()) {
+            <div class="notifications-panel" role="region" aria-label="Notificações">
+              @for (n of auth.notificacoes()?.itens ?? []; track n.id) {
+                <p [class.unread]="!n.lida">{{ n.mensagem }}</p>
+              } @empty {
+                <p>Nenhuma notificação.</p>
+              }
+            </div>
+          }
+        </div>
         <span class="topbar-divider">·</span>
-        <button class="user-menu" type="button">Ana Martins <span class="user-avatar">AM</span></button>
+        <button class="user-menu" type="button" title="Sair" (click)="auth.sair()">{{ auth.nome() }} <span class="user-avatar">{{ auth.iniciais() }}</span> <small>Sair</small></button>
       </div>
     </header>
     <section class="page-heading">
-      <div><p class="eyebrow">PAINEL DO SOLICITANTE</p><h1>Visão geral</h1><p class="welcome-line">{{ today }} · Tudo pronto para planejar o seu dia.</p></div>
+      <div><p class="eyebrow">PAINEL DO {{ painel()?.perfil?.toUpperCase() }}</p><h1>Visão geral</h1><p class="welcome-line">{{ today }} · Tudo pronto para planejar o seu dia.</p></div>
     </section>
+    @if (erro()) {<p class="load-error" role="alert">{{ erro() }}</p>}
     <section class="stats-grid" aria-label="Resumo de reservas">
-      <article class="stat-card"><span class="stat-number">12</span><span class="stat-label">Reservas hoje</span></article>
-      <article class="stat-card"><span class="stat-number">08</span><span class="stat-label">Recursos disponíveis</span></article>
-      <article class="stat-card"><span class="stat-number">03</span><span class="stat-label">Aguardando aprovação</span></article>
+      <article class="stat-card"><span class="stat-number">{{ dois(painel()?.reservasHoje) }}</span><span class="stat-label">Reservas hoje</span></article>
+      <article class="stat-card"><span class="stat-number">{{ dois(painel()?.recursosDisponiveis) }}</span><span class="stat-label">Recursos disponíveis</span></article>
+      <article class="stat-card"><span class="stat-number">{{ dois(painel()?.aguardandoAprovacao) }}</span><span class="stat-label">Aguardando aprovação</span></article>
     </section>
-    <div class="actions-row"><button class="primary-button" type="button" (click)="openReservation()"><span aria-hidden="true">＋</span> Nova reserva</button></div>
+    @if (podeReservar) {
+      <div class="actions-row"><button class="primary-button" type="button" (click)="openReservation()"><span aria-hidden="true">＋</span> Nova reserva</button></div>
+    }
     <section class="agenda-card">
-      <div class="card-heading"><div><h2>Sua agenda de hoje</h2><p>Hoje · Horário de Brasília</p></div><button type="button" class="text-action">Ver agenda completa <span>→</span></button></div>
+      <div class="card-heading"><div><h2>Sua agenda de hoje</h2><p>Hoje · Horário de Brasília</p></div><a class="text-action" routerLink="/minhas-reservas">Ver agenda completa <span>→</span></a></div>
       <div class="agenda-table" role="table" aria-label="Reservas de hoje">
         <div class="agenda-row agenda-header" role="row"><span role="columnheader">HORÁRIO</span><span role="columnheader">RECURSO</span><span role="columnheader">ATIVIDADE</span><span role="columnheader">STATUS</span></div>
-        @for (item of agenda; track item.time) {
-          <div class="agenda-row" role="row">
-            <strong class="agenda-time" role="cell">{{ item.time }}</strong><span class="agenda-place" role="cell">{{ item.place }}</span><span class="agenda-subject" role="cell">{{ item.subject }}</span>
-            <span class="status" [class.approved]="item.kind === 'approved'" [class.pending]="item.kind === 'pending'" role="cell"><span class="status-dot"></span>{{ item.status }}</span>
-          </div>
+        @for (item of painel()?.agenda ?? []; track item.codigo) {
+          <a class="agenda-row" role="row" [routerLink]="['/detalhe-auditoria', item.codigo]">
+            <strong class="agenda-time" role="cell">{{ hm(item.inicio) }} – {{ hm(item.fim) }}</strong><span class="agenda-place" role="cell">{{ item.local }}</span><span class="agenda-subject" role="cell">{{ item.atividade }}</span>
+            <span class="status" [class.approved]="classeStatus(item.status) === 'approved' || item.status === 'CONCLUIDA'" [class.pending]="item.status === 'SOLICITADA'" role="cell"><span class="status-dot"></span>{{ item.statusRotulo }}</span>
+          </a>
+        } @empty {
+          @if (painel()) {<p class="agenda-empty">Nenhuma reserva para hoje.</p>}
         }
       </div>
     </section>
     <aside class="tip-card"><span class="tip-icon">i</span><div><strong>Antes de reservar</strong><p>Confira também a disponibilidade do professor e dos materiais associados.</p></div></aside>
   </main>
 </div>
-@if (reservationDialogOpen()) {
-  <div class="dialog-backdrop" (click)="closeReservation()" (keydown.escape)="closeReservation()">
-    <section class="reservation-dialog" role="dialog" aria-modal="true" aria-labelledby="dialog-title" (click)="$event.stopPropagation()">
-      <button type="button" class="dialog-close" aria-label="Fechar" (click)="closeReservation()">×</button>
-      @if (!reservationSent()) {
-        <p class="eyebrow">NOVA SOLICITAÇÃO</p><h2 id="dialog-title">Nova reserva</h2><p class="dialog-description">Informe os dados iniciais para solicitar um recurso.</p>
-        <form (submit)="submitReservation($event)">
-          <label>Recurso<select required><option value="">Selecione um recurso</option><option>Lab. de informática 02</option><option>Sala 204</option><option>Auditório</option></select></label>
-          <label>Data<input type="date" required></label>
-          <div class="form-grid"><label>Início<input type="time" required></label><label>Término<input type="time" required></label></div>
-          <label>Atividade<input type="text" placeholder="Ex.: Aula de programação" required></label>
-          <div class="dialog-actions"><button type="button" class="secondary-button" (click)="closeReservation()">Cancelar</button><button type="submit" class="primary-button">Continuar</button></div>
-        </form>
-      } @else {
-        <div class="success-mark">✓</div><h2 id="dialog-title">Solicitação iniciada</h2><p class="dialog-description">Os dados foram preenchidos nesta demonstração. A integração com o serviço de reservas será necessária para registrar a solicitação.</p>
-        <div class="dialog-actions"><button type="button" class="primary-button" (click)="closeReservation()">Entendi</button></div>
-      }
-    </section>
-  </div>
-}

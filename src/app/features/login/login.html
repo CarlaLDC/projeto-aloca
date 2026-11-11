@@ -40,7 +40,7 @@
         }
       </div>
       <button class="recovery" type="button" (click)="recoverPassword()">Esqueceu sua senha?</button>
-      <button class="submit" type="submit">Entrar</button>
+      <button class="submit" type="submit" [disabled]="sending()">{{ sending() ? 'Entrando…' : 'Entrar' }}</button>
     </form>
     <p class="permissions">Seu perfil e suas permissões são definidos pela instituição.</p>
     <p class="feedback" role="status" aria-live="polite">{{ feedback() }}</p>

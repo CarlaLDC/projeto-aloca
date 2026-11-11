@@ -1,55 +1,63 @@
-import { inject } from '@angular/core';
-import { Router } from '@angular/router';
-import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { ApiService } from '../../core/api.service';
+import { AuthService } from '../../core/auth.service';
+import { Painel } from '../../core/api.models';
+import { classeStatus, dataExtensa, hm, mensagemErro } from '../../core/formato';
 
 @Component({
   selector: 'app-overview',
   standalone: true,
-  imports: [CommonModule],
+  imports: [RouterLink],
   templateUrl: './overview.html',
   styleUrl: './overview.css'
 })
-export class Overview {
+export class Overview implements OnInit {
   private readonly router = inject(Router);
-  readonly reservationDialogOpen = signal(false);
-  readonly reservationSent = signal(false);
-  readonly selectedSection = signal('Visão geral');
+  private readonly api = inject(ApiService);
+  readonly auth = inject(AuthService);
+
+  readonly painel = signal<Painel | null>(null);
+  readonly erro = signal('');
+  readonly notificacoesAbertas = signal(false);
+  readonly hm = hm;
+  readonly classeStatus = classeStatus;
 
   readonly navigation = [
-    { label: 'Visão geral', icon: '▦' },
-    { label: 'Disponibilidade', icon: '◷' },
-    { label: 'Minhas reservas', icon: '▤' },
-    { label: 'Aprovações', icon: '✓' },
-    { label: 'Materiais', icon: '▧' },
-    { label: 'Administração', icon: '⚙' },
-    { label: 'Relatórios', icon: '▥' }
-  ];
+    { label: 'Visão geral', icon: '▦', rota: '/visao-geral' },
+    { label: 'Disponibilidade', icon: '◷', rota: '/disponibilidade' },
+    { label: 'Minhas reservas', icon: '▤', rota: '/minhas-reservas' },
+    { label: 'Aprovações', icon: '✓', rota: '/aprovacoes', perfis: ['RESPONSAVEL'] as const },
+    { label: 'Materiais', icon: '▧', rota: '/retiradas-devolucoes', perfis: ['RESPONSAVEL'] as const },
+    { label: 'Relatórios', icon: '▥', rota: '/relatorios', perfis: ['RESPONSAVEL', 'ADMINISTRADOR'] as const }
+  ].filter(item => !item.perfis || this.auth.possui(...item.perfis));
 
-  readonly agenda = [
-    { time: '09:00 – 11:00', place: 'Lab. de informática 02', subject: 'Programação web', status: 'Aprovada', kind: 'approved' },
-    { time: '14:00 – 16:00', place: 'Sala 204 + Projetor', subject: 'Projeto integrador', status: 'Solicitada', kind: 'pending' },
-    { time: '19:00 – 21:00', place: 'Auditório', subject: 'Apresentação final', status: 'Aprovada', kind: 'approved' }
-  ];
+  readonly podeReservar = this.auth.possui('SOLICITANTE', 'RESPONSAVEL', 'ADMINISTRADOR');
 
-  readonly today = new Intl.DateTimeFormat('pt-BR', {
-    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-  }).format(new Date());
+  get today(): string {
+    const data = this.painel()?.data;
+    return data ? dataExtensa(data) : '';
+  }
+
+  ngOnInit(): void {
+    this.auth.atualizarNotificacoes();
+    this.api.painel().subscribe({
+      next: p => this.painel.set(p),
+      error: e => this.erro.set(mensagemErro(e, 'Não foi possível carregar o painel.'))
+    });
+  }
+
+  dois(n: number | undefined): string {
+    return String(n ?? 0).padStart(2, '0');
+  }
 
   openReservation(): void {
     void this.router.navigate(['/nova-reserva']);
   }
 
-  closeReservation(): void {
-    this.reservationDialogOpen.set(false);
-  }
-
-  submitReservation(event: Event): void {
-    event.preventDefault();
-    this.reservationSent.set(true);
-  }
-
-  selectSection(label: string): void {
-    this.selectedSection.set(label);
+  alternarNotificacoes(): void {
+    const abrir = !this.notificacoesAbertas();
+    this.notificacoesAbertas.set(abrir);
+    if (abrir && this.auth.naoLidas() > 0) this.auth.marcarNotificacoesLidas();
   }
 }
