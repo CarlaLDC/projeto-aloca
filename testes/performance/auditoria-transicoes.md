@@ -3,7 +3,7 @@
 ## Objetivo e critério geral
 Comprovar que toda mudança de estado registra, de forma persistente e correlacionável: identificador da entidade, estado anterior, estado novo, ator autenticado, instante, ação/origem e referência da operação. A trilha deve ser consultável após reinício.
 
-O código Angular possui agora `DemoAuditLog`, serviço compartilhado em memória da sessão, integrado à criação, aprovação, rejeição, edição, cancelamento, retirada e devolução. Cada evento contém ID, entidade, estado anterior/novo, ação, timestamp ISO e descrição. O ator é explicitamente marcado como demonstração não autenticada. O serviço não persiste no servidor e os eventos desaparecem ao recarregar a SPA; não equivale a auditoria de produção.
+O código Angular possui agora `DemoAuditLog`, serviço compartilhado em memória da sessão, integrado à criação, aprovação, rejeição, edição, cancelamento, retirada, devolução e alterações administrativas de recursos, usuários e bloqueios. Cada evento contém ID, entidade, estado anterior/novo, ação, timestamp ISO e descrição. O ator é explicitamente marcado como demonstração não autenticada. O serviço não persiste no servidor e os eventos desaparecem ao recarregar a SPA; não equivale a auditoria de produção.
 
 ## Casos de teste
 
@@ -20,11 +20,11 @@ O código Angular possui agora `DemoAuditLog`, serviço compartilhado em memóri
 | AUD-09 | Tentar excluir reserva em uso | Tentar exclusão por perfil autorizado | Exclusão recusada; tentativa registrada conforme política | teste de autorização e log | Bloqueado: endpoint/regra não localizado |
 | AUD-10 | Integridade após reinício | Executar AUD-01..09, reiniciar serviço e consultar trilha | Eventos confirmados permanecem íntegros e ordenáveis | teste de integração e consulta/export | Bloqueado: backend/persistência não localizados |
 
-## Evidência automatizada disponível
-`demo-audit-log.spec.ts` cobre criação de evento com antes/depois/timestamp/ator demonstrativo e ordenação de múltiplos eventos. `reservation-detail.spec.ts` cobre edição/cancelamento no detalhe. Os testes foram adicionados, mas não executados neste ambiente.
+## Cobertura adicional de alterações administrativas\n\nO serviço compartilhado também recebe eventos de cadastro/edição/ativação de recursos, ativação/desativação de usuários e remoção de bloqueios. Teste de integração correspondente em `administration.spec.ts`.\n\n## Evidência automatizada disponível
+`demo-audit-log.spec.ts`, `approvals.spec.ts`, `withdrawals-returns.spec.ts` e `administration.spec.ts` cobrem serviço, aprovação/rejeição, retirada/devolução e alterações administrativas. `reservation-detail.spec.ts` cobre edição/cancelamento. Os testes foram adicionados; o CI do commit mais recente está em execução.
 
 ## Lacunas para fechar RF-10
-1. Substituir o serviço demonstrativo por gravação em API transacional e integrar conclusão;
+1. Substituir o serviço demonstrativo por gravação em API transacional e implementar/integrar conclusão;
 2. Registrar estado anterior/novo, ator autenticado, instante confiável e motivo/diff.
 3. Persistir trilha fora da memória do navegador e permitir consulta por reserva/material.
 4. Testar todas as transições e persistência após reinício.
