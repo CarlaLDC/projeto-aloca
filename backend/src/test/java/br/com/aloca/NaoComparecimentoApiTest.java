@@ -1,9 +1,8 @@
 package br.com.aloca;
 
-import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.Matchers.hasItem;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -11,7 +10,10 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Primary;
 
 /** Fluxo positivo de ausência: autorização, janela, estado persistido e trilha de auditoria. */
 class NaoComparecimentoApiTest extends ApiTesteBase {
@@ -19,13 +21,50 @@ class NaoComparecimentoApiTest extends ApiTesteBase {
     private static final ZoneId FUSO = ZoneId.of("America/Sao_Paulo");
     private static final LocalDate DIA = LocalDate.of(2030, 1, 15);
 
-    @MockitoBean
-    Clock relogio;
+    @TestConfiguration
+    static class ConfiguracaoRelogio {
+        @Bean
+        @Primary
+        RelogioTeste relogioTeste() {
+            return new RelogioTeste(Clock.system(FUSO));
+        }
+    }
+
+    static class RelogioTeste extends Clock {
+        private volatile Instant instante;
+        private final ZoneId zona;
+
+        RelogioTeste(Clock inicial) {
+            this.instante = inicial.instant();
+            this.zona = inicial.getZone();
+        }
+
+        void fixar(Instant instante) {
+            this.instante = instante;
+        }
+
+        @Override
+        public Instant instant() {
+            return instante;
+        }
+
+        @Override
+        public ZoneId getZone() {
+            return zona;
+        }
+
+        @Override
+        public Clock withZone(ZoneId zone) {
+            return new RelogioTeste(Clock.fixed(instante, zone));
+        }
+    }
+
+    @Autowired
+    RelogioTeste relogio;
 
     @BeforeEach
     void fixarRelogioAntesDoInicioDaReserva() {
-        when(relogio.instant()).thenReturn(Instant.parse("2030-01-15T12:00:00Z"));
-        when(relogio.getZone()).thenReturn(FUSO);
+        relogio.fixar(Instant.parse("2030-01-15T12:00:00Z")); // 09h em São Paulo
     }
 
     @Test
@@ -35,8 +74,8 @@ class NaoComparecimentoApiTest extends ApiTesteBase {
         String codigo = codigoCriado(solicitante, reserva(DIA, "10:00", "11:00", SALA_204, null));
         String endpoint = "/api/reservas/" + codigo + "/nao-compareceu";
 
-        // Avança o relógio para 10h16 locais, depois de criar uma reserva válida às 10h.
-        when(relogio.instant()).thenReturn(Instant.parse("2030-01-15T13:16:00Z"));
+        // Avança para 10h16 locais, depois de criar uma reserva válida às 10h.
+        relogio.fixar(Instant.parse("2030-01-15T13:16:00Z"));
 
         postJson(responsavel, endpoint,
                 "{\"motivo\":\"Solicitante ausente após 15 minutos da tolerância\"}")
