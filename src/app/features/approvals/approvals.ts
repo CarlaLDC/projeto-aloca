@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { DemoAuditLog } from '../../core/demo-audit-log';
 
 type ApprovalStatus = 'Pendente' | 'Aprovada' | 'Rejeitada';
 
@@ -12,6 +13,7 @@ type ApprovalStatus = 'Pendente' | 'Aprovada' | 'Rejeitada';
   styleUrl: './approvals.css'
 })
 export class Approvals {
+  constructor(private readonly audit: DemoAuditLog) {}
   readonly status = signal<ApprovalStatus>('Pendente');
   readonly pendingCount = signal(3);
   readonly approvedToday = signal(7);
@@ -22,6 +24,7 @@ export class Approvals {
 
   approve(): void {
     if (this.status() !== 'Pendente') return;
+    this.audit.append({ entityId: 'RES-DEMO-APPROVAL', entityType: 'Reserva', fromState: 'Pendente', toState: 'Aprovada', action: 'Aprovação', description: 'Aprovação demonstrativa' });
     this.status.set('Aprovada');
     this.pendingCount.update(value => Math.max(0, value - 1));
     this.approvedToday.update(value => value + 1);
@@ -40,6 +43,7 @@ export class Approvals {
 
   reject(): void {
     if (this.status() !== 'Pendente' || !this.rejectionReason().trim()) return;
+    this.audit.append({ entityId: 'RES-DEMO-APPROVAL', entityType: 'Reserva', fromState: 'Pendente', toState: 'Rejeitada', action: 'Rejeição', description: this.rejectionReason().trim() });
     this.status.set('Rejeitada');
     this.pendingCount.update(value => Math.max(0, value - 1));
     this.rejectionDialogOpen.set(false);
