@@ -1,19 +1,24 @@
-# Testes de desempenho — Projeto Aloca
+# Testes de desempenho e rastreabilidade — Projeto Aloca
 
-Preparação de teste JMeter, RTM, registro de impedimentos e relatório final.
+Esta pasta contém JMeter, RTM completa, matriz de auditoria, defeitos/impedimentos e relatório final.
 
-## Estado
-Preparação concluída; execução de carga de negócio pendente. A aplicação inspecionada é Angular e não foi localizada API/backend documentado, URL de homologação, credenciais ou massa de dados. O JMX incluído testa somente a entrega HTTP das rotas SPA; não valida consultas reais, persistência, criação de reservas ou concorrência.
+## Estado real
+- **RTM:** RF-01..RF-14 e RNF-01..RNF-09 relacionados a risco, teste e referência/evidência. A estrutura documental está completa; a execução de todos os testes críticos não está comprovada.
+- **Auditoria RF-10:** detalhe da reserva acrescenta eventos locais em edição/cancelamento; aprovação/rejeição e retirada/devolução não registram evento no código inspecionado. Os eventos atuais não registram explicitamente estado anterior/novo nem persistem no servidor. Ver [auditoria-transicoes.md](./auditoria-transicoes.md).
+- **JMeter:** o plano executa GETs repetidos às rotas Angular SPA. Reserva/aprovação/movimentação são simuladas em memória e não há API/backend documentado; JMeter HTTP não consegue acionar corretamente esses eventos client-side. Não inventar POSTs/URLs.
 
-## Executar teste SPA
-Com Apache JMeter 5.6.x e aplicação autorizada disponível:
+## Executar carga das rotas SPA
+Com Apache JMeter 5.6.x e ambiente de teste autorizado:
 
     mkdir -p resultados
     jmeter -n -t testes/performance/jmeter/aloca-spa-load-test.jmx -Jprotocol=http -Jhost=localhost -Jport=4200 -l resultados/aloca-spa.jtl -e -o resultados/html
 
-Parâmetros: 50 usuários, ramp-up 60 s, duração 600 s. Disponibilidade: limite individual 2.000 ms; demais páginas: 3.000 ms. Conferir p95 no Aggregate Report/HTML; média não substitui p95. Assertions individuais não comprovam o percentil.
+Plano: 50 usuários, ramp-up 60 s, duração 600 s; sete rotas SPA em loop. Mede apenas entrega HTTP/servidor estático/Angular dev server, não operações de negócio. Verificar p95 no Aggregate Report/HTML.
 
-Não executar em produção sem autorização e janela aprovada. Para fechar RNF-01, é necessário ambiente/API de negócio, credenciais de teste e massa sintética; executar também cenário concorrente de duas reservas para mesmo recurso/horário.
+## Para JMeter sobre reservas reais
+Fornecer API/base URL de homologação, endpoints e payloads, autenticação de teste, massa sintética, política de limpeza e autorização. Com isso, modelar pesquisa, criação, edição, cancelamento, aprovação/rejeição e requisições concorrentes para o mesmo recurso/horário.
+
+Não executar em produção sem autorização e janela aprovada. Não usar dados pessoais reais na massa de carga.
 
 ## Evidências
-O JMX e os documentos versionados comprovam planejamento/configuração. Não há JTL, dashboard HTML ou capturas de execução nesta entrega; não foram inventados resultados.
+JMX, RTM e documentos são artefatos de planejamento/inspeção. Não há JTL, dashboard HTML ou relatório de execução nesta entrega.
