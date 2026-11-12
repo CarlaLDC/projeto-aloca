@@ -6,7 +6,7 @@ Before({ tags: '@aprovacao-inativos' }, async function () {
   this.apiInativos = await request.newContext({ baseURL: process.env.API_URL || 'http://127.0.0.1:8080' });
 });
 After({ tags: '@aprovacao-inativos' }, async function () { await this.apiInativos?.dispose(); });
-function h(token) { return { Authorization: 'Bearer ' + token }; }
+function h(token) { return token ? { Authorization: 'Bearer ' + token } : {}; }
 async function post(world, token, path, data, status) {
   const response = await world.apiInativos.post(path, { headers: h(token), data });
   expect(response.status(), path + ': ' + await response.text()).toBe(status);
