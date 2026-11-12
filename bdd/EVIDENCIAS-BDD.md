@@ -4,16 +4,39 @@ Revisão: 12/11/2026. Esta página distingue especificação executável, result
 
 ## Situação do requisito
 
-**Parcialmente demonstrado.** Há cenários Gherkin e automação Cucumber/Playwright. Esta revisão acrescenta aprovação restrita e bloqueio de manutenção, mas essas regras de negócio já existiam antes dos novos cenários. Portanto, este incremento é cobertura de regressão orientada a comportamento; não comprova retrospectivamente que uma funcionalidade nova foi desenvolvida com BDD/TDD.
+**Parcialmente demonstrado.** Há cenários Gherkin e automação Cucumber/Playwright. Esta revisão acrescenta aprovação restrita e bloqueio de manutenção, mas essas regras de negócio já existiam antes dos novos cenários. Portanto, este incremento é cobertura de regressão orientada a comportamento; não comprova retrospectivamente que uma funcionalidade nova foi desenvolvida com BDD.
 
-O critério “ao menos uma funcionalidade nova desenvolvida com evidências da técnica” só pode ser considerado concluído quando houver evidência verificável de um incremento de negócio guiado pelos exemplos/testes, além de sua execução aprovada. Não foi fabricado ciclo vermelho/verde nem alterado o histórico.
+O critério “ao menos uma funcionalidade nova desenvolvida com evidências da técnica” só pode ser considerado concluído quando houver evidência verificável de um incremento de negócio guiado pelos exemplos/testes, além de sua execução aprovada. O registro preserva a ordem real dos exemplos, da automação e da implementação.
+
+## Método adotado: BDD
+
+A entrega usa **Behavior-Driven Development (BDD)** como método escolhido para atender à alternativa permitida no enunciado.
+
+O ponto de partida é o comportamento observável e seus exemplos de negócio:
+
+1. **Descoberta:** identificar as regras de aprovação restrita, os perfis autorizados e o efeito da manutenção sobre a reserva.
+2. **Formulação:** expressar essas regras em linguagem compartilhada, com contexto, ação e resultado em **Dado / Quando / Então**. O arquivo `features/aprovacao-bloqueio.feature` é a especificação executável.
+3. **Automação:** ligar cada frase aos steps Cucumber, chamando a API real e verificando respostas, estado persistido e auditoria.
+4. **Desenvolvimento guiado pelos exemplos:** em uma funcionalidade nova, implementar o comportamento necessário para atender aos exemplos previamente definidos e registrar a evolução no PR.
+5. **Documentação viva:** executar os cenários no CI e conservar relatórios associados ao commit para verificar se a aplicação continua atendendo aos exemplos.
+
+Exemplo do comportamento especificado:
+
+```gherkin
+Dado que existe uma solicitação pendente para o recurso exclusivo
+E que o administrador bloqueia o recurso exclusivo no período solicitado
+Quando o responsável aprova a solicitação exclusiva
+Então a aprovação é recusada por manutenção e preserva o histórico anterior
+```
+
+Os exemplos desta entrega foram derivados dos requisitos fornecidos. A validação dos exemplos pela equipe deve ficar registrada na revisão do PR; não se presume uma reunião de descoberta ou aprovação que não aconteceu. A formulação e a automação estão registradas nos commits abaixo. Como as regras já existiam, a etapa de desenvolvimento de funcionalidade nova não é atribuída retrospectivamente a esta entrega.
 
 ## O que foi encontrado
 
 | Evidência | O que demonstra | O que não demonstra |
 |---|---|---|
 | [Commit 45f4236](https://github.com/CarlaLDC/projeto-aloca/commit/45f42367eb1410aa03384df405e03e4791b5316e) | Inclusão de cenários integrados de login, autorização, reserva e conflito | Execução aprovada ou teste anterior à implementação |
-| [Commit 31738d9](https://github.com/CarlaLDC/projeto-aloca/commit/31738d9262ffc1557f2448f8cd3c0cd3290026d5) | Extensão dos cenários para competência e autorização de ausência | Ciclo BDD/TDD de aprovação e manutenção |
+| [Commit 31738d9](https://github.com/CarlaLDC/projeto-aloca/commit/31738d9262ffc1557f2448f8cd3c0cd3290026d5) | Extensão dos cenários para competência e autorização de ausência | Ciclo BDD de aprovação e manutenção |
 | [AprovacaoApiTest](../backend/src/test/java/br/com/aloca/AprovacaoApiTest.java) | Asserções de autorização, aprovação, justificativa e auditoria | Resultado do teste nesta revisão |
 | [AdminRecursosTest](../backend/src/test/java/br/com/aloca/AdminRecursosTest.java) | Asserções de cadastro e validação de bloqueio | Ordem temporal teste → implementação |
 | [Cenários novos](features/aprovacao-bloqueio.feature) | Exemplos explícitos de aprovação e manutenção | Nova regra de negócio implementada neste incremento |
@@ -67,8 +90,8 @@ Para interpretar: todos os cinco casos novos devem estar PASSED; FAILED, UNDEFIN
 | Implementação de negócio | Já existia em develop antes dos exemplos desta revisão |
 | Validação local | Sintaxe JavaScript dos novos steps verificada com node --check |
 | Execução integrada | Não executada localmente nesta revisão; consultar o job do PR e seu artefato |
-| Resultado vermelho de regra ausente | Não produzido; regras já existentes |
-| Resultado verde integrado | Não declarado sem relatório |
+| Exemplo ainda não atendido pela aplicação | Não registrado nesta revisão; regras já existentes |
+| Exemplos atendidos na execução integrada | Não declarado sem relatório |
 
 Ter um commit de cenários antes do commit de steps documenta a ordem da automação, mas não prova que a funcionalidade de negócio nasceu por BDD.
 
