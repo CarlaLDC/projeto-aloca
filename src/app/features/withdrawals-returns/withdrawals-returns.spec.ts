@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { WithdrawalsReturns } from './withdrawals-returns';
 import { DemoAuditLog } from '../../core/demo-audit-log';
 
 describe('WithdrawalsReturns audit integration', () => {
-  beforeEach(async () => TestBed.configureTestingModule({ imports: [WithdrawalsReturns] }).compileComponents());
+  beforeEach(async () => TestBed.configureTestingModule({ imports: [WithdrawalsReturns], providers: [provideRouter([])] }).compileComponents());
 
   it('records pickup and return transitions', () => {
     const fixture = TestBed.createComponent(WithdrawalsReturns);
