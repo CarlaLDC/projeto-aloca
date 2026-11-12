@@ -28,3 +28,14 @@ Funcionalidade: Aloca integrado com autenticação, API e persistência
     Quando entro com o usuário de teste "ana.martins@aloca.edu.br"
     E crio duas reservas para a mesma sala e horário pela API
     Então a segunda reserva recebe conflito HTTP 409
+
+  Cenário: Pesquisar professores pela competência na API integrada
+    Dado que acesso a tela de login integrada
+    Quando entro com o usuário de teste "ana.martins@aloca.edu.br"
+    Então encontro professores pela competência "Matem" na API
+
+  Cenário: Impedir que solicitante registre não comparecimento
+    Dado que acesso a tela de login integrada
+    Quando entro com o usuário de teste "ana.martins@aloca.edu.br"
+    E crio uma reserva futura pela API para testar ausência
+    Então a API impede o registro de não comparecimento para solicitante
