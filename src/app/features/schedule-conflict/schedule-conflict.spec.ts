@@ -1,4 +1,6 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideRouter } from '@angular/router';
 import { ConflitoStore } from '../../core/conflito.store';
 import { ScheduleConflict } from './schedule-conflict';
@@ -7,7 +9,7 @@ describe('ScheduleConflict', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ScheduleConflict],
-      providers: [provideRouter([])]
+      providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()]
     }).compileComponents();
   });
 
