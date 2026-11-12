@@ -45,3 +45,22 @@ O workflow de CI integrado contém um job exclusivo de unitários, executando o 
 - Estratégia de qualidade: unitários isolados com JUnit e mocks somente nas dependências externas.
 
 As consultas de sobreposição, locks, transações, persistência de auditoria e entrega real dos eventos continuam sob responsabilidade dos testes de integração e BDD. Mockito não é usado como evidência de concorrência ou de integridade do banco. Nenhuma regra de produção foi alterada nesta entrega.
+
+## Evidência de execução — 12/11/2026
+
+PR: [#37](https://github.com/CarlaLDC/projeto-aloca/pull/37). Commit dos testes: [833c0e6](https://github.com/CarlaLDC/projeto-aloca/commit/833c0e6a4a3de351e2c3cd5076423a1fa13232e3).
+
+[Execução do CI integrado](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43330605457):
+
+| Execução | Resultado verificado |
+|---|---|
+| Job Backend — regras unitárias sem banco | 42 testes; zero falhas, erros e ignorados; BUILD SUCCESS |
+| ReservaServiceUnitTest | 19 casos aprovados |
+| ReservaUnitTest | 6 casos aprovados |
+| MovimentacaoServiceUnitTest | 17 casos aprovados |
+| Suíte backend completa no merge temporário do PR | 126 testes; zero falhas, erros e ignorados; BUILD SUCCESS |
+| Gate integrado | Aprovado |
+
+Relatórios: [somente unitários](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43330605457/artifacts/13993474881) e [suíte completa / JaCoCo](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43330605457/artifacts/13993778749). Os artefatos expiram em 10/02/2027. Nos XMLs/TXTs Surefire, procure as três classes do pacote br.com.aloca.unit.
+
+O job exclusivo executou somente essas três classes. Os imports de tipos Spring usados pelos serviços não significam inicialização de contexto; não há SpringBootTest nem conexão com infraestrutura nesse job. O resultado acima pertence à execução e ao commit indicados, anteriores a este registro documental.
