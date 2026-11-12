@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule, NgForm } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { DemoAuditLog } from '../../core/demo-audit-log';
 
 @Component({
   selector: 'app-new-reservation',
@@ -10,6 +11,7 @@ import { RouterLink } from '@angular/router';
   styleUrl: './new-reservation.css'
 })
 export class NewReservation {
+  constructor(private readonly audit: DemoAuditLog) {}
   readonly reviewing = signal(false);
   readonly completed = signal(false);
   readonly error = signal('');
@@ -47,6 +49,7 @@ export class NewReservation {
 
   confirm(): void {
     // Demonstração local: não representa aprovação ou gravação no servidor.
+    this.audit.append({ entityId: 'RES-DEMO-NEW', entityType: 'Reserva', fromState: 'Inexistente', toState: 'Solicitada', action: 'Criação', description: `${this.activity} · ${this.date} ${this.start}-${this.end}` });
     this.completed.set(true);
   }
 
