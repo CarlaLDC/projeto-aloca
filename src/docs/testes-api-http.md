@@ -61,3 +61,21 @@ A tag http permite selecionar a suíte. Surefire publica o resultado em backend/
 ## Limites
 
 A suíte cobre regras críticas por HTTP, mas não substitui testes de interface, expiração temporal completa de JWT, varredura de vulnerabilidades, carga JMeter ou todas as buscas e combinações de dados. A proteção da reserva em uso é exercitada com material já retirado; a evolução pelo agendador permanece coberta pelas suítes existentes. Não há alteração de regra de produção neste incremento.
+
+## Evidência verificada — 12/11/2026
+
+PR: [#38](https://github.com/CarlaLDC/projeto-aloca/pull/38). Commit testado: [be004b3](https://github.com/CarlaLDC/projeto-aloca/commit/be004b330ad5b99189d71c0c1577c8f4576dfce4).
+
+[Execução do CI integrado](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43332721433):
+
+| Verificação | Resultado |
+|---|---|
+| Job API — caixa-preta HTTP e MySQL | **32 testes**, zero falhas, erros e ignorados; BUILD SUCCESS |
+| Suíte backend completa | **158 testes**, zero falhas, erros e ignorados; BUILD SUCCESS |
+| Job de unitários isolados, frontend e gate | Aprovados |
+
+Relatórios: [artefato exclusivo HTTP](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43332721433/artifacts/13995432987) e [backend completo com JaCoCo](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43332721433/artifacts/13996680426). Extraia o ZIP e consulte o TXT/XML de br.com.aloca.http.RegrasCriticasHttpTest em surefire-reports. A retenção dos artefatos vai até 10/02/2027.
+
+A primeira execução teve 31 casos aprovados e uma falha no teste de relatório: a consulta incluía somente o dia futuro da reserva, mas o conflito é contabilizado pela data da tentativa. O commit be004b3 ajustou o período para incluir ambas as datas. As asserções de uma reserva, uma hora e um conflito foram mantidas. Não houve mudança de produção para obter o resultado aprovado.
+
+A contagem de 158 corresponde à suíte completa da revisão testada; o presente registro documental posterior não altera o código executável.
