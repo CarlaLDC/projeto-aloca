@@ -8,7 +8,7 @@
 ## 1. Resumo executivo
 A RTM foi ampliada para RF-01..RF-14 e RNF-01..RNF-09, incluindo risco, teste, referência/evidência e status. Também foi criada uma matriz de transições de auditoria RF-10.
 
-A inspeção do código indica aplicação Angular com dados/estados demonstrativos em memória. Foi criado `DemoAuditLog`, integrado à criação, aprovação, rejeição, edição, cancelamento, retirada e devolução. Os eventos incluem estado anterior/novo e timestamp, mas são mantidos apenas em memória e usam ator demonstrativo não autenticado. Não há persistência no servidor; conclusão operacional continua ausente.
+A inspeção do código indica aplicação Angular com dados/estados demonstrativos em memória. Foi ampliado `DemoAuditLog`, integrado à criação, aprovação, rejeição, edição, cancelamento, retirada, devolução e mudanças administrativas de recursos, usuários e bloqueios. Os eventos incluem estado anterior/novo e timestamp, mas são mantidos apenas em memória e usam ator demonstrativo não autenticado. Não há persistência no servidor; conclusão operacional continua ausente.
 
 O JMX executa GETs repetidos às rotas SPA. Não foi localizada API/backend de reserva documentado. Portanto, não há como afirmar que JMeter executou operações reais de reserva.
 
@@ -31,14 +31,14 @@ Não há JTL, dashboard HTML, screenshots ou logs de execução nesta entrega. N
 50 usuários, ramp-up 60 s, duração 600 s, loop das rotas /login, /disponibilidade, /nova-reserva, /minhas-reservas, /aprovacoes, /administracao e /relatorios. O JMX mede resposta HTTP de páginas; não mede ações client-side nem API de reserva. Os limites individuais não substituem a análise p95.
 
 ## 4. Auditoria RF-10
-Consulte [auditoria-transicoes.md](./auditoria-transicoes.md). Foram mapeados criação, aprovação, rejeição, cancelamento, edição, conclusão, retirada, devolução, tentativa de exclusão em uso e persistência após reinício. A trilha compartilhada local agora cobre criação, aprovação, rejeição, edição, cancelamento, retirada e devolução. Continua sem persistência, ator autenticado e fluxo de conclusão.
+Consulte [auditoria-transicoes.md](./auditoria-transicoes.md). Foram mapeados criação, aprovação, rejeição, cancelamento, edição, conclusão, retirada, devolução, tentativa de exclusão em uso e persistência após reinício. A trilha compartilhada local agora cobre criação, aprovação, rejeição, edição, cancelamento, retirada, devolução e alterações administrativas. Continua sem persistência, ator autenticado e fluxo de conclusão.
 
 ## 5. Impedimentos/lacunas
 - IMP-001: API/backend e URL de homologação não documentados.
 - IMP-002: credenciais por perfil e massa sintética ausentes.
 - IMP-003: JTL/dashboard de execução inexistentes.
-- GAP-004: eventos dos fluxos principais existem apenas no DemoAuditLog em memória; sem API transacional/persistência/ator autenticado.
-- GAP-005: ator demonstrativo não autenticado e ausência de persistência; diff detalhado de edição e transição de conclusão pendentes.
+- GAP-004: eventos dos fluxos de negócio/administração existem apenas no DemoAuditLog em memória; sem API transacional/persistência/ator autenticado. Conclusão de reserva não possui ação operacional.
+- GAP-005: ator demonstrativo não autenticado e ausência de persistência; diff detalhado de edição e transição de conclusão pendentes. Specs de integração adicionadas, CI em execução.
 
 ## 6. Evidências e documentos
 - [RTM completa](./RTM.md)
