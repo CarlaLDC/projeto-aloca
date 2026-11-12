@@ -8,6 +8,7 @@ describe('Overview', () => {
   let http: HttpTestingController;
 
   beforeEach(async () => {
+    localStorage.clear(); // Impede vazamento de sessão dos testes de autenticação.
     await TestBed.configureTestingModule({
       imports: [Overview],
       providers: [provideRouter([]), provideHttpClient(), provideHttpClientTesting()]
