@@ -17,7 +17,7 @@
     <elementProp name="ThreadGroup.main_controller" elementType="LoopController"><boolProp name="LoopController.continue_forever">true</boolProp><stringProp name="LoopController.loops">-1</stringProp></elementProp>
     <stringProp name="ThreadGroup.num_threads">50</stringProp><stringProp name="ThreadGroup.ramp_time">60</stringProp><boolProp name="ThreadGroup.scheduler">true</boolProp><stringProp name="ThreadGroup.duration">600</stringProp><stringProp name="ThreadGroup.delay">0</stringProp>
    </ThreadGroup><hashTree>
-    <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="One route pass per virtual user" enabled="true"/><hashTree>
+    
      
      <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="SPA-01 login" enabled="true">
       <stringProp name="HTTPSampler.path">/login</stringProp><stringProp name="HTTPSampler.method">GET</stringProp><boolProp name="HTTPSampler.follow_redirects">true</boolProp><boolProp name="HTTPSampler.use_keepalive">true</boolProp><boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
