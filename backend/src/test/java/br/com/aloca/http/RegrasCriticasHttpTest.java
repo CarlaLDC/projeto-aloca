@@ -347,13 +347,15 @@ class RegrasCriticasHttpTest {
         Map<String, Object> p = pedido(sala, null, List.of());
         criar(p);
         esperar("POST", "/api/reservas", ana, p, 409);
-        Resposta relatorio = esperar("GET", "/api/relatorios?inicio=" + DIA + "&fim=" + DIA, responsavel, null, 200);
+        // Conflitos são contabilizados na data da tentativa; horas na data da reserva.
+        String inicioRelatorio = LocalDate.now(ZoneId.of("America/Sao_Paulo")).toString();
+        Resposta relatorio = esperar("GET", "/api/relatorios?inicio=" + inicioRelatorio + "&fim=" + DIA, responsavel, null, 200);
         List<Map<String, Object>> linhas = relatorio.json().read("$.recursos");
         Map<String, Object> linha = linhas.stream().filter(l -> ((Number) l.get("id")).longValue() == sala).findFirst().orElseThrow();
         assertThat(((Number) linha.get("reservas")).longValue()).isEqualTo(1);
         assertThat(((Number) linha.get("horas")).doubleValue()).isEqualTo(1.0);
         assertThat(((Number) linha.get("conflitos")).longValue()).isEqualTo(1);
-        Resposta csv = esperar("GET", "/api/relatorios/csv?inicio=" + DIA + "&fim=" + DIA, admin, null, 200);
+        Resposta csv = esperar("GET", "/api/relatorios/csv?inicio=" + inicioRelatorio + "&fim=" + DIA, admin, null, 200);
         assertThat(csv.headers().firstValue("content-type").orElse("")).contains("text/csv");
         assertThat(csv.corpo()).contains(linha.get("nome").toString());
     }
