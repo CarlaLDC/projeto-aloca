@@ -92,6 +92,6 @@ Then('a reserva fica aprovada com auditoria da decisão', async function () {
   const reserva = await detalhe(this);
   expect(reserva.status).toBe('APROVADA');
   expect(reserva.historico).toEqual(expect.arrayContaining([
-    expect.objectContaining({ estadoAnterior: 'SOLICITADA', estadoNovo: 'APROVADA', ator: 'Roberto Almeida' })
+    expect.objectContaining({ estadoAnterior: 'Solicitada', estadoNovo: 'Aprovada', ator: 'Roberto Almeida' })
   ]));
 });
