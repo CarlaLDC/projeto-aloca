@@ -72,6 +72,21 @@
       </div>
     </section>
 
+    <section class="filter-card" aria-label="Pesquisa por competência de professor">
+      <h2>Pesquisar professores por competência</h2>
+      <p>Encontre docentes pelo nome ou pela competência cadastrada.</p>
+      <div class="filter-controls">
+        <label class="search-field"><input aria-label="Competência do professor" placeholder="Ex.: Matemática, Robótica" type="search" [ngModel]="competencia()" (ngModelChange)="competencia.set($event)"></label>
+        <button class="today-button" type="button" (click)="buscarCompetencia()">Pesquisar competências</button>
+      </div>
+      @if (erroProfessores()) {<p role="alert">{{ erroProfessores() }}</p>}
+      @if (professoresEncontrados(); as lista) {
+        <ul aria-label="Professores encontrados">
+          @for (professor of lista; track professor.id) {<li><strong>{{ professor.nome }}</strong> · {{ professor.competencia }}</li>}
+          @empty {<li>Nenhum professor encontrado para esta competência.</li>}
+        </ul>
+      }
+    </section>
     <section class="results-section">
       <div class="results-heading">
         <div>
