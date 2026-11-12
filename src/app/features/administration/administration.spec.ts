@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { Administration } from './administration';
 import { DemoAuditLog } from '../../core/demo-audit-log';
 
 describe('Administration audit integration', () => {
-  beforeEach(async () => TestBed.configureTestingModule({ imports: [Administration] }).compileComponents());
+  beforeEach(async () => TestBed.configureTestingModule({ imports: [Administration], providers: [provideRouter([])] }).compileComponents());
 
   it('records resource, user and block changes', () => {
     const fixture = TestBed.createComponent(Administration);
