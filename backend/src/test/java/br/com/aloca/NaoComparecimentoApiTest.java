@@ -3,6 +3,7 @@ package br.com.aloca;
 import static org.hamcrest.Matchers.hasItem;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.mockito.Mockito.when;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -11,8 +12,6 @@ import java.time.ZoneId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
-import static org.mockito.Mockito.when;
 
 /** Fluxo positivo de ausência: autorização, janela, estado persistido e trilha de auditoria. */
 class NaoComparecimentoApiTest extends ApiTesteBase {
@@ -24,10 +23,9 @@ class NaoComparecimentoApiTest extends ApiTesteBase {
     Clock relogio;
 
     @BeforeEach
-    void fixarRelogioDentroDaJanelaDeAusencia() {
-        Clock fixo = Clock.fixed(Instant.parse("2030-01-15T13:16:00Z"), FUSO);
-        when(relogio.instant()).thenReturn(fixo.instant());
-        when(relogio.getZone()).thenReturn(fixo.getZone());
+    void fixarRelogioAntesDoInicioDaReserva() {
+        when(relogio.instant()).thenReturn(Instant.parse("2030-01-15T12:00:00Z"));
+        when(relogio.getZone()).thenReturn(FUSO);
     }
 
     @Test
@@ -37,7 +35,11 @@ class NaoComparecimentoApiTest extends ApiTesteBase {
         String codigo = codigoCriado(solicitante, reserva(DIA, "10:00", "11:00", SALA_204, null));
         String endpoint = "/api/reservas/" + codigo + "/nao-compareceu";
 
-        postJson(responsavel, endpoint, "{\\"motivo\\":\\"Solicitante ausente após 15 minutos da tolerância\\"}")
+        // Avança o relógio para 10h16 locais, depois de criar uma reserva válida às 10h.
+        when(relogio.instant()).thenReturn(Instant.parse("2030-01-15T13:16:00Z"));
+
+        postJson(responsavel, endpoint,
+                "{\"motivo\":\"Solicitante ausente após 15 minutos da tolerância\"}")
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.codigo").value(codigo))
             .andExpect(jsonPath("$.status").value("NAO_COMPARECEU"))
@@ -59,7 +61,7 @@ class NaoComparecimentoApiTest extends ApiTesteBase {
                 hasItem("Roberto Almeida")));
 
         // A operação é terminal: não deve ser aplicada novamente.
-        postJson(responsavel, endpoint, "{\\"motivo\\":\\"Tentativa duplicada\\"}")
+        postJson(responsavel, endpoint, "{\"motivo\":\"Tentativa duplicada\"}")
             .andExpect(status().isConflict());
     }
 }
