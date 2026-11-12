@@ -25,8 +25,8 @@ describe('MyReservations', () => {
       data: '2030-10-22', inicio: '09:00:00', fim: '11:00:00', status: 'APROVADA', statusRotulo: 'Aprovada'
     }]);
     const reservation = fixture.componentInstance.reservations()[0];
-    expect(reservation.schedule).toContain('09:00');
-    expect(reservation.schedule).toContain('11:00');
+    expect(reservation.schedule).toContain('09h');
+    expect(reservation.schedule).toContain('11h');
     expect(reservation.statusClass).toBeTruthy();
     expect(fixture.componentInstance.carregado()).toBeTrue();
   });
