@@ -48,7 +48,13 @@ export class Admin implements OnInit {
 
   salvarRecurso(): void {
     if (this.enviando()) return;
-    this.enviando.set(true); this.erro.set('');
+    if (!this.recurso.nome.trim() || !this.recurso.localizacao.trim() ||
+        !Number.isInteger(this.recurso.capacidade) || this.recurso.capacidade < 1 ||
+        this.recurso.fechamento <= this.recurso.abertura) {
+      this.erro.set('Informe nome e localização, capacidade inteira positiva e horário de fechamento posterior à abertura.');
+      return;
+    }
+    this.enviando.set(true); this.erro.set(''); this.feedback.set('');
     const request = this.editandoRecurso === null
       ? this.api.criarRecurso(this.recurso)
       : this.api.editarRecurso(this.editandoRecurso, this.recurso);
@@ -74,7 +80,11 @@ export class Admin implements OnInit {
 
   salvarProfessor(): void {
     if (this.enviando()) return;
-    this.enviando.set(true); this.erro.set('');
+    if (!this.professor.nome.trim() || !this.professor.competencia.trim()) {
+      this.erro.set('Informe o nome e a competência do professor.');
+      return;
+    }
+    this.enviando.set(true); this.erro.set(''); this.feedback.set('');
     const request = this.editandoProfessor === null
       ? this.api.criarProfessor(this.professor)
       : this.api.editarProfessor(this.editandoProfessor, this.professor);
@@ -94,7 +104,12 @@ export class Admin implements OnInit {
 
   salvarBloqueio(): void {
     if (this.enviando()) return;
-    this.enviando.set(true); this.erro.set('');
+    if (!this.bloqueio.recursoId || !this.bloqueio.inicio || !this.bloqueio.fim ||
+        this.bloqueio.fim <= this.bloqueio.inicio || !this.bloqueio.motivo.trim()) {
+      this.erro.set('Informe recurso, período válido e motivo para o bloqueio.');
+      return;
+    }
+    this.enviando.set(true); this.erro.set(''); this.feedback.set('');
     this.api.criarBloqueio(this.bloqueio).subscribe({
       next: () => { this.enviando.set(false); this.bloqueio = { recursoId: 0, inicio: '', fim: '', motivo: '' };
         this.feedback.set('Bloqueio registrado.'); this.carregar(); },
