@@ -1,6 +1,7 @@
 package br.com.aloca.servico;
 
 import br.com.aloca.api.dto.AdminDtos.*;
+import br.com.aloca.seguranca.UsuarioAtual;
 import br.com.aloca.dominio.*;
 import br.com.aloca.repositorio.*;
 import java.time.Clock;
@@ -17,13 +18,17 @@ public class AdminService {
     private final ProfessorRepositorio professores;
     private final BloqueioRepositorio bloqueios;
     private final Clock relogio;
+    private final AuditoriaService auditoria;
+    private final UsuarioAtual usuarioAtual;
 
     public AdminService(RecursoRepositorio recursos, ProfessorRepositorio professores, BloqueioRepositorio bloqueios,
-                        Clock relogio) {
+                        Clock relogio, AuditoriaService auditoria, UsuarioAtual usuarioAtual) {
         this.recursos = recursos;
         this.professores = professores;
         this.bloqueios = bloqueios;
         this.relogio = relogio;
+        this.auditoria = auditoria;
+        this.usuarioAtual = usuarioAtual;
     }
 
     // ---------------------------------------------------------------- recursos
@@ -36,8 +41,10 @@ public class AdminService {
     @Transactional
     public RecursoDto criarRecurso(RecursoRequest p) {
         validarHorario(p);
-        return dto(recursos.save(new Recurso(p.nome().trim(), p.tipo(), p.categoria(), p.localizacao().trim(),
-            p.capacidade(), p.ehRestrito(), p.abertura(), p.fechamento())));
+        Recurso salvo = recursos.save(new Recurso(p.nome().trim(), p.tipo(), p.categoria(), p.localizacao().trim(),
+            p.capacidade(), p.ehRestrito(), p.abertura(), p.fechamento()));
+        auditoria.registrar(usuarioAtual.obter(), "CRIAR", "RECURSO", salvo.getId(), "Recurso criado: " + salvo.getNome());
+        return dto(salvo);
     }
 
     @Transactional
@@ -46,6 +53,7 @@ public class AdminService {
         Recurso r = recurso(id);
         r.atualizar(p.nome().trim(), p.tipo(), p.categoria(), p.localizacao().trim(), p.capacidade(), p.ehRestrito(),
             p.abertura(), p.fechamento());
+        auditoria.registrar(usuarioAtual.obter(), "ATUALIZAR", "RECURSO", r.getId(), "Recurso atualizado: " + r.getNome());
         return dto(r);
     }
 
@@ -54,6 +62,7 @@ public class AdminService {
     public RecursoDto definirAtivo(Long id, boolean ativo) {
         Recurso r = recurso(id);
         r.setAtivo(ativo);
+        auditoria.registrar(usuarioAtual.obter(), ativo ? "ATIVAR" : "DESATIVAR", "RECURSO", r.getId(), "Recurso " + r.getNome());
         return dto(r);
     }
 
@@ -66,13 +75,16 @@ public class AdminService {
 
     @Transactional
     public ProfessorDto criarProfessor(ProfessorRequest p) {
-        return dto(professores.save(new Professor(p.nome().trim(), p.competencia().trim(), null)));
+        Professor salvo = professores.save(new Professor(p.nome().trim(), p.competencia().trim(), null));
+        auditoria.registrar(usuarioAtual.obter(), "CRIAR", "PROFESSOR", salvo.getId(), "Professor criado: " + salvo.getNome());
+        return dto(salvo);
     }
 
     @Transactional
     public ProfessorDto alterarProfessor(Long id, ProfessorRequest p) {
         Professor prof = professor(id);
         prof.atualizar(p.nome().trim(), p.competencia().trim());
+        auditoria.registrar(usuarioAtual.obter(), "ATUALIZAR", "PROFESSOR", prof.getId(), "Professor atualizado: " + prof.getNome());
         return dto(prof);
     }
 
@@ -80,6 +92,7 @@ public class AdminService {
     public ProfessorDto definirProfessorAtivo(Long id, boolean ativo) {
         Professor prof = professor(id);
         prof.setAtivo(ativo);
+        auditoria.registrar(usuarioAtual.obter(), ativo ? "ATIVAR" : "DESATIVAR", "PROFESSOR", prof.getId(), "Professor " + prof.getNome());
         return dto(prof);
     }
 
@@ -100,7 +113,9 @@ public class AdminService {
             throw RegraNegocioException.invalida("O bloqueio precisa terminar no futuro.");
         }
         Recurso r = recurso(p.recursoId());
-        return dto(bloqueios.save(new Bloqueio(r, p.inicio(), p.fim(), p.motivo().trim(), admin)));
+        Bloqueio salvo = bloqueios.save(new Bloqueio(r, p.inicio(), p.fim(), p.motivo().trim(), admin));
+        auditoria.registrar(admin, "CRIAR", "BLOQUEIO", salvo.getId(), "Bloqueio criado: " + p.motivo().trim());
+        return dto(salvo);
     }
 
     @Transactional
@@ -109,6 +124,7 @@ public class AdminService {
             throw RegraNegocioException.naoEncontrada("Bloqueio não encontrado.");
         }
         bloqueios.deleteById(id);
+        auditoria.registrar(usuarioAtual.obter(), "REMOVER", "BLOQUEIO", id, "Bloqueio removido");
     }
 
     // ---------------------------------------------------------------- apoio
