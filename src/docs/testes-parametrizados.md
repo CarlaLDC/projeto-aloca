@@ -39,3 +39,14 @@ Os workflows existentes de backend e CI integrado descobrem a classe automaticam
 - Estratégia obrigatória de qualidade: testes parametrizados com JUnit.
 
 Este incremento testa comportamento existente; não altera regras de negócio nem substitui o teste paralelo de dupla reserva ou o ciclo BDD documentado separadamente. O resultado da execução deve ser consultado no PR correspondente.
+
+## Resultado verificado em 12/11/2026
+
+- PR: [#35](https://github.com/CarlaLDC/projeto-aloca/pull/35).
+- Commit da implementação dos testes: [1277b5c](https://github.com/CarlaLDC/projeto-aloca/commit/1277b5c3ceb0f2dedd777cfd3423438e89ff3208).
+- Execução: [Verificação backend — qualidade funcional](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43329164079).
+- Classe parametrizada: **37 testes, zero falhas, zero erros e zero ignorados**.
+- Suíte completa: **82 testes, zero falhas, zero erros e zero ignorados**; BUILD SUCCESS.
+- [Artefato com Surefire e JaCoCo](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43329164079/artifacts/13994411546): extraia e consulte o arquivo `br.com.aloca.ReservaParametrizadaApiTest.txt` ou o XML correspondente em surefire-reports. O artefato tem retenção até 10/02/2027.
+
+O resultado corresponde ao commit indicado; este registro documental posterior não altera o código dos testes.
