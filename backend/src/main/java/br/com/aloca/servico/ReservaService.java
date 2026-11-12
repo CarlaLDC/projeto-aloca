@@ -333,8 +333,18 @@ public class ReservaService {
     /** Descrição dos conflitos atuais de uma reserva já gravada (vazia quando está tudo livre). */
     public List<String> problemas(Reserva r) {
         Selecao sel = new Selecao(r.getEspaco(), r.getProfessor(), List.copyOf(r.getMateriais()));
-        return colisoes(r.getData(), r.getInicio(), r.getFim(), sel, r.getId()).stream()
-            .map(c -> descrever(c.item())).toList();
+        List<String> problemas = new ArrayList<>();
+        for (Recurso recurso : sel.todosRecursos()) {
+            if (!recurso.isAtivo()) {
+                problemas.add(recurso.getNome() + " está desativado e não pode ser alocado");
+            }
+        }
+        if (sel.professor() != null && !sel.professor().isAtivo()) {
+            problemas.add(sel.professor().getNome() + " está desativado e não pode ser alocado");
+        }
+        colisoes(r.getData(), r.getInicio(), r.getFim(), sel, r.getId()).stream()
+            .map(c -> descrever(c.item())).forEach(problemas::add);
+        return List.copyOf(problemas);
     }
 
     private Resultado emConflito(ReservaRequest p, Selecao sel, List<Colisao> colisoes, Usuario usuario, long ignorarId) {

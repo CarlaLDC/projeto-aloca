@@ -1,0 +1,468 @@
+[
+  {
+    "description": "  Como responsável\n  Quero impedir a aprovação de uma alocação desativada após a solicitação\n  Para confirmar somente recursos e professores disponíveis para uso",
+    "elements": [
+      {
+        "description": "",
+        "id": "revalidar-cadastros-ativos-antes-de-aprovar-uma-solicitação;desativação-posterior-bloqueia-aprovação-até-a-reativação",
+        "keyword": "Esquema do Cenário",
+        "line": 20,
+        "name": "Desativação posterior bloqueia aprovação até a reativação",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 7725279
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Dado ",
+            "line": 9,
+            "name": "uma solicitação restrita com sala, material e professor ativos",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:27"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 369426227
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Quando ",
+            "line": 10,
+            "name": "o administrador desativa o \"sala\" da solicitação",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:55"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 7567064
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Então ",
+            "line": 11,
+            "name": "o painel de aprovações informa a desativação do \"sala\"",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:60"
+            },
+            "result": {
+              "status": "failed",
+              "duration": 29659962,
+              "error_message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: false\nReceived: true\n    at Proxy.<anonymous> (/home/runner/work/projeto-aloca/projeto-aloca/bdd/node_modules/playwright/lib/matchers/expect.js:221:24)\n    at World.<anonymous> (/home/runner/work/projeto-aloca/projeto-aloca/bdd/steps/aprovacao-inativos.cjs:62:40)"
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Quando ",
+            "line": 12,
+            "name": "o responsável tenta aprovar a solicitação com cadastro desativado",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:66"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Então ",
+            "line": 13,
+            "name": "a API recusa com 409 e preserva a solicitação e sua auditoria",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:70"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Quando ",
+            "line": 14,
+            "name": "o administrador reativa o \"sala\" da solicitação",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:79"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Então ",
+            "line": 15,
+            "name": "o painel informa que a solicitação pode ser aprovada",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:83"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Quando ",
+            "line": 16,
+            "name": "o responsável aprova a solicitação revalidada",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:88"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Então ",
+            "line": 17,
+            "name": "a reserva fica aprovada com auditoria da decisão",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:91"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 847667
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@aprovacao-inativos",
+            "line": 2
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "revalidar-cadastros-ativos-antes-de-aprovar-uma-solicitação;desativação-posterior-bloqueia-aprovação-até-a-reativação",
+        "keyword": "Esquema do Cenário",
+        "line": 21,
+        "name": "Desativação posterior bloqueia aprovação até a reativação",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 558188
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Dado ",
+            "line": 9,
+            "name": "uma solicitação restrita com sala, material e professor ativos",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:27"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 272248616
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Quando ",
+            "line": 10,
+            "name": "o administrador desativa o \"material\" da solicitação",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:55"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 4480547
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Então ",
+            "line": 11,
+            "name": "o painel de aprovações informa a desativação do \"material\"",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:60"
+            },
+            "result": {
+              "status": "failed",
+              "duration": 19443730,
+              "error_message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: false\nReceived: true\n    at Proxy.<anonymous> (/home/runner/work/projeto-aloca/projeto-aloca/bdd/node_modules/playwright/lib/matchers/expect.js:221:24)\n    at World.<anonymous> (/home/runner/work/projeto-aloca/projeto-aloca/bdd/steps/aprovacao-inativos.cjs:62:40)"
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Quando ",
+            "line": 12,
+            "name": "o responsável tenta aprovar a solicitação com cadastro desativado",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:66"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Então ",
+            "line": 13,
+            "name": "a API recusa com 409 e preserva a solicitação e sua auditoria",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:70"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Quando ",
+            "line": 14,
+            "name": "o administrador reativa o \"material\" da solicitação",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:79"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Então ",
+            "line": 15,
+            "name": "o painel informa que a solicitação pode ser aprovada",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:83"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Quando ",
+            "line": 16,
+            "name": "o responsável aprova a solicitação revalidada",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:88"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Então ",
+            "line": 17,
+            "name": "a reserva fica aprovada com auditoria da decisão",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:91"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 506968
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@aprovacao-inativos",
+            "line": 2
+          }
+        ],
+        "type": "scenario"
+      },
+      {
+        "description": "",
+        "id": "revalidar-cadastros-ativos-antes-de-aprovar-uma-solicitação;desativação-posterior-bloqueia-aprovação-até-a-reativação",
+        "keyword": "Esquema do Cenário",
+        "line": 22,
+        "name": "Desativação posterior bloqueia aprovação até a reativação",
+        "steps": [
+          {
+            "keyword": "Before",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 438895
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Dado ",
+            "line": 9,
+            "name": "uma solicitação restrita com sala, material e professor ativos",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:27"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 273157283
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Quando ",
+            "line": 10,
+            "name": "o administrador desativa o \"professor\" da solicitação",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:55"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 4656831
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Então ",
+            "line": 11,
+            "name": "o painel de aprovações informa a desativação do \"professor\"",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:60"
+            },
+            "result": {
+              "status": "failed",
+              "duration": 22701362,
+              "error_message": "Error: expect(received).toBe(expected) // Object.is equality\n\nExpected: false\nReceived: true\n    at Proxy.<anonymous> (/home/runner/work/projeto-aloca/projeto-aloca/bdd/node_modules/playwright/lib/matchers/expect.js:221:24)\n    at World.<anonymous> (/home/runner/work/projeto-aloca/projeto-aloca/bdd/steps/aprovacao-inativos.cjs:62:40)"
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Quando ",
+            "line": 12,
+            "name": "o responsável tenta aprovar a solicitação com cadastro desativado",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:66"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Então ",
+            "line": 13,
+            "name": "a API recusa com 409 e preserva a solicitação e sua auditoria",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:70"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Quando ",
+            "line": 14,
+            "name": "o administrador reativa o \"professor\" da solicitação",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:79"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Então ",
+            "line": 15,
+            "name": "o painel informa que a solicitação pode ser aprovada",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:83"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Quando ",
+            "line": 16,
+            "name": "o responsável aprova a solicitação revalidada",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:88"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "arguments": [],
+            "keyword": "Então ",
+            "line": 17,
+            "name": "a reserva fica aprovada com auditoria da decisão",
+            "match": {
+              "location": "steps/aprovacao-inativos.cjs:91"
+            },
+            "result": {
+              "status": "skipped",
+              "duration": 0
+            }
+          },
+          {
+            "keyword": "After",
+            "hidden": true,
+            "result": {
+              "status": "passed",
+              "duration": 379793
+            }
+          }
+        ],
+        "tags": [
+          {
+            "name": "@aprovacao-inativos",
+            "line": 2
+          }
+        ],
+        "type": "scenario"
+      }
+    ],
+    "id": "revalidar-cadastros-ativos-antes-de-aprovar-uma-solicitação",
+    "line": 3,
+    "keyword": "Funcionalidade",
+    "name": "Revalidar cadastros ativos antes de aprovar uma solicitação",
+    "tags": [
+      {
+        "name": "@aprovacao-inativos",
+        "line": 2
+      }
+    ],
+    "uri": "features/aprovacao-inativos.feature"
+  }
+]

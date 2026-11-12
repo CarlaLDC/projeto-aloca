@@ -1,0 +1,53 @@
+name: BDD - ciclo de aprovação de cadastros
+on:
+  pull_request:
+    branches: [develop]
+    paths:
+      - 'bdd/**'
+      - 'backend/**'
+      - '.github/workflows/bdd-aprovacao-inativos.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  exemplos:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --prefix bdd --no-audit --no-fund
+      - name: Iniciar API real com banco descartável
+        run: |
+          mkdir -p bdd/reports
+          cd backend
+          mvn -B spring-boot:run -Dspring-boot.run.arguments="--spring.datasource.url=jdbc:h2:mem:bdd-inativos;DB_CLOSE_DELAY=-1" > ../bdd/reports/backend.log 2>&1 &
+          for attempt in $(seq 1 120); do
+            if curl -fsS http://127.0.0.1:8080/api/auth/login -H 'Content-Type: application/json' -d '{"email":"ana.martins@aloca.edu.br","senha":"aloca123"}' | grep -q token; then exit 0; fi
+            sleep 2
+          done
+          cat ../bdd/reports/backend.log
+          exit 1
+      - name: Identificar execução
+        run: |
+          git rev-parse HEAD > bdd/reports/checkout-sha.txt
+          printf '%s\n' "$GITHUB_SHA" > bdd/reports/github-sha.txt
+          printf '%s\n' "$GITHUB_RUN_ID" > bdd/reports/run-id.txt
+      - name: Executar exemplos BDD de aprovação
+        working-directory: bdd
+        run: npx cucumber-js --config aprovacao-inativos.cjs
+      - name: Preservar evidências mesmo quando exemplos falham
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdd-aprovacao-inativos-${{ github.run_id }}
+          path: bdd/reports/
+          if-no-files-found: error
