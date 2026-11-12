@@ -1,5 +1,6 @@
 const { Given, When, Then } = require('@cucumber/cucumber');
 const { expect } = require('@playwright/test');
+
 Given('que acesso {string}', async function (path) { await this.page.goto(path); });
 When('clico em {string}', async function (name) { await this.page.getByRole('button', { name, exact: true }).click(); });
 When('preencho {string} com {string}', async function (label, value) { await this.page.getByLabel(label, { exact: true }).fill(value); });

@@ -24,7 +24,7 @@ npm test --prefix bdd
 
 Abra `bdd/reports/cucumber.html` para visualizar cenários, passos e capturas de falhas.
 O arquivo JSON também fica em `bdd/reports/`.
-Para outro servidor, defina `BASE_URL`. Para acompanhar o navegador, defina `HEADED=true`.
+Para outro servidor, defina `BASE_URL` (por exemplo, `http://localhost:4200`). Para acompanhar o navegador, defina `HEADED=true`.
 
 ## Cobertura
 

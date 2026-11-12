@@ -8,7 +8,8 @@ BeforeAll(async function () {
   browser = await chromium.launch({ headless: process.env.HEADED !== 'true' });
 });
 Before(async function () {
-  this.context = await browser.newContext({ baseURL: process.env.BASE_URL || 'http://127.0.0.1:4200', locale: 'pt-BR', timezoneId: 'America/Sao_Paulo' });
+  const baseUrl = process.env.BASE_URL || 'http://localhost:4200';
+  this.context = await browser.newContext({ baseURL: baseUrl, locale: 'pt-BR', timezoneId: 'America/Sao_Paulo' });
   this.page = await this.context.newPage();
 });
 After(async function ({ result }) {
