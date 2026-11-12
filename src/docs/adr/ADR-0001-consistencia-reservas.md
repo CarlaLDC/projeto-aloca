@@ -1,3 +1,5 @@
+> **Revisão de 12/11/2026:** proposta histórica preservada. Para o estado implementado em develop, consulte [ADR-0005](ADR-0005-arquitetura-implementada.md) e [arquitetura atual](../arquitetura.md). Este texto não comprova funcionalidades implementadas.
+
 # ADR-0001: Consistência na confirmação de reservas
 
 - **Estado:** Proposto; mecanismo físico pendente de decisão técnica.
