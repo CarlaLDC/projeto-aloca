@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
-import { Disponibilidade, RecursoDisponibilidade } from '../../core/api.models';
+import { AdminProfessor, Disponibilidade, RecursoDisponibilidade } from '../../core/api.models';
 import { dataExtensa, hm, hojeIso, mensagemErro, somarDias } from '../../core/formato';
 
 type ResourceType = 'Todos' | 'Salas' | 'Laboratórios' | 'Equipamentos';
@@ -24,6 +24,9 @@ export class Availability implements OnInit {
   readonly auth = inject(AuthService);
 
   readonly searchTerm = signal('');
+  readonly competencia = signal('');
+  readonly professoresEncontrados = signal<AdminProfessor[] | null>(null);
+  readonly erroProfessores = signal('');
   readonly selectedType = signal<ResourceType>('Todos');
   readonly selectedDate = signal(hojeIso());
   readonly selectedView = signal<'lista' | 'horarios'>('lista');
@@ -60,6 +63,14 @@ export class Availability implements OnInit {
     this.api.disponibilidade(this.selectedDate()).subscribe({
       next: r => { this.resultado.set(r); this.carregando.set(false); },
       error: e => { this.erro.set(mensagemErro(e, 'Não foi possível consultar a disponibilidade.')); this.carregando.set(false); }
+    });
+  }
+
+  buscarCompetencia(): void {
+    this.erroProfessores.set('');
+    this.api.pesquisarProfessores(this.competencia()).subscribe({
+      next: docentes => this.professoresEncontrados.set(docentes),
+      error: e => this.erroProfessores.set(mensagemErro(e, 'Não foi possível buscar professores.'))
     });
   }
 

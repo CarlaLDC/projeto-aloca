@@ -56,6 +56,28 @@ export class ReservationDetail {
     return this.reservation()?.podeGerenciar ?? false;
   }
 
+  get podeMarcarAusencia(): boolean {
+    const status = this.reservation()?.status;
+    return this.auth.possui('RESPONSAVEL') && (status === 'APROVADA' || status === 'EM_USO');
+  }
+
+  registrarAusencia(): void {
+    const item = this.reservation();
+    if (!item || !this.podeMarcarAusencia || this.sending()) return;
+    const motivo = window.prompt('Justificativa do não comparecimento:')?.trim();
+    if (!motivo) return;
+    this.sending.set(true);
+    this.error.set('');
+    this.api.registrarNaoComparecimento(item.codigo, motivo).subscribe({
+      next: atualizada => {
+        this.reservation.set(atualizada);
+        this.feedback.set('Não comparecimento registrado no histórico.');
+        this.sending.set(false);
+      },
+      error: e => { this.error.set(mensagemErro(e)); this.sending.set(false); }
+    });
+  }
+
   get materiais(): string {
     const lista = this.reservation()?.materiais ?? [];
     return lista.length ? lista.map(m => m.nome).join(', ') : 'Sem materiais';

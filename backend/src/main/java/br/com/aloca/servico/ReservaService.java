@@ -185,6 +185,32 @@ public class ReservaService {
         return mapeador.detalhe(r, false);
     }
 
+    /**
+     * Ausência confirmada pelo responsável após 15 minutos do início e antes do encerramento.
+     * Reservas com material já retirado não podem ser marcadas como ausência.
+     */
+    @Transactional
+    public ReservaDetalhe marcarNaoComparecimento(String codigo, String motivo, Usuario responsavel) {
+        Reserva r = buscar(codigo);
+        if (!responsavel.possui(Perfil.RESPONSAVEL)) {
+            throw RegraNegocioException.proibida("Somente o responsável pode registrar não comparecimento.");
+        }
+        LocalDateTime agora = agora();
+        if (r.getStatus() != StatusReserva.APROVADA && r.getStatus() != StatusReserva.EM_USO) {
+            throw RegraNegocioException.conflito("Somente reservas aprovadas ou em uso admitem não comparecimento.");
+        }
+        if (agora.isBefore(r.inicioEm().plusMinutes(15)) || !agora.isBefore(r.fimEm())) {
+            throw RegraNegocioException.conflito("A ausência pode ser registrada somente de 15 minutos após o início até o fim da reserva.");
+        }
+        // Ouvintes recusam a alteração se houve retirada de material.
+        eventos.publishEvent(new ReservaEventos.AntesDeModificar(r));
+        r.mudarStatus(StatusReserva.NAO_COMPARECEU, responsavel.getNome(), responsavel,
+            "Não compareceu", motivo.trim(), agora);
+        eventos.publishEvent(new ReservaEventos.Cancelada(r));
+        notificarSolicitante(r, "Ausência registrada na reserva " + r.getCodigo() + ": " + motivo.trim(), agora);
+        return mapeador.detalhe(r, false);
+    }
+
     // ------------------------------------------------------------------ ciclo automático
 
     /** Marca reservas aprovadas como "Em uso" quando começam e "Concluída" quando terminam. */

@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
-  Aprovacoes, Disponibilidade, LoginResposta, Movimentacao, Movimentacoes, Notificacoes, OpcoesReserva, Painel,
+  AdminRecurso, AdminProfessor, AdminBloqueio, Aprovacoes, Disponibilidade, LoginResposta, Movimentacao, Movimentacoes, Notificacoes, OpcoesReserva, Painel,
   Relatorio, ReservaDetalhe, ReservaPedido, ReservaResumo, Usuario
 } from './api.models';
 
@@ -84,6 +84,43 @@ export class ApiService {
   }
   relatorioCsv(inicio: string, fim: string): Observable<Blob> {
     return this.http.get(`${this.base}/relatorios/csv`, { params: { inicio, fim }, responseType: 'blob' });
+  }
+
+  // RF-03: pesquisa por nome e competência de professor (sem privilégios de administrador).
+  pesquisarProfessores(competencia = ''): Observable<AdminProfessor[]> {
+    return this.http.get<AdminProfessor[]>(`${this.base}/professores`, { params: { competencia } });
+  }
+
+  // RF-02 e RF-08: operações de administração persistidas no backend.
+  adminRecursos(): Observable<AdminRecurso[]> { return this.http.get<AdminRecurso[]>(`${this.base}/admin/recursos`); }
+  adminProfessores(): Observable<AdminProfessor[]> { return this.http.get<AdminProfessor[]>(`${this.base}/admin/professores`); }
+  adminBloqueios(): Observable<AdminBloqueio[]> { return this.http.get<AdminBloqueio[]>(`${this.base}/admin/bloqueios`); }
+  criarRecurso(pedido: Omit<AdminRecurso, 'id' | 'ativo'>): Observable<AdminRecurso> {
+    return this.http.post<AdminRecurso>(`${this.base}/admin/recursos`, pedido);
+  }
+  editarRecurso(id: number, pedido: Omit<AdminRecurso, 'id' | 'ativo'>): Observable<AdminRecurso> {
+    return this.http.put<AdminRecurso>(`${this.base}/admin/recursos/${id}`, pedido);
+  }
+  alterarAtivoRecurso(id: number, ativo: boolean): Observable<AdminRecurso> {
+    return this.http.post<AdminRecurso>(`${this.base}/admin/recursos/${id}/${ativo ? 'ativar' : 'desativar'}`, {});
+  }
+  criarProfessor(pedido: { nome: string; competencia: string }): Observable<AdminProfessor> {
+    return this.http.post<AdminProfessor>(`${this.base}/admin/professores`, pedido);
+  }
+  editarProfessor(id: number, pedido: { nome: string; competencia: string }): Observable<AdminProfessor> {
+    return this.http.put<AdminProfessor>(`${this.base}/admin/professores/${id}`, pedido);
+  }
+  alterarAtivoProfessor(id: number, ativo: boolean): Observable<AdminProfessor> {
+    return this.http.post<AdminProfessor>(`${this.base}/admin/professores/${id}/${ativo ? 'ativar' : 'desativar'}`, {});
+  }
+  criarBloqueio(pedido: { recursoId: number; inicio: string; fim: string; motivo: string }): Observable<AdminBloqueio> {
+    return this.http.post<AdminBloqueio>(`${this.base}/admin/bloqueios`, pedido);
+  }
+  removerBloqueio(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.base}/admin/bloqueios/${id}`);
+  }
+  registrarNaoComparecimento(codigo: string, motivo: string): Observable<ReservaDetalhe> {
+    return this.http.post<ReservaDetalhe>(`${this.base}/reservas/${encodeURIComponent(codigo)}/nao-compareceu`, { motivo });
   }
 
   // Topo das telas

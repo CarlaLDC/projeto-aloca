@@ -61,6 +61,13 @@ public class ReservaController {
         return reservas.cancelar(codigo, pedido.motivo(), usuarioAtual.obter());
     }
 
+    /** Responsável registra ausência documentada, respeitando janela e retirada de materiais. */
+    @PostMapping("/{codigo}/nao-compareceu")
+    @PreAuthorize("hasRole('RESPONSAVEL')")
+    public ReservaDetalhe naoCompareceu(@PathVariable String codigo, @Valid @RequestBody CancelamentoRequest pedido) {
+        return reservas.marcarNaoComparecimento(codigo, pedido.motivo(), usuarioAtual.obter());
+    }
+
     private static ResponseEntity<?> responder(Resultado resultado, HttpStatus sucesso) {
         return switch (resultado) {
             case Gravada g -> ResponseEntity.status(sucesso).body(g.reserva());

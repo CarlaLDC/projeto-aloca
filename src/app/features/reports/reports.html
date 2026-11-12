@@ -11,6 +11,7 @@
         <a class="nav-item" routerLink="/retiradas-devolucoes" routerLinkActive="active"><span>▧</span>Materiais</a>
       }
       <a class="nav-item" routerLink="/relatorios" routerLinkActive="active"><span>▥</span>Relatórios</a>
+      @if (auth.possui('ADMINISTRADOR')) {<a class="nav-item" routerLink="/administracao"><span>⚙</span>Administração</a>}
     </nav>
     <div class="sidebar-profile"><span>{{ auth.unidade() }}</span><strong>{{ auth.nome() }}</strong><small>{{ auth.perfilRotulo() }}</small></div>
   </aside>
