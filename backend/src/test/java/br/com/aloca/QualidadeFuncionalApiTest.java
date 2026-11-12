@@ -11,7 +11,7 @@ class QualidadeFuncionalApiTest extends ApiTesteBase {
 
     @Test
     void pesquisaDocentesAtivosPorCompetenciaSemExigirAdmin() throws Exception {
-        get(token(ANA), "/api/professores?competencia=Matem%C3%A1tica")
+        get(token(ANA), "/api/professores?competencia=Matem")
             .andExpect(status().isOk())
             .andExpect(jsonPath("$[*].nome", hasItem("Lucas Oliveira")))
             .andExpect(jsonPath("$[*].competencia", hasItem("Matemática")));
