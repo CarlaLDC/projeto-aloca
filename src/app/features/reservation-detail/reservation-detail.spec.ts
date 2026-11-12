@@ -56,6 +56,22 @@ describe('ReservationDetail', () => {
     expect(component.feedback()).toContain('simulado');
   });
 
+  it('appends a local audit event when a valid edit is saved', async () => {
+    const fixture = await render();
+    const component = fixture.componentInstance;
+    const before = component.reservation()?.history.length ?? 0;
+    component.openAction('edit');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    component.draft.activity = 'Aula revisada';
+    fixture.nativeElement.querySelector('dialog form').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    fixture.detectChanges();
+    expect(component.reservation()?.activity).toBe('Aula revisada');
+    expect(component.reservation()?.history.length).toBe(before + 1);
+    expect(component.reservation()?.history.at(-1)?.action).toContain('Alterada');
+    expect(component.feedback()).toContain('simulada');
+  });
+
   it('rejects an invalid edit without changing the original data or history', async () => {
     const fixture = await render();
     const component = fixture.componentInstance;
