@@ -12,3 +12,7 @@ Requisitos: Java 21, Maven, Node 22, Chromium. Em terminais distintos:
 O CI anexa relatórios Cucumber HTML/JSON e capturas em falhas. O banco é isolado, mas a aplicação precisa estar realmente em execução.
 
 **Limitações:** execução local e CI ainda precisam ser confirmadas; os cenários demonstram integração, mas não substituem testes de concorrência paralela nem cobertura total de regras de negócio. Credenciais são somente da base demonstrativa.
+
+## Aprovação e bloqueio — evidências da técnica
+
+Os [cenários de aprovação/manutenção](features/aprovacao-bloqueio.feature) cobrem cinco casos executáveis de autorização, aprovação, bloqueio e auditoria com API real. Consulte [EVIDENCIAS-BDD.md](EVIDENCIAS-BDD.md) para rastreabilidade, comandos, relatórios e a distinção entre cobertura de regressão e prova de desenvolvimento de uma funcionalidade nova guiado por BDD. A ordem histórica teste → implementação não foi comprovada para essas regras existentes.
