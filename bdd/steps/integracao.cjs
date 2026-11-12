@@ -92,3 +92,45 @@ Then('a segunda reserva recebe conflito HTTP 409', async function () {
   const erro = await this.segundaResposta.json();
   expect(erro.conflitos.length).toBeGreaterThan(0);
 });
+
+ 
+Then('encontro professores pela competência {string} na API', async function (termo) {
+  const response = await this.page.request.get('/api/professores?competencia=' + encodeURIComponent(termo), {
+    headers: { Authorization: 'Bearer ' + this.token }
+  });
+  expect(response.status()).toBe(200);
+  const professores = await response.json();
+  expect(professores.length).toBeGreaterThan(0);
+  expect(professores.every(p => p.ativo !== false &&
+    (p.competencia.toLocaleLowerCase().includes(termo.toLocaleLowerCase()) ||
+     p.nome.toLocaleLowerCase().includes(termo.toLocaleLowerCase())))).toBe(true);
+});
+
+When('crio uma reserva futura pela API para testar ausência', async function () {
+  const headers = { Authorization: 'Bearer ' + this.token };
+  const opcoes = await this.page.request.get('/api/reservas/opcoes', { headers });
+  expect(opcoes.status()).toBe(200);
+  const dados = await opcoes.json();
+  const sala = dados.espacos.find(r => !r.restrito);
+  expect(sala).toBeTruthy();
+  const response = await this.page.request.post('/api/reservas', {
+    headers,
+    data: { atividade: 'BDD ausência ' + Date.now(), data: dataFutura(90),
+      inicio: '17:00', fim: '18:00', espacoId: sala.id, professorId: null, materialIds: [] }
+  });
+  expect(response.status()).toBe(201);
+  this.codigoAusencia = (await response.json()).codigo;
+});
+
+Then('a API impede o registro de não comparecimento para solicitante', async function () {
+  const response = await this.page.request.post('/api/reservas/' + this.codigoAusencia + '/nao-compareceu', {
+    headers: { Authorization: 'Bearer ' + this.token },
+    data: { motivo: 'Teste de autorização BDD' }
+  });
+  expect(response.status()).toBe(403);
+  const detalhe = await this.page.request.get('/api/reservas/' + this.codigoAusencia, {
+    headers: { Authorization: 'Bearer ' + this.token }
+  });
+  expect(detalhe.status()).toBe(200);
+  expect((await detalhe.json()).status).not.toBe('NAO_COMPARECEU');
+});
