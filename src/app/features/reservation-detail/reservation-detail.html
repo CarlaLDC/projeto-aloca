@@ -25,6 +25,11 @@
         </p>
         <button class="primary" type="button" [disabled]="!canManage" (click)="openAction('edit')">Alterar reserva</button>
         <button class="primary" type="button" [disabled]="!canManage" (click)="openAction('cancel')">Cancelar reserva</button>
+        @if (podeMarcarAusencia) {
+          <button class="primary" type="button" [disabled]="sending()" (click)="registrarAusencia()">Registrar não comparecimento</button>
+          <p class="muted">O responsável pode registrar ausência entre 15 minutos após o início e o término, desde que nenhum material tenha sido retirado.</p>
+        }
+        @if (error() && !action()) {<p class="error" role="alert">{{ error() }}</p>}
         @if (!canManage) {<p class="muted">Somente quem fez a reserva pode alterá-la ou cancelá-la, antes do início. Reservas em uso, concluídas, rejeitadas ou canceladas ficam apenas para consulta.</p>}
       </section>
       @if (feedback()) {<p class="feedback" role="status">{{ feedback() }}</p>}
