@@ -1,9 +1,10 @@
 import { TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 import { Approvals } from './approvals';
 import { DemoAuditLog } from '../../core/demo-audit-log';
 
 describe('Approvals audit integration', () => {
-  beforeEach(async () => TestBed.configureTestingModule({ imports: [Approvals] }).compileComponents());
+  beforeEach(async () => TestBed.configureTestingModule({ imports: [Approvals], providers: [provideRouter([])] }).compileComponents());
 
   it('records pending -> approved', () => {
     const fixture = TestBed.createComponent(Approvals);
