@@ -251,3 +251,14 @@ export interface Notificacoes {
   naoLidas: number;
   itens: { id: number; mensagem: string; codigoReserva: string | null; criadaEm: string; lida: boolean }[];
 }
+
+/** Administração: entidades persistidas pelo backend. */
+export interface AdminRecurso {
+  id: number; nome: string; tipo: 'SALA' | 'LABORATORIO' | 'EQUIPAMENTO';
+  categoria: string | null; localizacao: string; capacidade: number;
+  restrito: boolean; ativo: boolean; abertura: string; fechamento: string;
+}
+export interface AdminProfessor { id: number; nome: string; competencia: string; ativo: boolean; }
+export interface AdminBloqueio {
+  id: number; recursoId: number; recurso: string; inicio: string; fim: string; motivo: string; criadoPor: string | null;
+}
