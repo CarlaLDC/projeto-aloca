@@ -3,7 +3,7 @@ import { Injectable, signal } from '@angular/core';
 export interface DemoAuditEvent {
   id: string;
   entityId: string;
-  entityType: 'Reserva' | 'Movimentação';
+  entityType: 'Reserva' | 'Movimentação' | 'Recurso' | 'Usuário' | 'Bloqueio';
   fromState: string;
   toState: string;
   action: string;
