@@ -9,7 +9,7 @@ permissions:
   contents: read
 jobs:
   bdd-integrado:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
@@ -54,6 +54,5 @@ jobs:
           name: bdd-integrado-evidencias
           path: |
             bdd/reports/
-            /tmp/aloca-backend.log
-            /tmp/aloca-angular.log
+
           if-no-files-found: warn
