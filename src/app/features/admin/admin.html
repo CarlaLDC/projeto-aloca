@@ -1,0 +1,59 @@
+<div class="admin-shell">
+  <aside class="sidebar">
+    <a class="brand" routerLink="/visao-geral">aloca.</a>
+    <nav aria-label="Navegação principal">
+      <a routerLink="/visao-geral">Visão geral</a>
+      <a routerLink="/disponibilidade">Disponibilidade</a>
+      <a routerLink="/relatorios">Relatórios</a>
+      <a routerLink="/administracao" aria-current="page">Administração</a>
+    </nav>
+    <p>{{ auth.nome() }} · {{ auth.perfilRotulo() }}</p>
+  </aside>
+  <main class="content">
+    <header><span>{{ auth.unidade() }}</span><button type="button" (click)="auth.sair()">Sair</button></header>
+    <h1>Administração</h1>
+    <p>Cadastros de salas, materiais, professores e manutenção.</p>
+    @if (erro()) {<p class="error" role="alert">{{ erro() }}</p>}
+    @if (feedback()) {<p class="feedback" role="status">{{ feedback() }}</p>}
+    <div class="tabs" role="group" aria-label="Seções administrativas">
+      <button type="button" (click)="aba.set('recursos')" [attr.aria-pressed]="aba() === 'recursos'">Recursos</button>
+      <button type="button" (click)="aba.set('professores')" [attr.aria-pressed]="aba() === 'professores'">Professores</button>
+      <button type="button" (click)="aba.set('bloqueios')" [attr.aria-pressed]="aba() === 'bloqueios'">Manutenção</button>
+    </div>
+    @if (aba() === 'recursos') {
+      <section class="panel">
+        <h2>{{ editandoRecurso === null ? 'Cadastrar recurso' : 'Editar recurso' }}</h2>
+        <form (ngSubmit)="salvarRecurso()">
+          <label>Nome<input name="recursoNome" [(ngModel)]="recurso.nome" required maxlength="150"></label>
+          <label>Tipo<select name="tipo" [(ngModel)]="recurso.tipo"><option value="SALA">Sala</option><option value="LABORATORIO">Laboratório</option><option value="EQUIPAMENTO">Equipamento</option></select></label>
+          <label>Categoria<input name="categoria" [(ngModel)]="recurso.categoria"></label>
+          <label>Localização<input name="local" [(ngModel)]="recurso.localizacao" required></label>
+          <label>Capacidade<input type="number" min="1" name="capacidade" [(ngModel)]="recurso.capacidade" required></label>
+          <label>Abertura<input type="time" name="abertura" [(ngModel)]="recurso.abertura" required></label>
+          <label>Fechamento<input type="time" name="fechamento" [(ngModel)]="recurso.fechamento" required></label>
+          <label class="check"><input type="checkbox" name="restrito" [(ngModel)]="recurso.restrito"> Requer aprovação</label>
+          <button [disabled]="enviando()" type="submit">Salvar recurso</button>
+        </form>
+      </section>
+      <section class="panel"><h2>Recursos cadastrados</h2><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Tipo</th><th>Localização</th><th>Situação</th><th>Ações</th></tr></thead><tbody>
+        @for (item of recursos(); track item.id) {<tr><td>{{ item.nome }}</td><td>{{ item.tipo }}</td><td>{{ item.localizacao }}</td><td>{{ item.ativo ? 'Ativo' : 'Inativo' }}</td><td><button type="button" (click)="editarRecurso(item)">Editar</button> <button type="button" (click)="ativarRecurso(item)">{{ item.ativo ? 'Desativar' : 'Ativar' }}</button></td></tr>}
+      </tbody></table></div></section>
+    }
+    @if (aba() === 'professores') {
+      <section class="panel"><h2>{{ editandoProfessor === null ? 'Cadastrar professor' : 'Editar professor' }}</h2>
+        <form (ngSubmit)="salvarProfessor()"><label>Nome<input name="professorNome" [(ngModel)]="professor.nome" required></label><label>Competência<input name="competencia" [(ngModel)]="professor.competencia" required></label><button type="submit" [disabled]="enviando()">Salvar professor</button></form>
+      </section>
+      <section class="panel"><h2>Professores cadastrados</h2><div class="table-wrap"><table><thead><tr><th>Nome</th><th>Competência</th><th>Situação</th><th>Ações</th></tr></thead><tbody>
+        @for (item of professores(); track item.id) {<tr><td>{{ item.nome }}</td><td>{{ item.competencia }}</td><td>{{ item.ativo ? 'Ativo' : 'Inativo' }}</td><td><button type="button" (click)="editarProfessor(item)">Editar</button> <button type="button" (click)="ativarProfessor(item)">{{ item.ativo ? 'Desativar' : 'Ativar' }}</button></td></tr>}
+      </tbody></table></div></section>
+    }
+    @if (aba() === 'bloqueios') {
+      <section class="panel"><h2>Registrar bloqueio de manutenção</h2>
+        <form (ngSubmit)="salvarBloqueio()"><label>Recurso<select name="recurso" [(ngModel)]="bloqueio.recursoId" required><option [ngValue]="0" disabled>Selecione</option>@for (item of recursos(); track item.id) {<option [ngValue]="item.id">{{ item.nome }}</option>}</select></label><label>Início<input type="datetime-local" name="inicio" [(ngModel)]="bloqueio.inicio" required></label><label>Fim<input type="datetime-local" name="fim" [(ngModel)]="bloqueio.fim" required></label><label>Motivo<input name="motivo" [(ngModel)]="bloqueio.motivo" required></label><button type="submit" [disabled]="enviando()">Bloquear recurso</button></form>
+      </section>
+      <section class="panel"><h2>Bloqueios cadastrados</h2><div class="table-wrap"><table><thead><tr><th>Recurso</th><th>Início</th><th>Fim</th><th>Motivo</th><th>Ação</th></tr></thead><tbody>
+        @for (item of bloqueios(); track item.id) {<tr><td>{{ item.recurso }}</td><td>{{ item.inicio }}</td><td>{{ item.fim }}</td><td>{{ item.motivo }}</td><td><button type="button" (click)="removerBloqueio(item)">Remover</button></td></tr>}
+      </tbody></table></div></section>
+    }
+  </main>
+</div>
