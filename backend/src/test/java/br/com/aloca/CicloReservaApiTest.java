@@ -1,10 +1,12 @@
 package br.com.aloca;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import br.com.aloca.servico.ReservaService;
+import com.jayway.jsonpath.JsonPath;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -91,8 +93,10 @@ class CicloReservaApiTest extends ApiTesteBase {
             .andExpect(jsonPath("$.historico[?(@.acao == 'Aprovada')].ator", hasItem("Roberto Almeida")));
 
         // O agendador executa a transição para EM_USO quando chega o início.
+        // A rotina é global e pode avançar outras reservas de demonstração no mesmo instante;
+        // por isso, a asserção é feita sobre a reserva deste cenário, não sobre a contagem global.
         relogio.fixar("2030-01-15T13:00:00Z"); // 10h em São Paulo
-        org.junit.jupiter.api.Assertions.assertEquals(1, reservas.atualizarCiclo());
+        reservas.atualizarCiclo();
         get(solicitante, "/api/reservas/" + codigo)
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("EM_USO"))
@@ -102,7 +106,7 @@ class CicloReservaApiTest extends ApiTesteBase {
 
         // Ao atingir o fim, a mesma rotina conclui a reserva e registra a segunda transição automática.
         relogio.fixar("2030-01-15T14:00:00Z"); // 11h em São Paulo
-        org.junit.jupiter.api.Assertions.assertEquals(1, reservas.atualizarCiclo());
+        reservas.atualizarCiclo();
         get(solicitante, "/api/reservas/" + codigo)
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.status").value("CONCLUIDA"))
@@ -110,11 +114,19 @@ class CicloReservaApiTest extends ApiTesteBase {
             .andExpect(jsonPath("$.historico[?(@.acao == 'Concluída')].estadoAnterior", hasItem("Em uso")))
             .andExpect(jsonPath("$.historico[?(@.acao == 'Concluída')].estadoNovo", hasItem("Concluída")));
 
-        // A rotina é idempotente: uma reserva terminal não gera novas transições.
-        relogio.fixar("2030-01-15T14:30:00Z");
-        org.junit.jupiter.api.Assertions.assertEquals(0, reservas.atualizarCiclo());
-        get(solicitante, "/api/reservas/" + codigo)
+        // A rotina é idempotente para esta reserva: não cria nova entrada de auditoria terminal.
+        String antes = get(solicitante, "/api/reservas/" + codigo)
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.status").value("CONCLUIDA"));
+            .andReturn().getResponse().getContentAsString();
+        Object historicoAntes = JsonPath.read(antes, "$.historico");
+
+        relogio.fixar("2030-01-15T14:30:00Z");
+        reservas.atualizarCiclo();
+
+        String depois = get(solicitante, "/api/reservas/" + codigo)
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+        assertEquals("CONCLUIDA", JsonPath.read(depois, "$.status"));
+        assertEquals(historicoAntes, JsonPath.read(depois, "$.historico"));
     }
 }
