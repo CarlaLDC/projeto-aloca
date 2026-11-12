@@ -12,3 +12,7 @@ Requisitos: Java 21, Maven, Node 22, Chromium. Em terminais distintos:
 O CI anexa relatórios Cucumber HTML/JSON e capturas em falhas. O banco é isolado, mas a aplicação precisa estar realmente em execução.
 
 **Limitações:** execução local e CI ainda precisam ser confirmadas; os cenários demonstram integração, mas não substituem testes de concorrência paralela nem cobertura total de regras de negócio. Credenciais são somente da base demonstrativa.
+
+## Funcionalidade nova desenvolvida com BDD
+
+O bloqueio da aprovação após desativação de sala, material ou professor foi especificado e executado antes da implementação. Consulte [o ciclo BDD comprovado](EVIDENCIAS-APROVACAO-INATIVOS.md), com commits, execução com falha, execução aprovada (3 cenários / 27 passos), relatórios originais versionados e requisitos correspondentes.
