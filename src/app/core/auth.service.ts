@@ -58,7 +58,7 @@ export class AuthService {
   telaInicial(): string {
     if (this.possui('SOLICITANTE', 'PROFESSOR')) return '/visao-geral';
     if (this.possui('RESPONSAVEL')) return '/aprovacoes';
-    if (this.possui('ADMINISTRADOR')) return '/relatorios';
+    if (this.possui('ADMINISTRADOR')) return '/administracao';
     return '/visao-geral';
   }
 
