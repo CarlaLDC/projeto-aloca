@@ -82,7 +82,7 @@ Todas as rotas (exceto o login) exigem o cabeçalho `Authorization: Bearer <toke
 | | `GET /api/relatorios/csv?inicio=&fim=` | Responsável, Administrador | Mesmo relatório em CSV (`;`, abre no Excel) |
 | Topo das telas | `GET /api/notificacoes`, `POST /api/notificacoes/lidas` | todos | Notificações (o envio é simulado, como permite o RF-11) |
 
-> A tela **10 · Administração** existe no Figma, mas ainda não tem rota no front. Os endpoints já estão prontos para ela.
+> A tela **10 · Administração** está disponível em `/administracao`, com guard para Administrador.
 
 ## Regras implementadas
 
@@ -131,3 +131,9 @@ Em `backend/src/main/resources/application.properties`:
 - `aloca.jwt.segredo`: segredo do token. **Troque em produção** com a variável `ALOCA_JWT_SEGREDO` (mínimo de 32 caracteres).
 - `aloca.dados-demo=false`: não cria os dados de demonstração.
 - `aloca.fuso-horario`: padrão `America/Sao_Paulo`.
+
+## Diagramas e decisões de arquitetura
+
+Consulte [a arquitetura da implementação atual](src/docs/arquitetura.md) para contexto, contêineres, componentes e sequências de autenticação, criação e concorrência de reservas, aprovação, alteração/cancelamento e materiais. O documento identifica o commit inspecionado, as fontes no código e as diferenças em relação ao enunciado.
+
+As propostas anteriores foram preservadas em [arquitetura-historica.md](src/docs/arquitetura-historica.md). A [ADR-0005](src/docs/adr/ADR-0005-arquitetura-implementada.md) registra as decisões observadas no código.
