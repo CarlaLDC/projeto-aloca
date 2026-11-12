@@ -14,8 +14,8 @@ O critério “ao menos uma funcionalidade nova desenvolvida com evidências da 
 |---|---|---|
 | [Commit 45f4236](https://github.com/CarlaLDC/projeto-aloca/commit/45f42367eb1410aa03384df405e03e4791b5316e) | Inclusão de cenários integrados de login, autorização, reserva e conflito | Execução aprovada ou teste anterior à implementação |
 | [Commit 31738d9](https://github.com/CarlaLDC/projeto-aloca/commit/31738d9262ffc1557f2448f8cd3c0cd3290026d5) | Extensão dos cenários para competência e autorização de ausência | Ciclo BDD/TDD de aprovação e manutenção |
-| [AprovacaoApiTest](../../backend/src/test/java/br/com/aloca/AprovacaoApiTest.java) | Asserções de autorização, aprovação, justificativa e auditoria | Resultado do teste nesta revisão |
-| [AdminRecursosTest](../../backend/src/test/java/br/com/aloca/AdminRecursosTest.java) | Asserções de cadastro e validação de bloqueio | Ordem temporal teste → implementação |
+| [AprovacaoApiTest](../backend/src/test/java/br/com/aloca/AprovacaoApiTest.java) | Asserções de autorização, aprovação, justificativa e auditoria | Resultado do teste nesta revisão |
+| [AdminRecursosTest](../backend/src/test/java/br/com/aloca/AdminRecursosTest.java) | Asserções de cadastro e validação de bloqueio | Ordem temporal teste → implementação |
 | [Cenários novos](features/aprovacao-bloqueio.feature) | Exemplos explícitos de aprovação e manutenção | Nova regra de negócio implementada neste incremento |
 | [Steps novos](steps/aprovacao-bloqueio.cjs) | Requisições reais, verificações de estado persistido e histórico | Êxito em runtime antes de consultar o relatório |
 
