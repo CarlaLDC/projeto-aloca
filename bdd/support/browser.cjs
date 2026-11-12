@@ -4,7 +4,7 @@ const fs = require('node:fs');
 setDefaultTimeout(60000);
 let browser;
 BeforeAll(async () => {
-  fs.mkdirSync('bdd/reports', { recursive: true });
+  fs.mkdirSync('reports', { recursive: true });
   browser = await chromium.launch({ headless: true });
 });
 Before(async function () {
