@@ -95,22 +95,30 @@ Todas as rotas (exceto o login) exigem o cabeçalho `Authorization: Bearer <toke
 - **Materiais (RF-09):** o módulo de materiais reage a eventos das reservas (`ReservaEventos`). A aprovação de uma reserva com materiais cria as movimentações. *Devolução pendente* aparece quando o material está em uso depois do horário previsto.
 - **Persistência (RNF-04):** o H2 grava em arquivo, então os dados continuam após reiniciar o servidor.
 
-## Testes
+## Testes e evidências de qualidade
 
-**Ambiente realista:** os testes de integração não usam mocks nem banco em memória. Cada execução sobe um MySQL real em contêiner com Testcontainers (`BancoMySqlTeste`), então persistência, travas (`SELECT ... FOR UPDATE`) e o teste de concorrência rodam no mesmo banco usado no perfil `mysql`. No GitHub Actions o Docker já vem instalado no runner `ubuntu-latest`.
+O [plano unificado](src/docs/qualidade/PLANO-TESTES.md) reúne todas as modalidades, prioridades, ambientes e critérios de aceite. Consulte também:
+
+- [Índice da suíte e comandos](src/docs/qualidade/SUITE-TESTES.md).
+- [Relatório consolidado de resultados e pendências](src/docs/qualidade/RELATORIO-TESTES.md).
+- [Modelo de registro de execução](src/docs/qualidade/REGISTRO-EXECUCAO.md).
 
 ```bash
-# Back-end: 43 testes de integração + relatório de cobertura em backend/target/site/jacoco
-# Exige Docker: os testes sobem um MySQL 8.4 em contêiner (Testcontainers).
-cd backend && mvn verify
+# Unitários isolados do backend: Java 21 e Maven, sem Docker
+mvn -f backend/pom.xml -Dgroups=unitario test
 
-# Front-end: 23 testes (Karma)
+# Backend completo, integração MySQL/Testcontainers e JaCoCo: exige Docker
+mvn -f backend/pom.xml clean verify
+
+# Frontend
+npm ci
+npm run build
 npm test -- --watch=false --browsers=ChromeHeadless
 ```
 
-Cobertura atual do back-end: **93,9% das linhas e 75,1% dos ramos** (meta do RNF-06: 80% e 70%).
+BDD/E2E exige a aplicação em execução, conforme [instruções específicas](bdd/README.md). A suíte HTTP de caixa-preta foi incorporada pelo PR #38 e está incluída no índice.
 
-O GitHub Actions (`.github/workflows/main.yml`) roda os dois conjuntos a cada push.
+Metas de cobertura: **80% de linhas e 70% de branches**. Quantidades de testes, percentuais e conclusões devem ser associados ao SHA e ao relatório da execução; números de campanhas anteriores não certificam a versão atual. Os workflows de qualidade estão em `.github/workflows/` e publicam os artefatos indicados no índice.
 
 ## Estrutura do back-end
 
