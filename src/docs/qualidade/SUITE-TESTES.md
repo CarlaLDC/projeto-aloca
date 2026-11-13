@@ -37,7 +37,7 @@ Relatórios: backend/target/surefire-reports e backend/target/site/jacoco. Docum
 
 ## API caixa-preta — incorporada pelo PR #38
 
-[RegrasCriticasHttpTest](../../../backend/src/test/java/br/com/aloca/http/RegrasCriticasHttpTest.java) usa HTTP real/MySQL e tag http. [Documentação](../testes-api-http.md) e [PR #38](https://github.com/CarlaLDC/projeto-aloca/pull/38).
+[RegrasCriticasHttpTest](../../../backend/src/test/java/br/com/aloca/http/RegrasCriticasHttpTest.java) usa HTTP real/PostgreSQL (Testcontainers) e tag http. [Documentação](../testes-api-http.md) e [PR #38](https://github.com/CarlaLDC/projeto-aloca/pull/38).
 
 Na base integrada:
 
@@ -60,8 +60,11 @@ npm test -- --watch=false --browsers=ChromeHeadless
 E2E integrado: [feature](../../../bdd/features/integracao.feature), [steps](../../../bdd/steps/integracao.cjs), [instruções](../../../bdd/README.md). Em terminais distintos, na raiz:
 
 ```bash
+# Banco descartável (PostgreSQL na memória do contêiner, porta 5433)
+docker compose -f backend/docker-compose.yml --profile e2e up -d postgres-e2e
+
 # Terminal 1
-mvn -f backend/pom.xml spring-boot:run "-Dspring-boot.run.arguments=--spring.datasource.url=jdbc:h2:mem:bdd;DB_CLOSE_DELAY=-1"
+mvn -f backend/pom.xml spring-boot:run "-Dspring-boot.run.arguments=--spring.datasource.url=jdbc:postgresql://localhost:5433/aloca_e2e"
 
 # Terminal 2
 npm ci
@@ -104,7 +107,7 @@ Não copiar o relatório antigo da branch JMeter como descrição da arquitetura
 | CI integrado — unitários | backend-unitarios |
 | CI integrado — backend completo | backend-testcontainers-jacoco |
 | Verificação backend — qualidade funcional | qualidade-funcional-relatorios |
-| BDD integrado — Angular + API + H2 | bdd-integrado-evidencias |
+| BDD integrado — Angular + API + PostgreSQL | bdd-integrado-evidencias |
 | BDD — ciclo de aprovação de cadastros | bdd-aprovacao-inativos-RUN_ID |
 | API HTTP | backend-api-http |
 | Angular | Logs do build/Karma no job; não presumir artefato específico |

@@ -35,13 +35,12 @@ Movimentações é um módulo da mesma aplicação Java, não outro processo. O 
 |---|---|
 | Frontend | Angular, `src/app`; rotas em `app.routes.ts` |
 | API | Java 21; Spring Boot **4.1.2**, conforme `backend/pom.xml` |
-| Banco padrão | H2 em arquivo, `jdbc:h2:file:./data/aloca` |
-| Perfil alternativo | MySQL, `application-mysql.properties` e `backend/docker-compose.yml` |
-| Integração em testes | MySQL em Testcontainers |
+| Banco | PostgreSQL 17, `jdbc:postgresql://localhost:5432/aloca` (variáveis `ALOCA_DB_URL`, `ALOCA_DB_USUARIO`, `ALOCA_DB_SENHA`); local com `backend/docker-compose.yml` |
+| Integração em testes | PostgreSQL 17 em Testcontainers |
 | Isolamento | `TRANSACTION_READ_COMMITTED`, configurado no datasource |
 | Agendamento | `CicloReservaAgendador`, ao iniciar e a cada minuto por padrão |
 
-**Diferença em relação ao enunciado:** a especificação pede Spring Boot 3.x; o código está em 4.1.2. O diagrama registra a versão real, sem declarar conformidade nesse ponto.
+**Diferença em relação ao enunciado:** a especificação pede Spring Boot 3.x; o código está em 4.1.2, com aceite do professor (13/11/2026). O diagrama registra a versão real.
 
 ## 3. Componentes
 
@@ -68,7 +67,7 @@ flowchart TB
   C --> V["Serviços de negócio"]
   V --> E["Entidades de domínio"]
   V --> R["Repositórios Spring Data JPA"]
-  R --> DB[("H2 ou MySQL")]
+  R --> DB[("PostgreSQL")]
   V --> N["Eventos locais de reserva"]
   N --> M["MovimentacaoService"]
   M --> R
@@ -121,7 +120,7 @@ sequenceDiagram
   end
 ```
 
-A claim `perfis` vira autoridades `ROLE_*`. Somente Responsável acessa aprovações e movimentações; Administrador acessa administração. A checagem de proprietário da reserva fica também em `ReservaService`. O console H2 é liberado na configuração de desenvolvimento; o perfil MySQL o desabilita.
+A claim `perfis` vira autoridades `ROLE_*`. Somente Responsável acessa aprovações e movimentações; Administrador acessa administração. A checagem de proprietário da reserva fica também em `ReservaService`.
 
 ## 5. Sequência — criação, conflito e manutenção
 
@@ -170,7 +169,7 @@ Sobreposição: `existente.inicio < pedido.fim && existente.fim > pedido.inicio`
 sequenceDiagram
   participant A as Transação A
   participant B as Transação B
-  participant DB as MySQL
+  participant DB as PostgreSQL
   A->>DB: Lock de recursos comuns
   DB-->>A: Lock adquirido
   B->>DB: Solicitar lock dos mesmos recursos

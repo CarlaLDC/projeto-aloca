@@ -20,8 +20,8 @@ Disponibilidade oferece capacidade mínima inteira não negativa. O filtro é en
 
 ## Evidências reproduzíveis
 
-- `UsuariosApiTest`: perfis, cadastro inválido/duplicado, ausência de senha/hash na resposta, revogação de tokens após edição/desativação/troca de senha, proteção do próprio administrador e ciclo do professor solicitante. Banco MySQL/Testcontainers na suíte completa.
-- `scripts/persistencia-reinicio.py`: inicia JAR com H2 **em arquivo**, cria recurso/reserva, cancela com histórico, encerra o processo, inicia outro PID sobre o mesmo banco e compara integralmente a reserva e o histórico por HTTP. A massa e o arquivo do banco são temporários; nenhum banco do usuário é usado.
+- `UsuariosApiTest`: perfis, cadastro inválido/duplicado, ausência de senha/hash na resposta, revogação de tokens após edição/desativação/troca de senha, proteção do próprio administrador e ciclo do professor solicitante. Banco PostgreSQL/Testcontainers na suíte completa.
+- `scripts/persistencia-reinicio.py`: inicia o JAR com **PostgreSQL** (`ALOCA_DB_URL`; no workflow, um serviço descartável), cria recurso/reserva, cancela com histórico, encerra o processo, inicia outro PID sobre o mesmo banco e compara integralmente a reserva e o histórico por HTTP. Até o PR #45 a verificação usava H2 em arquivo; os resultados abaixo são dessa execução.
 - `bdd/candidato-responsivo.cjs`: navegador Chromium real em **360×900 e 1280×900**, login como professor, pesquisa com capacidade, formulário/criação/cancelamento pela interface, verificação HTTP de cancelamento e administração de usuários. Preserva capturas e medidas de largura. Não substitui avaliação humana de acessibilidade/usabilidade.
 - `scripts/resumo-cobertura.py`: extrai contadores do XML JaCoCo, associa SHA checkout, GITHUB_SHA e run-id, grava percentuais e reprova abaixo de **80% linhas / 70% branches**.
 
@@ -44,7 +44,7 @@ Para o navegador, iniciar API em banco descartável na porta 8080 e frontend na 
 
 ## Limites
 
-A verificação de reinício usa H2 em arquivo; a suíte de integração verifica MySQL separadamente. Os dois viewports não representam todos os dispositivos. A cobertura só vale para o checkout registrado no artefato. WireMock, SonarCloud, teste de carga e divergência de versões exigidas pelo enunciado não são resolvidos por este incremento.
+A verificação de reinício usa PostgreSQL desde o PR #45 (os resultados registrados abaixo são da execução anterior, com H2 em arquivo e suíte MySQL). Os dois viewports não representam todos os dispositivos. A cobertura só vale para o checkout registrado no artefato. WireMock, SonarCloud, teste de carga e divergência de versões exigidas pelo enunciado não são resolvidos por este incremento.
 
 ## Resultado da campanha verificada
 
