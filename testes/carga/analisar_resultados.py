@@ -21,6 +21,7 @@ import csv
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 from collections import Counter, defaultdict
@@ -91,16 +92,26 @@ def ler_jtl(caminho):
     return amostras
 
 
+NOME_CONTAINER = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}")
+PREFIXO_MASSA = re.compile(r"CARGA-[A-Za-z0-9_.-]{1,64}")
+
+
 def consultar_banco(container, prefixo):
+    # Nome do contêiner e prefixo da massa só com caracteres seguros: nada de opções ("-...") nem SQL
+    # vindo da linha de comando ou do manifesto.
+    if not NOME_CONTAINER.fullmatch(container):
+        raise SystemExit(f"Nome de contêiner inválido: {container!r}")
+    if not PREFIXO_MASSA.fullmatch(prefixo):
+        raise SystemExit(f"Prefixo de massa inválido: {prefixo!r}")
     sql = (
         "SELECT r.atividade, r.status, r.codigo, "
         "(SELECT COUNT(*) FROM historico_reserva h WHERE h.reserva_id = r.id) "
-        f"FROM reserva r WHERE r.atividade LIKE '{prefixo} %'"
+        f"FROM reserva r WHERE r.atividade LIKE '{prefixo} %';\n"
     )
-    # psql sem cabeçalho (-A -t) e com TAB entre as colunas, como a saída anterior.
-    cmd = ["docker", "exec", container, "psql", "-h", "127.0.0.1", "-U", "aloca", "-d", "aloca",
-           "-A", "-t", "-F", "\t", "-c", sql]
-    saida = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
+    # psql sem cabeçalho (-A -t) e com TAB entre as colunas; o SQL vai pela entrada padrão (-i), não como argumento.
+    cmd = ["docker", "exec", "-i", "--", container, "psql", "-h", "127.0.0.1", "-U", "aloca", "-d", "aloca",
+           "-A", "-t", "-F", "\t", "-q"]
+    saida = subprocess.run(cmd, input=sql, capture_output=True, text=True, check=True).stdout
     linhas = []
     for l in saida.splitlines():
         partes = l.split("\t")

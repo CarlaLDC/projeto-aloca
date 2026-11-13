@@ -40,14 +40,16 @@ jobs:
           node-version: '22'
           cache: npm
 
-      - name: "Back-end: testes e cobertura (Testcontainers + JaCoCo)"
-        run: mvn -B -f backend/pom.xml verify
-
+      # O front roda antes do back-end: depois do mvn verify (Testcontainers) a máquina fica ocupada e o
+      # Chrome pode não abrir a tempo.
       - name: "Front-end: testes e cobertura (lcov)"
         run: |
           npm ci
           npm test -- --watch=false --code-coverage --browsers=ChromeHeadless
           test -f coverage/projeto-aloca/lcov.info
+
+      - name: "Back-end: testes e cobertura (Testcontainers + JaCoCo)"
+        run: mvn -B -f backend/pom.xml verify
 
       - name: Análise SonarCloud
         if: vars.SONAR_CI_ANALISE == 'true'
