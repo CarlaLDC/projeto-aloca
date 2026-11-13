@@ -1,0 +1,98 @@
+name: Dependências - vulnerabilidades conhecidas
+
+# Análise de dependências (RNF-07) com o OSV-Scanner (base OSV.dev, que reúne GitHub Advisory, NVD e outras).
+# Back-end: lista resolvida pelo Maven (transitivas incluídas) consultada na API OSV por scripts/osv-maven.py.
+# Front-end: package-lock.json (e bdd/) pelo OSV-Scanner.
+# Publica o relatório no resumo da execução e como artefato. Só falha por erro da ferramenta, não por aviso
+# encontrado: a triagem fica registrada no relatório (ex.: avisos moderados do @angular/cli só em desenvolvimento).
+on:
+  pull_request:
+    paths:
+      - "backend/pom.xml"
+      - "package.json"
+      - "package-lock.json"
+      - "scripts/osv-maven.py"
+      - ".github/workflows/dependencias.yml"
+  push:
+    branches: [develop, main]
+    paths:
+      - "backend/pom.xml"
+      - "package-lock.json"
+  schedule:
+    - cron: "17 9 * * 1" # toda segunda-feira, para pegar avisos novos sem mudança no código
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  osv:
+    name: OSV-Scanner (back-end e front-end)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      # Back-end: o Maven resolve todas as dependências (inclusive transitivas) e o script consulta a base OSV.
+      - name: "Back-end: dependências Maven na base OSV"
+        run: |
+          mvn -B -q -f backend/pom.xml dependency:list -DoutputFile="$PWD/dependencias-maven.txt"
+          python3 scripts/osv-maven.py --lista dependencias-maven.txt --markdown backend-dependencias.md --json backend-dependencias.json
+
+      # Front-end e BDD: package-lock.json.
+      - name: OSV-Scanner (relatório em markdown)
+        uses: google/osv-scanner-action/osv-scanner-action@e69cc6c86b31f1e7e23935bbe7031b50e51082de # v2.0.2
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=markdown
+            --output=dependencias.md
+            -r
+            ./
+
+      - name: OSV-Scanner (relatório em JSON)
+        uses: google/osv-scanner-action/osv-scanner-action@e69cc6c86b31f1e7e23935bbe7031b50e51082de # v2.0.2
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=json
+            --output=dependencias.json
+            -r
+            ./
+
+      # Avisos encontrados não reprovam o PR (a triagem fica no relatório); só falha se a ferramenta não gerar o relatório.
+      - name: Resumo
+        run: |
+          test -s dependencias.json || { echo "O OSV-Scanner não gerou o relatório."; exit 1; }
+          test -s backend-dependencias.md || { echo "A análise do back-end não gerou o relatório."; exit 1; }
+          total=$(python3 -c "import json; d=json.load(open('dependencias.json')); print(sum(len(p.get('vulnerabilities', [])) for r in d.get('results', []) for p in r.get('packages', [])))")
+          {
+            echo "## Dependências com vulnerabilidade conhecida (base OSV.dev)"
+            echo
+            cat backend-dependencias.md
+            echo
+            echo "### Front-end e BDD (package-lock.json): ${total} aviso(s)"
+            echo
+            if [ -s dependencias.md ]; then cat dependencias.md; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preservar relatório
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependencias-${{ github.run_id }}
+          path: |
+            backend-dependencias.md
+            backend-dependencias.json
+            dependencias-maven.txt
+            dependencias.md
+            dependencias.json
+          if-no-files-found: warn
+          retention-days: 90

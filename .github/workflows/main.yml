@@ -38,4 +38,13 @@ jobs:
         run: npm run build -- --configuration production
 
       - name: Executar testes
-        run: npm test -- --watch=false --browsers=ChromeHeadless
+        run: npm test -- --watch=false --code-coverage --browsers=ChromeHeadless
+
+
+      - name: Publicar cobertura do frontend
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-cobertura-${{ github.run_id }}
+          path: coverage/projeto-aloca/
+          if-no-files-found: error

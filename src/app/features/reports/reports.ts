@@ -1,46 +1,59 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { RouterLink, RouterLinkActive } from '@angular/router';
-
-interface ResourceReport {
-  name: string;
-  usage: number;
-  hours: number;
-  reservations: number;
-  conflicts: number;
-}
+import { ApiService } from '../../core/api.service';
+import { AuthService } from '../../core/auth.service';
+import { Relatorio } from '../../core/api.models';
+import { dataBr, hojeIso, mensagemErro, somarDias } from '../../core/formato';
 
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [FormsModule, RouterLink, RouterLinkActive],
   templateUrl: './reports.html',
   styleUrl: './reports.css'
 })
-export class Reports {
-  readonly resources: ResourceReport[] = [
-    { name: 'Laboratório 02', usage: 84, hours: 120, reservations: 42, conflicts: 9 },
-    { name: 'Sala 204', usage: 72, hours: 96, reservations: 36, conflicts: 6 },
-    { name: 'Auditório', usage: 56, hours: 68, reservations: 18, conflicts: 3 }
-  ];
+export class Reports implements OnInit {
+  private readonly api = inject(ApiService);
+  readonly auth = inject(AuthService);
+
+  readonly fim = signal(hojeIso());
+  readonly inicio = signal(somarDias(hojeIso(), -29));
+  readonly relatorio = signal<Relatorio | null>(null);
+  readonly erro = signal('');
+  readonly dataBr = dataBr;
+
+  readonly resources = computed(() => (this.relatorio()?.recursos ?? []).map(r => ({
+    name: r.nome, usage: r.utilizacao, hours: r.horas, reservations: r.reservas, conflicts: r.conflitos
+  })));
+
+  ngOnInit(): void {
+    this.carregar();
+  }
+
+  carregar(): void {
+    this.erro.set('');
+    this.api.relatorio(this.inicio(), this.fim()).subscribe({
+      next: r => this.relatorio.set(r),
+      error: e => this.erro.set(mensagemErro(e, 'Não foi possível gerar o relatório.'))
+    });
+  }
+
+  horas(valor: number | undefined): string {
+    return (valor ?? 0).toLocaleString('pt-BR', { maximumFractionDigits: 1 });
+  }
 
   exportReport(): void {
-    const rows = [
-      ['Recurso', 'Utilização (%)', 'Horas alocadas', 'Reservas', 'Conflitos evitados'],
-      ...this.resources.map(resource => [
-        resource.name,
-        String(resource.usage),
-        String(resource.hours),
-        String(resource.reservations),
-        String(resource.conflicts)
-      ])
-    ];
-    const csv = rows.map(row => row.map(value => '"' + value.replaceAll('"', '""') + '"').join(';')).join('\n');
-    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = 'relatorio-aloca.csv';
-    anchor.click();
-    URL.revokeObjectURL(url);
+    this.api.relatorioCsv(this.inicio(), this.fim()).subscribe({
+      next: blob => {
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `relatorio-aloca-${this.inicio()}-a-${this.fim()}.csv`;
+        anchor.click();
+        URL.revokeObjectURL(url);
+      },
+      error: e => this.erro.set(mensagemErro(e, 'Não foi possível exportar o relatório.'))
+    });
   }
 }

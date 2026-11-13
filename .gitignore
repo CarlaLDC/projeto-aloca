@@ -41,3 +41,9 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+/evidencias-candidato/
+__pycache__/
+
+# Relatórios gerados pelo BDD local (o CI publica como artefato)
+bdd/reports/

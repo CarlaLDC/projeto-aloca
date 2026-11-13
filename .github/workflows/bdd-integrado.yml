@@ -1,0 +1,70 @@
+name: BDD integrado - Angular + API + PostgreSQL
+on:
+  push:
+    branches: [feat/integracao-bdd]
+  pull_request:
+    branches: [develop]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  bdd-integrado:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: aloca_bdd
+          POSTGRES_USER: aloca
+          POSTGRES_PASSWORD: aloca
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aloca -d aloca_bdd"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm ci --ignore-scripts --prefix bdd --no-audit --no-fund
+      - run: node bdd/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Iniciar backend com PostgreSQL isolado (serviço do job)
+        run: |
+          cd backend
+          mvn -B spring-boot:run -Dspring-boot.run.arguments="--spring.datasource.url=jdbc:postgresql://localhost:5432/aloca_bdd" > /tmp/aloca-backend.log 2>&1 &
+          for attempt in $(seq 1 120); do
+            if curl -fsS http://127.0.0.1:8080/api/auth/login -H 'Content-Type: application/json' -d '{"email":"ana.martins@aloca.edu.br","senha":"aloca123"}' | grep -q token; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/aloca-backend.log
+          exit 1
+      - name: Iniciar frontend integrado
+        run: |
+          npm start -- --host 127.0.0.1 --proxy-config proxy.conf.json > /tmp/aloca-angular.log 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat /tmp/aloca-angular.log
+          exit 1
+      - name: Executar cenários de ponta a ponta
+        run: cd bdd && npm test
+      - name: Publicar relatórios e logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bdd-integrado-evidencias
+          path: |
+            bdd/reports/
+
+          if-no-files-found: warn

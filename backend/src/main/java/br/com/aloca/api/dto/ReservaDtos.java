@@ -1,0 +1,73 @@
+package br.com.aloca.api.dto;
+
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
+
+/** Telas 04 · Nova reserva, 05 · Conflito, 06 · Minhas reservas e 07 · Detalhe e auditoria. */
+public final class ReservaDtos {
+    private ReservaDtos() {}
+
+    public record OpcaoRecurso(Long id, String nome, String tipo, String tipoRotulo, String localizacao,
+                               int capacidade, boolean restrito, String rotulo) {}
+
+    public record OpcaoProfessor(Long id, String nome, String competencia, String rotulo) {}
+
+    public record OpcoesReserva(List<OpcaoRecurso> espacos, List<OpcaoProfessor> professores,
+                                List<OpcaoRecurso> materiais,
+                                @Schema(description = "Cadastro de professor do usuário logado, quando ele é professor e "
+                                    + "também solicitante: a tela já o sugere como professor da reserva", nullable = true)
+                                Long professorDoUsuario) {}
+
+    public record ReservaRequest(
+        @Schema(example = "Aula de Programação Web")
+        @NotBlank(message = "Informe a atividade.") @Size(max = 150, message = "A atividade pode ter até 150 caracteres.") String atividade,
+        @Schema(description = "Data de hoje ou futura", example = "2030-03-12")
+        @NotNull(message = "Informe a data.") LocalDate data,
+        @Schema(type = "string", format = "time", example = "09:00")
+        @NotNull(message = "Informe o horário de início.") LocalTime inicio,
+        @Schema(type = "string", format = "time", description = "Precisa ser posterior ao início", example = "11:00")
+        @NotNull(message = "Informe o horário de término.") LocalTime fim,
+        @Schema(description = "Id da sala ou laboratório (veja GET /api/reservas/opcoes)", example = "1")
+        @NotNull(message = "Selecione a sala ou laboratório.") Long espacoId,
+        @Schema(description = "Id do professor (opcional)", example = "2", nullable = true)
+        Long professorId,
+        @Schema(description = "Ids dos materiais (opcional)", example = "[8]")
+        List<Long> materialIds) {
+
+        public List<Long> materiais() { return materialIds == null ? List.of() : materialIds; }
+    }
+
+    public record CancelamentoRequest(
+        @Schema(example = "Atividade remarcada")
+        @NotBlank(message = "Informe o motivo do cancelamento.") @Size(max = 500, message = "O motivo pode ter até 500 caracteres.") String motivo) {}
+
+    public record ReservaResumo(String codigo, String atividade, String recurso, LocalDate data, LocalTime inicio,
+                                LocalTime fim, String status, String statusRotulo) {}
+
+    public record EventoHistorico(LocalDateTime dataHora, String ator, String acao, String descricao,
+                                  String estadoAnterior, String estadoNovo) {}
+
+    public record ReservaDetalhe(String codigo, String atividade, LocalDate data, LocalTime inicio, LocalTime fim,
+                                 OpcaoRecurso espaco, OpcaoProfessor professor, List<OpcaoRecurso> materiais,
+                                 String solicitante, String status, String statusRotulo, String motivoRejeicao,
+                                 boolean exigeAprovacao, boolean podeGerenciar, LocalDateTime criadaEm,
+                                 List<EventoHistorico> historico) {}
+
+    /** Choque com uma reserva existente ou com um bloqueio de manutenção. */
+    public record ItemConflito(String tipo, String recurso, String localizacao, LocalTime inicio, LocalTime fim,
+                               String atividade, String responsavel, long sobreposicaoMinutos) {}
+
+    public record Alternativa(LocalDate data, LocalTime inicio, LocalTime fim, Long espacoId, String espaco,
+                              String localizacao, String motivo) {}
+
+    /** Corpo da resposta 409 quando a reserva não pode ser feita por conflito (tela 05). */
+    public record ConflitoResposta(String mensagem, String atividade, LocalDate data, LocalTime inicio, LocalTime fim,
+                                   Long espacoId, Long professorId, List<Long> materialIds,
+                                   List<ItemConflito> conflitos, List<Alternativa> alternativas) {}
+}

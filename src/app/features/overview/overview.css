@@ -85,4 +85,14 @@ h1{margin:0;color:#19343a;font-size:clamp(26px,3vw,34px);letter-spacing:-.8px;fo
 .actions-row{padding:14px 0 12px}.agenda-card{padding:18px 14px 13px}.card-heading h2{font-size:14px}.text-action{font-size:0}.text-action span{font-size:16px}
 .agenda-header{display:none}.agenda-row{grid-template-columns:1fr auto;gap:6px 10px;padding:12px 0;min-height:0}.agenda-time,.agenda-place,.agenda-subject{grid-column:1}.agenda-place,.agenda-subject{font-size:10px}.agenda-row .status{grid-column:2;grid-row:1/span 3}
 .tip-card{padding:14px}.reservation-dialog{padding:26px 20px}
-}
+}a.nav-item,a.agenda-row,a.text-action{text-decoration:none}
+a.agenda-row{color:#4d6266}
+a.agenda-row:hover{background:#f6faf8}
+.notifications-wrap{position:relative}
+.notifications-panel{position:absolute;right:0;top:38px;z-index:5;width:min(320px,80vw);background:#fff;border-radius:10px;box-shadow:0 8px 28px rgba(20,50,45,.16);padding:6px 14px}
+.notifications-panel p{margin:0;padding:10px 0;border-bottom:1px solid #edf1ef;color:#4d6266;font-size:11px;line-height:1.4}
+.notifications-panel p:last-child{border-bottom:0}
+.notifications-panel .unread{color:#19343a;font-weight:600}
+.user-menu small{color:#71858a;font-size:10px}
+.load-error{color:#a33b3b;font-size:12px}
+.agenda-empty{color:#819296;font-size:12px;padding:14px 0;border-top:1px solid #edf1ef;margin:0}

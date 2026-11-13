@@ -7,20 +7,19 @@
       <a routerLink="/disponibilidade">Disponibilidade</a>
       <a routerLink="/minhas-reservas">Minhas reservas</a>
       <a routerLink="/aprovacoes" class="active" aria-current="page">Aprovações</a>
-      <span>Materiais</span>
-      <span>Administração</span>
-      <span>Relatórios</span>
+      <a routerLink="/retiradas-devolucoes">Materiais</a>
+      <a routerLink="/relatorios">Relatórios</a>
     </nav>
     <div class="profile">
-      <p>Unidade Santo Amaro</p>
-      <p><strong>Ana Martins</strong><br>Responsável / Administrador</p>
+      <p>{{ auth.unidade() }}</p>
+      <p><strong>{{ auth.nome() }}</strong><br>{{ auth.perfilRotulo() }}</p>
     </div>
   </aside>
 
   <main>
     <header class="topbar">
-      <span>UNIDADE SANTO AMARO</span>
-      <div><span>Notificações <b class="notification-count">3</b></span><span class="separator">•</span><span>Ana Martins</span></div>
+      <span>{{ auth.unidade().toUpperCase() }}</span>
+      <div><span>Notificações <b class="notification-count">{{ auth.naoLidas() }}</b></span><span class="separator">•</span><span>{{ auth.nome() }}</span></div>
     </header>
 
     <section class="page-heading">
@@ -29,59 +28,65 @@
     </section>
 
     <section class="stats-grid" aria-label="Resumo das aprovações">
-      <article class="stat-card"><strong>{{ pendingCount().toString().padStart(2, '0') }}</strong><span>Solicitações pendentes</span></article>
-      <article class="stat-card"><strong>{{ approvedToday().toString().padStart(2, '0') }}</strong><span>Aprovadas hoje</span></article>
-      <article class="stat-card"><strong>{{ awaitingAdjustment().toString().padStart(2, '0') }}</strong><span>Aguardando ajuste</span></article>
-    </section>
-
-    <section class="approval-card" aria-labelledby="request-title">
-      <div class="request-heading">
-        <h2 id="request-title">#RES-0249 · Workshop de robótica</h2>
-        @if (status() === 'Pendente') {
-          <span class="status pending">Pendente</span>
-        } @else if (status() === 'Aprovada') {
-          <span class="status approved">Aprovada</span>
-        } @else {
-          <span class="status rejected">Rejeitada</span>
-        }
-      </div>
-      <p class="requester">Ana Martins · solicitado há 25 minutos</p>
-      <div class="request-details">
-        <p>Laboratório 02 + Kit de robótica</p>
-        <p>23/10/2026 · 14:00–17:00</p>
-        <p>Docente: Ricardo Alves · Robótica educacional</p>
-      </div>
-      <aside class="validation-note">
-        <strong>Disponibilidade validada</strong>
-        <p>Sala, professor e materiais sem sobreposição no período.</p>
-      </aside>
-      @if (status() === 'Pendente') {
-        <div class="actions">
-          <button class="primary" type="button" (click)="approve()">Aprovar solicitação</button>
-          <button class="primary" type="button" (click)="openRejection()">Rejeitar com justificativa</button>
-        </div>
-      } @else {
-        <p class="completed-note" role="status">Esta solicitação já foi {{ status().toLowerCase() }} nesta demonstração.</p>
-      }
+      <article class="stat-card"><strong>{{ dois(dados()?.pendentes) }}</strong><span>Solicitações pendentes</span></article>
+      <article class="stat-card"><strong>{{ dois(dados()?.aprovadasHoje) }}</strong><span>Aprovadas hoje</span></article>
+      <article class="stat-card"><strong>{{ dois(dados()?.rejeitadasHoje) }}</strong><span>Rejeitadas hoje</span></article>
     </section>
 
     @if (feedback()) {
       <p class="feedback" role="status">{{ feedback() }}</p>
     }
+    @if (erro()) {
+      <p class="feedback" role="alert">{{ erro() }}</p>
+    }
+
+    @for (item of dados()?.solicitacoes ?? []; track item.codigo) {
+      <section class="approval-card" [attr.aria-labelledby]="'request-' + item.codigo">
+        <div class="request-heading">
+          <h2 [id]="'request-' + item.codigo"><a [routerLink]="['/detalhe-auditoria', item.codigo]">#{{ item.codigo }}</a> · {{ item.atividade }}</h2>
+          <span class="status pending">Pendente</span>
+        </div>
+        <p class="requester">{{ item.solicitante }} · solicitado {{ tempoDecorrido(item.criadaEm) }}</p>
+        <div class="request-details">
+          <p>{{ item.recursos }}</p>
+          <p>{{ dataBr(item.data) }} · {{ hm(item.inicio) }}–{{ hm(item.fim) }}</p>
+          <p>Docente: {{ item.professor ?? 'Não informado' }}</p>
+        </div>
+        @if (item.disponibilidadeValidada) {
+          <aside class="validation-note">
+            <strong>Disponibilidade validada</strong>
+            <p>Sala, professor e materiais sem sobreposição no período.</p>
+          </aside>
+        } @else {
+          <aside class="validation-note warning">
+            <strong>Conflito encontrado</strong>
+            @for (p of item.problemas; track p) {<p>{{ p }}</p>}
+          </aside>
+        }
+        <div class="actions">
+          <button class="primary" type="button" [disabled]="enviando() === item.codigo || !item.disponibilidadeValidada" (click)="approve(item)">Aprovar solicitação</button>
+          <button class="primary" type="button" [disabled]="enviando() === item.codigo" (click)="openRejection(item)">Rejeitar com justificativa</button>
+        </div>
+      </section>
+    } @empty {
+      @if (dados()) {
+        <section class="approval-card"><p class="completed-note" role="status">Nenhuma solicitação aguardando aprovação.</p></section>
+      }
+    }
   </main>
 </div>
 
-@if (rejectionDialogOpen()) {
+@if (rejecting(); as item) {
   <div class="dialog-backdrop" (click)="closeRejection()" (keydown.escape)="closeRejection()">
     <section class="rejection-dialog" role="dialog" aria-modal="true" aria-labelledby="reject-title" (click)="$event.stopPropagation()">
       <h2 id="reject-title">Rejeitar solicitação</h2>
-      <p>Informe a justificativa para rejeitar a reserva RES-0249.</p>
+      <p>Informe a justificativa para rejeitar a reserva {{ item.codigo }}.</p>
       <form (ngSubmit)="reject()">
         <label for="rejection-reason">Justificativa</label>
         <textarea id="rejection-reason" name="rejectionReason" [ngModel]="rejectionReason()" (ngModelChange)="rejectionReason.set($event)" required maxlength="500" rows="4"></textarea>
         <div class="dialog-actions">
           <button class="secondary" type="button" (click)="closeRejection()">Voltar</button>
-          <button class="primary" type="submit" [disabled]="!rejectionReason().trim()">Confirmar rejeição</button>
+          <button class="primary" type="submit" [disabled]="!rejectionReason().trim() || enviando()">Confirmar rejeição</button>
         </div>
       </form>
     </section>

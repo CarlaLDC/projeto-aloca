@@ -1,6 +1,11 @@
 # RTM — requisitos, riscos, testes e evidências
 
-Revisão: 12/11/2026 (America/Sao_Paulo).
+Revisão histórica: 12/11/2026 (America/Sao_Paulo).
+
+> Documento histórico preservado na conciliação de main com develop do PR #62.
+> O diagnóstico abaixo vale apenas para os commits citados. Para o estado atual,
+> consulte a [RTM da aplicação integrada](../../RTM.md) e o
+> [relatório de carga PostgreSQL](../../src/docs/qualidade/RELATORIO-CARGA.md).
 
 ## Base e interpretação
 

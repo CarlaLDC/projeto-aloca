@@ -1,0 +1,67 @@
+name: SonarCloud
+
+# Testes com cobertura do back (JaCoCo) e do front (lcov) a cada push e pull request e, quando ligada,
+# análise do SonarCloud com essa cobertura.
+#
+# Enquanto a "Automatic Analysis" do SonarCloud estiver ativa (é ela que comenta nos PRs hoje), a análise
+# por CI é recusada pelo SonarCloud. Por isso os passos do Sonar só rodam com a variável do repositório
+# SONAR_CI_ANALISE = true. Para trocar para a análise por CI (que inclui a cobertura):
+#   1. SonarCloud > Administration > Analysis Method: desligar "Automatic Analysis".
+#   2. GitHub > Settings > Secrets and variables > Actions: segredo SONAR_TOKEN
+#      (SonarCloud > My Account > Security) e variável SONAR_CI_ANALISE = true.
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  sonar:
+    name: Análise SonarCloud
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # histórico completo: o Sonar atribui problemas novos ao autor certo
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # O front roda antes do back-end: depois do mvn verify (Testcontainers) a máquina fica ocupada e o
+      # Chrome pode não abrir a tempo.
+      - name: "Front-end: testes e cobertura (lcov)"
+        run: |
+          npm ci --ignore-scripts
+          npm test -- --watch=false --code-coverage --browsers=ChromeHeadless
+          test -f coverage/projeto-aloca/lcov.info
+
+      - name: "Back-end: testes e cobertura (Testcontainers + JaCoCo)"
+        run: mvn -B -f backend/pom.xml verify
+
+      - name: Análise SonarCloud
+        if: vars.SONAR_CI_ANALISE == 'true'
+        uses: SonarSource/sonarqube-scan-action@2f77a1ec69fb1d595b06f35ab27e97605bdef703 # v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
+      - name: Quality Gate
+        if: vars.SONAR_CI_ANALISE == 'true'
+        uses: SonarSource/sonarqube-quality-gate-action@7a5fffe8e523c40e0c740b6bc2712ab503e52efa # v1
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io

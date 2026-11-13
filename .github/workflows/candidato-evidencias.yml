@@ -1,0 +1,83 @@
+name: Candidato - persistência, responsividade e cobertura
+on:
+  pull_request:
+    branches: [develop, main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  evidencias:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: aloca_reinicio
+          POSTGRES_USER: aloca
+          POSTGRES_PASSWORD: aloca
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aloca -d aloca_reinicio"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      EVIDENCE_DIR: evidencias-candidato
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Identificar candidato e ambiente
+        run: |
+          mkdir -p evidencias-candidato
+          git rev-parse HEAD > evidencias-candidato/checkout-sha.txt
+          printf '%s\n' "$GITHUB_SHA" > evidencias-candidato/github-sha.txt
+          printf '%s\n' "$GITHUB_RUN_ID" > evidencias-candidato/run-id.txt
+          java -version 2> evidencias-candidato/java.txt
+          node --version > evidencias-candidato/node.txt
+      - name: Suíte completa PostgreSQL (Testcontainers) e cobertura do candidato
+        run: mvn -B -f backend/pom.xml clean verify
+      - name: Preservar percentuais e verificar metas
+        run: python3 scripts/resumo-cobertura.py
+      - name: Reiniciar processo e conferir reserva e histórico
+        env:
+          ALOCA_DB_URL: jdbc:postgresql://localhost:5432/aloca_reinicio
+        run: python3 scripts/persistencia-reinicio.py
+      - name: Criar banco isolado para os fluxos responsivos
+        env:
+          PGPASSWORD: aloca
+        run: psql -h localhost -U aloca -d aloca_reinicio -c "create database aloca_responsivo"
+      - run: npm ci --ignore-scripts
+      - run: npm run build
+      - run: npm ci --ignore-scripts --prefix bdd
+      - run: node bdd/node_modules/playwright/cli.js install --with-deps chromium
+      - name: Iniciar aplicação isolada e executar fluxos nos dois viewports
+        run: |
+          java -jar backend/target/aloca-backend-*.jar '--spring.datasource.url=jdbc:postgresql://localhost:5432/aloca_responsivo' > evidencias-candidato/responsivo-backend.log 2>&1 &
+          api_pid=$!
+          npm start -- --host 127.0.0.1 > evidencias-candidato/responsivo-frontend.log 2>&1 &
+          front_pid=$!
+          trap 'kill "$api_pid" "$front_pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 120); do
+            if curl -fsS http://127.0.0.1:4200/login >/dev/null && curl -s http://127.0.0.1:8080/api/auth/me | grep -q mensagem; then break; fi
+            sleep 2
+          done
+          node bdd/candidato-responsivo.cjs
+      - name: Publicar evidências mesmo em falha
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: candidato-evidencias-${{ github.run_id }}
+          path: |
+            evidencias-candidato/
+            backend/target/site/jacoco/
+            backend/target/surefire-reports/
+          if-no-files-found: error
