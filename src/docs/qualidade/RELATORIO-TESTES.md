@@ -50,7 +50,7 @@ A retenção registrada para esses artefatos vai até 10/02/2027. Os JSONs do ci
 
 ## Decisão desta consolidação
 
-**Aprovado com restrições documentadas (develop `31afdd4`, 13/11/2026).** Todas as modalidades automatizadas do plano têm evidência aprovada: unitários, parametrizados, integração com PostgreSQL, caixa-preta HTTP, concorrência, auditoria de todas as transições, reinício, WireMock, BDD, front com cobertura 80/70 e carga PE-01/02/03. Restrições: registro manual de responsividade (RNF-05), análise de dependências do back-end (RNF-07) e revisão do PR #28. A suíte HTTP faz parte da base integrada pelo #38.
+**Aprovado com restrições documentadas (develop `31afdd4`, 13/11/2026).** Todas as modalidades automatizadas do plano têm evidência aprovada: unitários, parametrizados, integração com PostgreSQL, caixa-preta HTTP, concorrência, auditoria de todas as transições, reinício, WireMock, BDD, front com cobertura 80/70 e carga PE-01/02/03. Restrições: registro manual de responsividade (RNF-05). A análise de dependências do back-end (RNF-07) roda no workflow `dependencias.yml` (PR #60: 153 dependências, 0 vulnerabilidades conhecidas) e a revisão por pares dos PRs #27, #28, #29 e #43 está registrada em [REVISAO-PARES](REVISAO-PARES.md). A suíte HTTP faz parte da base integrada pelo #38.
 
 Este documento não altera retroativamente o parecer de um relatório antigo. A próxima campanha deve usar [REGISTRO-EXECUCAO](REGISTRO-EXECUCAO.md), executar o [plano](PLANO-TESTES.md) no SHA candidato e atualizar esta decisão com resultados reais.
 

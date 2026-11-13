@@ -83,7 +83,7 @@ Não usar este modelo preenchido automaticamente como assinatura de outra pessoa
 | PR | Revisor | SHA | Data | Link da avaliação | Parecer |
 |---|---|---|---|---|---|
 | #27 | ThiagoMarangoni-dev | `de28a30` | 13/11/2026 | [aprovação](https://github.com/CarlaLDC/projeto-aloca/pull/27#pullrequestreview-5884758423) | Aprovado |
-| #28 | CarolinaMagalhaesLopes (solicitada) | Pendente | Pendente | Pendente | **Sem avaliação registrada**; PR já mesclado |
+| #28 | ThiagoMarangoni-dev | `92fb6c4` | 13/11/2026 | [aprovação](https://github.com/CarlaLDC/projeto-aloca/pull/28#pullrequestreview-5897892731) | Aprovado no escopo (revisão retrospectiva, PR já mesclado); sugestões: busca por competência sem acento, ocultar o botão de ausência fora da janela, trocar `window.prompt` por campo |
 | #29 | CarlaLDC | `e6e2824` | 13/11/2026 | [aprovação](https://github.com/CarlaLDC/projeto-aloca/pull/29#pullrequestreview-5884716387) | Aprovado |
 | #43 | CarolinaMagalhaesLopes e Camila-cvs | `d4c8189` | 13/11/2026 | [aprovação 1](https://github.com/CarlaLDC/projeto-aloca/pull/43#pullrequestreview-5884757782), [aprovação 2](https://github.com/CarlaLDC/projeto-aloca/pull/43#pullrequestreview-5884757785) | Aprovado |
 
