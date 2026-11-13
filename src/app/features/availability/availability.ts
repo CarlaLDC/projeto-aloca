@@ -25,6 +25,7 @@ export class Availability implements OnInit {
 
   readonly searchTerm = signal('');
   readonly competencia = signal('');
+  readonly capacidadeMinima = signal<number | null>(null);
   readonly professoresEncontrados = signal<AdminProfessor[] | null>(null);
   readonly erroProfessores = signal('');
   readonly selectedType = signal<ResourceType>('Todos');
@@ -36,7 +37,7 @@ export class Availability implements OnInit {
   readonly resultado = signal<Disponibilidade | null>(null);
   readonly carregando = signal(false);
   readonly erro = signal('');
-  readonly podeReservar = this.auth.possui('SOLICITANTE', 'RESPONSAVEL', 'ADMINISTRADOR');
+  readonly podeReservar = this.auth.possui('SOLICITANTE', 'RESPONSAVEL', 'ADMINISTRADOR', 'PROFESSOR');
 
   // A busca e o tipo filtram localmente a lista do dia (resposta imediata); a data consulta a API.
   readonly filteredResources = computed(() => {
@@ -45,7 +46,7 @@ export class Availability implements OnInit {
     return (this.resultado()?.recursos ?? []).filter(resource => {
       const matchesType = type === 'Todos' || resource.tipo === TIPO_API[type];
       const matchesTerm = !term || `${resource.nome} ${resource.localizacao}`.toLocaleLowerCase('pt-BR').includes(term);
-      return matchesType && matchesTerm;
+      return matchesType && matchesTerm && resource.capacidade >= (this.capacidadeMinima() ?? 0);
     });
   });
 
@@ -60,7 +61,7 @@ export class Availability implements OnInit {
   carregar(): void {
     this.carregando.set(true);
     this.erro.set('');
-    this.api.disponibilidade(this.selectedDate()).subscribe({
+    this.api.disponibilidade(this.selectedDate(), undefined, undefined, this.capacidadeMinima() ?? undefined).subscribe({
       next: r => { this.resultado.set(r); this.carregando.set(false); },
       error: e => { this.erro.set(mensagemErro(e, 'Não foi possível consultar a disponibilidade.')); this.carregando.set(false); }
     });
@@ -72,6 +73,11 @@ export class Availability implements OnInit {
       next: docentes => this.professoresEncontrados.set(docentes),
       error: e => this.erroProfessores.set(mensagemErro(e, 'Não foi possível buscar professores.'))
     });
+  }
+
+  setCapacidade(valor: number | null): void {
+    if (valor !== null && (!Number.isInteger(valor) || valor < 0)) return;
+    this.capacidadeMinima.set(valor); this.carregar();
   }
 
   setType(type: ResourceType): void {

@@ -12,13 +12,14 @@
   <main class="content">
     <header><span>{{ auth.unidade() }}</span><button type="button" (click)="auth.sair()">Sair</button></header>
     <h1>Administração</h1>
-    <p>Cadastros de salas, materiais, professores e manutenção.</p>
+    <p>Cadastros de salas, materiais, professores, usuários e manutenção.</p>
     @if (erro()) {<p class="error" role="alert">{{ erro() }}</p>}
     @if (feedback()) {<p class="feedback" role="status">{{ feedback() }}</p>}
     <div class="tabs" role="group" aria-label="Seções administrativas">
       <button type="button" (click)="aba.set('recursos')" [attr.aria-pressed]="aba() === 'recursos'">Recursos</button>
       <button type="button" (click)="aba.set('professores')" [attr.aria-pressed]="aba() === 'professores'">Professores</button>
       <button type="button" (click)="aba.set('bloqueios')" [attr.aria-pressed]="aba() === 'bloqueios'">Manutenção</button>
+      <button type="button" (click)="aba.set('usuarios')" [attr.aria-pressed]="aba() === 'usuarios'">Usuários e perfis</button>
     </div>
     @if (aba() === 'recursos') {
       <section class="panel">
@@ -54,6 +55,29 @@
       <section class="panel"><h2>Bloqueios cadastrados</h2><div class="table-wrap"><table><thead><tr><th>Recurso</th><th>Início</th><th>Fim</th><th>Motivo</th><th>Ação</th></tr></thead><tbody>
         @for (item of bloqueios(); track item.id) {<tr><td>{{ item.recurso }}</td><td>{{ item.inicio }}</td><td>{{ item.fim }}</td><td>{{ item.motivo }}</td><td><button type="button" (click)="removerBloqueio(item)">Remover</button></td></tr>}
       </tbody></table></div></section>
+    }
+    @if (aba() === 'usuarios') {
+      <section class="panel"><h2>{{ editandoUsuario === null ? 'Cadastrar usuário' : 'Editar usuário' }}</h2>
+        <form (ngSubmit)="salvarUsuario()">
+          <label>Nome do usuário<input name="usuarioNome" [(ngModel)]="usuario.nome" required maxlength="100"></label>
+          <label>E-mail do usuário<input type="email" name="usuarioEmail" [(ngModel)]="usuario.email" required maxlength="150"></label>
+          <label>Unidade do usuário<input name="usuarioUnidade" [(ngModel)]="usuario.unidade" required maxlength="100"></label>
+          @if (editandoUsuario === null) {<label>Senha inicial<input type="password" name="usuarioSenha" [(ngModel)]="usuario.senha" required minlength="8" maxlength="72" autocomplete="new-password"></label>}
+          <fieldset><legend>Perfis do usuário</legend>
+            @for (p of perfis; track p) {<label class="check"><input type="checkbox" [name]="'perfil' + p" [checked]="usuario.perfis.includes(p)" (change)="marcarPerfil(p, $any($event.target).checked)">{{ p }}</label>}
+          </fieldset>
+          <button type="submit" [disabled]="enviando()">Salvar usuário</button>
+          @if (editandoUsuario !== null) {<button type="button" (click)="limparUsuario()">Cancelar edição</button>}
+        </form>
+      </section>
+      <section class="panel"><h2>Usuários cadastrados</h2><div class="table-wrap"><table aria-label="Usuários cadastrados"><thead><tr><th>Nome</th><th>E-mail</th><th>Perfis</th><th>Situação</th><th>Ações</th></tr></thead><tbody>
+        @for (u of usuarios(); track u.id) {<tr><td>{{ u.nome }}</td><td>{{ u.email }}</td><td>{{ u.perfis.join(', ') }}</td><td>{{ u.ativo ? 'Ativo' : 'Inativo' }}</td><td>
+          <button type="button" (click)="editarUsuario(u)">Editar</button>
+          <button type="button" [disabled]="u.id === auth.usuario()?.id" (click)="ativarUsuario(u)">{{ u.ativo ? 'Desativar' : 'Ativar' }}</button>
+          <button type="button" (click)="redefinindo = u.id; senhaNova = ''">Redefinir senha</button>
+        </td></tr>}
+      </tbody></table></div></section>
+      @if (redefinindo !== null) {<section class="panel"><h2>Redefinir senha</h2><form (ngSubmit)="redefinirSenha()"><label>Nova senha<input type="password" name="novaSenha" [(ngModel)]="senhaNova" required minlength="8" maxlength="72" autocomplete="new-password"></label><button type="submit" [disabled]="enviando()">Confirmar nova senha</button><button type="button" (click)="redefinindo = null; senhaNova = ''">Cancelar</button></form></section>}
     }
   </main>
 </div>

@@ -44,19 +44,19 @@ public class ReservaController {
 
     /** 201 com a reserva criada, ou 409 com os conflitos e alternativas (tela 05). */
     @PostMapping
-    @PreAuthorize("hasAnyRole('SOLICITANTE','RESPONSAVEL','ADMINISTRADOR')")
+    @PreAuthorize("hasAnyRole('SOLICITANTE','RESPONSAVEL','ADMINISTRADOR','PROFESSOR')")
     public ResponseEntity<?> criar(@Valid @RequestBody ReservaRequest pedido) {
         return responder(reservas.criar(pedido, usuarioAtual.obter()), HttpStatus.CREATED);
     }
 
     @PutMapping("/{codigo}")
-    @PreAuthorize("hasAnyRole('SOLICITANTE','RESPONSAVEL','ADMINISTRADOR')")
+    @PreAuthorize("hasAnyRole('SOLICITANTE','RESPONSAVEL','ADMINISTRADOR','PROFESSOR')")
     public ResponseEntity<?> alterar(@PathVariable String codigo, @Valid @RequestBody ReservaRequest pedido) {
         return responder(reservas.alterar(codigo, pedido, usuarioAtual.obter()), HttpStatus.OK);
     }
 
     @PostMapping("/{codigo}/cancelamento")
-    @PreAuthorize("hasAnyRole('SOLICITANTE','RESPONSAVEL','ADMINISTRADOR')")
+    @PreAuthorize("hasAnyRole('SOLICITANTE','RESPONSAVEL','ADMINISTRADOR','PROFESSOR')")
     public ReservaDetalhe cancelar(@PathVariable String codigo, @Valid @RequestBody CancelamentoRequest pedido) {
         return reservas.cancelar(codigo, pedido.motivo(), usuarioAtual.obter());
     }

@@ -15,6 +15,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
+    private final br.com.aloca.repositorio.UsuarioRepositorio usuarios;
+    public SecurityConfig(br.com.aloca.repositorio.UsuarioRepositorio usuarios) { this.usuarios=usuarios; }
+
 
     private static final String NAO_AUTENTICADO =
         "{\"mensagem\":\"Sua sessão expirou ou você não entrou no sistema. Entre novamente.\"}";
@@ -35,8 +38,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/aprovacoes/**", "/api/movimentacoes/**").hasRole("RESPONSAVEL")
                 .requestMatchers("/api/relatorios/**").hasAnyRole("RESPONSAVEL", "ADMINISTRADOR")
                 .requestMatchers(HttpMethod.POST, "/api/reservas", "/api/reservas/*/cancelamento")
-                    .hasAnyRole("SOLICITANTE", "RESPONSAVEL", "ADMINISTRADOR")
-                .requestMatchers(HttpMethod.PUT, "/api/reservas/*").hasAnyRole("SOLICITANTE", "RESPONSAVEL", "ADMINISTRADOR")
+                    .hasAnyRole("SOLICITANTE", "RESPONSAVEL", "ADMINISTRADOR", "PROFESSOR")
+                .requestMatchers(HttpMethod.PUT, "/api/reservas/*").hasAnyRole("SOLICITANTE", "RESPONSAVEL", "ADMINISTRADOR", "PROFESSOR")
                 .requestMatchers("/api/**").authenticated()
                 .anyRequest().permitAll())
             .oauth2ResourceServer(rs -> rs
@@ -55,13 +58,19 @@ public class SecurityConfig {
     }
 
     /** Converte a claim "perfis" do token em papéis ROLE_SOLICITANTE, ROLE_RESPONSAVEL etc. */
-    private JwtAuthenticationConverter conversorPerfis() {
-        JwtGrantedAuthoritiesConverter perfis = new JwtGrantedAuthoritiesConverter();
-        perfis.setAuthoritiesClaimName("perfis");
-        perfis.setAuthorityPrefix("ROLE_");
-        JwtAuthenticationConverter conversor = new JwtAuthenticationConverter();
-        conversor.setJwtGrantedAuthoritiesConverter(perfis);
-        return conversor;
+    private org.springframework.core.convert.converter.Converter<org.springframework.security.oauth2.jwt.Jwt,
+            org.springframework.security.authentication.AbstractAuthenticationToken> conversorPerfis() {
+        return jwt -> {
+            try {
+                var u=usuarios.findById(Long.parseLong(jwt.getSubject())).filter(x->x.isAtivo()).orElseThrow();
+                Number versao=jwt.getClaim("versao");
+                if (versao==null || versao.longValue()!=u.getVersaoToken()) throw new IllegalArgumentException();
+                var autoridades=u.getPerfis().stream().map(p->new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_"+p.name())).toList();
+                return new org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken(jwt,autoridades);
+            } catch (RuntimeException e) {
+                throw new org.springframework.security.oauth2.core.OAuth2AuthenticationException("invalid_token");
+            }
+        };
     }
 
     private static void responder(jakarta.servlet.http.HttpServletResponse res, int status, String corpo)

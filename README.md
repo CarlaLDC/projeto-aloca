@@ -153,3 +153,7 @@ Consulte o [registro priorizado](src/docs/defeitos.md), com causas, commits, tes
 ## Rastreabilidade
 
 Consulte a [RTM reconciliada](RTM.md), com requisito, risco, implementação, teste, evidência por commit e pendências. Resultados históricos e aceite da release são distinguidos explicitamente.
+
+## Evidências do candidato
+
+Consulte [usuários, professor solicitante, capacidade, reinício, responsividade e cobertura](src/docs/qualidade/CANDIDATO.md).

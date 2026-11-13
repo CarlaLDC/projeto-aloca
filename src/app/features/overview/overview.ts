@@ -32,7 +32,7 @@ export class Overview implements OnInit {
     { label: 'Relatórios', icon: '▥', rota: '/relatorios', perfis: ['RESPONSAVEL', 'ADMINISTRADOR'] as const }
   ].filter(item => !item.perfis || this.auth.possui(...item.perfis));
 
-  readonly podeReservar = this.auth.possui('SOLICITANTE', 'RESPONSAVEL', 'ADMINISTRADOR');
+  readonly podeReservar = this.auth.possui('SOLICITANTE', 'RESPONSAVEL', 'ADMINISTRADOR', 'PROFESSOR');
 
   get today(): string {
     const data = this.painel()?.data;

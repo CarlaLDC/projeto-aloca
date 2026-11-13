@@ -32,6 +32,18 @@ public class Usuario {
 
     private boolean ativo = true;
 
+    @Column(nullable = false, columnDefinition = "bigint default 0")
+    private long versaoToken;
+
+    public long getVersaoToken() { return versaoToken; }
+    public void atualizar(String nome, String email, String unidade, Set<Perfil> perfis) {
+        this.nome = nome; this.email = email; this.unidade = unidade;
+        this.perfis = EnumSet.copyOf(perfis);
+        this.versaoToken++;
+    }
+    public void trocarSenha(String hash) { this.senhaHash = hash; this.versaoToken++; }
+
+
     protected Usuario() {}
 
     public Usuario(String nome, String email, String senhaHash, String unidade, Set<Perfil> perfis) {
@@ -51,5 +63,5 @@ public class Usuario {
     public Set<Perfil> getPerfis() { return perfis; }
     public String getUnidade() { return unidade; }
     public boolean isAtivo() { return ativo; }
-    public void setAtivo(boolean ativo) { this.ativo = ativo; }
+    public void setAtivo(boolean ativo) { if (this.ativo != ativo) this.versaoToken++; this.ativo = ativo; }
 }
