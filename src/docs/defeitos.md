@@ -30,8 +30,11 @@ Estados: Aberto → Triado → Em correção → Corrigido → Validado. Reabrir
 | AUT-001 | Automação: Bearer null no login BDD | S3 | P1 | Validado historicamente no ciclo BDD |
 | AUT-002 | Automação: contagem global no teste de ciclo; RF-10 | S3 | P2 | Corrigido e suíte posterior aprovada |
 | NC-001 | Conformidade: Spring Boot 4.1.2 versus 3.x exigido | S2 | P1 | Aberto; não alterar framework neste PR documental |
-| IMP-003 | Evidência: resultado JMeter não consolidado em develop | S2 | P1 | Encerrado: PE-02/PE-03 executados, evidências em `testes/carga/resultados/20261113-campanha-01` ([relatório](qualidade/RELATORIO-CARGA.md)) |
-| DEF-PERF-001 | Produto: 409 de disputa por professor/material leva ~0,9 s (P95 1,6 s) por varrer todos os espaços nas alternativas sob trava; RNF-01 | S3 | P2 | Aberto; dentro da meta de 3 s, risco ao crescer o número de salas |
+| IMP-003 | Evidência: resultado JMeter não consolidado em develop | S2 | P1 | Encerrado: PE-01/PE-02/PE-03 executados no PostgreSQL, evidências em `testes/carga/resultados/20261113-campanha-03` ([relatório](qualidade/RELATORIO-CARGA.md)) |
+| DEF-PERF-001 | Produto: 409 de disputa por professor/material leva ~0,9 s (P95 1,6 s) por varrer todos os espaços nas alternativas sob trava; RNF-01 | S3 | P2 | Validado: P95 do 409 caiu de ~1,2 s para 90 ms na campanha 03 |
+| DEF-INT-001 | Produto: em 4xx/5xx do serviço de notificação, o log gravava o corpo da resposta externa e o e-mail do destinatário; EX-03, RNF-03 | S3 | P1 | Validado: testes WireMock ([relatório](qualidade/RELATORIO-WIREMOCK.md)) |
+| DEF-INT-002 | Produto: resposta corrompida do serviço de notificação gerava `IllegalArgumentException` fora do tratamento de erro; EX-04 | S3 | P1 | Validado: testes WireMock ([relatório](qualidade/RELATORIO-WIREMOCK.md)) |
+| DEF-INT-003 | Produto: notificação sem destinatário era enviada ao serviço externo; EX-04 | S4 | P2 | Validado: testes WireMock ([relatório](qualidade/RELATORIO-WIREMOCK.md)) |
 
 ## DEF-001 — solicitação com cadastro desativado continuava válida no painel
 
@@ -73,6 +76,17 @@ Estados: Aberto → Triado → Em correção → Corrigido → Validado. Reabrir
 - **Obtido:** regra correta (1×201, 9×409 em 100 de 100 disputas), mas o 409 tem mediana de ~0,9 s e P95 de 1,6 s, contra 83 ms nas disputas por sala; o 201 leva ~15 ms.
 - **Causa provável:** `ReservaService.alternativas`, passo “outro local, mesmo horário”, consulta conflitos em cada espaço ativo dentro da transação com as travas; quando o choque é do professor ou do material, nenhum local resolve e a varredura é completa. As perdedoras são serializadas pela trava.
 - **Correção proposta:** pular o passo quando o conflito não é do espaço, ou calcular alternativas após liberar as travas. **Regressão:** repetir PE-03 e comparar o P95 do 409 por tipo (`disputas.csv` e `RESULTADO.md`).
+- **Reprodução no PostgreSQL:** campanha `20261113-campanha-02` (mesmo perfil, sem correção): 409 por professor com mediana de 620 ms e P95 de 1.167 ms; por material, 686 ms e 1.256 ms.
+- **Correção:** `feat/back-reservas` `ed41485`. O passo "outro local, mesmo horário" só roda quando todos os conflitos são do próprio local; professor ou material ocupado continua ocupado em qualquer sala. O resultado da API não muda.
+- **Regressão automatizada:** `AlternativasConflitoUnitTest` (3 casos). No código anterior, 2 falhas (professor e material consultavam todos os espaços); no novo, 3 aprovados.
+- **Validação:** campanha `20261113-campanha-03`: 409 por professor com mediana de 47 ms e P95 de 90 ms; por material, 49 ms e 90 ms; sala sem mudança (P95 de 118 ms). Regra mantida: 150/150 disputas com uma única aceita ([relatório](qualidade/RELATORIO-CARGA.md)).
+
+## DEF-INT-001 a 003 — notificação externa (WireMock)
+
+- **Ambiente:** `NotificacaoExternaClientTest` com WireMock 3.13.2, sem Spring.
+- **Obtido no código anterior:** 15 testes, 5 falhas e 1 erro. O log de falha gravava a mensagem da exceção (com o corpo da resposta externa) e o e-mail; dados aleatórios na resposta geravam `IllegalArgumentException` não tratada; uma notificação sem destinatário era enviada.
+- **Correção:** `feat/back-reservas` `57b0d32`. O log registra só a reserva e o status ou tipo da falha; qualquer falha de execução vira falha tratada; destinatário ausente não é enviado.
+- **Validação:** 21 testes WireMock aprovados (15 do cliente e 6 pela API com PostgreSQL), dentro de `mvn verify` com 502 testes e 0 falhas ([relatório](qualidade/RELATORIO-WIREMOCK.md)).
 
 ## Pendências e reavaliação do registro de performance
 
@@ -82,7 +96,7 @@ Fonte histórica: [defeitos.md na branch qa/performance-jmeter](https://github.c
 |---|---|---|
 | IMP-001 — API/ambiente | Superado para PE-02/PE-03: `executar-carga.sh` sobe API + MySQL descartável e registra commit e máquina em `ambiente.txt` | Ambiente de homologação dedicado continua desejável |
 | IMP-002 — credenciais/massa | Superado: `preparar_massa.py` cria massa sintética exclusiva por execução (prefixo `CARGA-<RUN_ID>`), senha aleatória fora dos artefatos e banco descartável | — |
-| IMP-003 — JMeter sem resultado | Encerrado: plano, JTL, dashboard, logs, parâmetros, commit, métricas, análise e decisão em [RELATORIO-CARGA](qualidade/RELATORIO-CARGA.md) | Repetir no SHA candidato; PE-01 (pesquisa) ainda não executado |
+| IMP-003 — JMeter sem resultado | Encerrado: plano, JTL, dashboard, logs, parâmetros, commit, métricas, análise e decisão em [RELATORIO-CARGA](qualidade/RELATORIO-CARGA.md) | PE-01 executado e aprovado (campanha 03, PostgreSQL). Depois do merge, repetir pelo workflow para vincular ao SHA do develop |
 | GAP-004/005 — auditoria em memória/ator fictício | Diagnóstico histórico superado na implementação integrada; ciclo e auditoria têm testes reais vinculados acima | Manter origem histórica; não converter a inspeção antiga em bug de runtime reproduzido nem declarar AUD-01..10 executados |
 | NC-001 — versão Spring Boot | Aberto, S2/P1: [pom.xml](../../backend/pom.xml) declara 4.1.2; enunciado exige 3.x | Alinhar versão ao requisito e executar integração MySQL, unitários, BDD e build; registrar commit/relatórios antes de encerrar |
 

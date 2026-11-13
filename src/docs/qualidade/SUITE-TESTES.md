@@ -88,10 +88,10 @@ npx cucumber-js --config aprovacao-inativos.cjs
 
 | Item | Localização | Uso e pendência |
 |---|---|---|
-| **JMeter reservas e disputas (PE-02/PE-03)** | [testes/carga](../../../testes/carga/README.md), workflow `carga-jmeter.yml` | Incorporado: criar/alterar/cancelar com massa isolada + 150 disputas simultâneas; JTL, dashboard e prova por disputa em [RELATORIO-CARGA](RELATORIO-CARGA.md) |
+| **JMeter pesquisa, reservas e disputas (PE-01/PE-02/PE-03)** | [testes/carga](../../../testes/carga/README.md), workflow `carga-jmeter.yml` | Incorporado: pesquisa de disponibilidade com 50 usuários, criar/alterar/cancelar com massa isolada + 150 disputas simultâneas; JTL, dashboard e prova por disputa em [RELATORIO-CARGA](RELATORIO-CARGA.md) |
 | JMeter API leitura | [README da branch](https://github.com/CarlaLDC/projeto-aloca/blob/qa/performance-jmeter/testes/performance/README.md) | Login/GETs; fora de develop; não cobre reservas concorrentes sob carga |
 | JMeter SPA | Mesma branch, plano aloca-spa-load-test.jmx | Mede entrega de rotas, não ações client-side nem regras de reserva |
-| WireMock | Não localizado nesta base | Implementar EX-01..04 do plano |
+| **WireMock (EX-01..04)** | `NotificacaoExternaClientTest`, `NotificacaoExternaApiTest` | Incorporado: sucesso, tempo limite, 4xx/5xx sem expor dados, resposta quebrada e destinatário ausente ([RELATORIO-WIREMOCK](RELATORIO-WIREMOCK.md)) |
 | Manual, recuperação e instalação | PLANO-TESTES MA/RE/IN | Executar e anexar registro; não há resultado presumido |
 | SonarCloud / dependências | [Projeto SonarCloud](https://sonarcloud.io/dashboard?id=CarlaLDC_projeto-aloca) | Vincular análise ao SHA da release; dependências precisam de relatório próprio |
 
