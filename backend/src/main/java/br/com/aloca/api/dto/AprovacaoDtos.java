@@ -17,6 +17,10 @@ public final class AprovacaoDtos {
 
     public record Aprovacoes(long pendentes, long aprovadasHoje, long rejeitadasHoje, List<Solicitacao> solicitacoes) {}
 
+    /** Corpo opcional do registro de não comparecimento. */
+    public record NaoComparecimentoRequest(
+        @Size(max = 500, message = "A observação pode ter até 500 caracteres.") String observacao) {}
+
     public record RejeicaoRequest(
         @NotBlank(message = "Informe a justificativa.") @Size(max = 500, message = "A justificativa pode ter até 500 caracteres.") String justificativa) {}
 }
