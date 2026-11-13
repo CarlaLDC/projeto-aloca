@@ -2,6 +2,8 @@
 
 Revisão: 12/11/2026 (America/Sao_Paulo).
 
+> **Atualização do PR #43:** a matriz abaixo mantém os links do snapshot original. Os seis itens de usuários/perfis, capacidade na interface, professor solicitante, viewports, reinício e cobertura foram implementados/verificados no candidato `895d8e7`. Consulte a seção **Incremento verificado — candidato do PR #43** ao final e o [relatório com evidências](src/docs/qualidade/CANDIDATO.md) para o estado mais recente desses itens. As antigas pendências correspondentes não devem ser usadas como diagnóstico atual desse candidato.
+
 ## Base e interpretação
 
 Esta matriz substitui o diagnóstico antigo baseado somente na interface demonstrativa. A implementação inspecionada é a **develop no commit 3fb1f0dc91d58fa06d72d0306db7239f7e2c54bf**, após incorporar a auditoria administrativa do PR #31. Os links de código e testes abaixo são fixados nesse commit para evitar que mudanças futuras alterem a base da avaliação.
@@ -99,3 +101,19 @@ AUD-01..AUD-10 preservam IDs de roteiro; cada linha indica os testes reais que o
 Para encerrar a entrega: consolidar o candidato, executar carga real e WireMock, obter análise estática/dependências, comprovar reinício e viewports, fechar lacunas funcionais e preservar cobertura do SHA candidato. Revisar por pares as linhas críticas e os riscos residuais antes da decisão final.
 
 Ao alterar código/teste, atualizar linha afetada e E-ID com SHA, ambiente, resultado, link do run e artefato. Manter evidências antigas identificadas como históricas; não mover percentuais/contagens para outro commit. A documentação de performance legada só vale para o snapshot que analisou.
+
+## Incremento verificado — candidato do PR #43
+
+Fonte: [CANDIDATO.md](src/docs/qualidade/CANDIDATO.md). Head executável `895d8e7ac9bbd9615e94ed680762a002baedf9d1`; checkout real do merge de PR `26a21f63727461dbb491e14ee9d118d5df32819a`. [Execução 43340838626 aprovada](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43340838626). Os JSONs e identificadores originais estão versionados em src/docs/qualidade/evidencias-candidato/; capturas e relatórios completos no artefato vinculado no relatório.
+
+| Requisito/item afetado | Risco | Implementação/teste do incremento | Evidência e estado no candidato |
+|---|---|---|---|
+| RF-01 / administração de usuários e perfis | Acesso indevido ou sessão ativa após revogação | UsuarioAdminController, UsuarioAdminService; Usuários e perfis na administração; UsuariosApiTest | Implementado e verificado: cadastro/edição/ativação/senha, controle de administrador, tokens anteriores invalidados, senha/hash não retornados; fluxo UI nos dois viewports |
+| RF-03 — capacidade na interface | Pesquisa incompatível | campo Capacidade mínima, parâmetro capacidadeMinima; ApiService spec e navegador | Verificado: API recebe 30 e todos os resultados retornados têm capacidade >=30 |
+| Solicitante professor / RF-04 e RF-14 | Professor impedido de solicitar ou modificando reserva alheia | permissões PROFESSOR no backend/frontend; UsuariosApiTest.professorCriaAlteraECancelaSuaReservaMasNaoAprovaNemAlteraADeOutro | Verificado: cria/edita/cancela própria, consulta agenda; nega aprovação e alteração alheia. Substitui a política antiga de professor somente leitor |
+| RF-13 / RNF-05 — 360 e 1280 px | Fluxo inacessível | candidato-responsivo.cjs; pesquisa, criação e cancelamento pela UI, capturas e medidas | Verificado em Chromium nesses viewports, com inspeção visual registrada no relatório; não equivale a certificação de todos os dispositivos/acessibilidade |
+| RNF-04 / AUD-10 — reinício | Perda de reserva/histórico | persistencia-reinicio.py; dois processos reais sobre o mesmo H2 em arquivo | Aprovado: reserva completa/histórico iguais, cinco eventos, recurso preservado. MySQL continua testado separadamente na integração |
+| RNF-06 — cobertura do candidato | Percentuais sem origem | resumo-cobertura.py, XML JaCoCo e metadados de checkout | Aprovado neste candidato: linhas 94,63% (1340/1416), branches 79,16% (376/475); build falha abaixo de 80%/70% |
+| RNF-08 — evidências dos itens acima | Rastreabilidade incompleta | Este adendo, relatório e JSONs originais | Mapeamento atualizado; permanecem pendências globais de SonarCloud/segurança, WireMock, carga e versões, sem declarar 100% de aceite global |
+
+A suíte completa deste incremento tem **164 testes backend aprovados, zero falhas/erros/ignorados**. As evidências E1–E5 anteriores continuam históricas e não substituem os metadados deste candidato. O incremento está proposto no PR #43; só passa a compor develop após merge. A main não recebe automaticamente a aplicação integrada.

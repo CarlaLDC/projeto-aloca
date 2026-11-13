@@ -45,3 +45,27 @@ Para o navegador, iniciar API em banco descartável na porta 8080 e frontend na 
 ## Limites
 
 A verificação de reinício usa H2 em arquivo; a suíte de integração verifica MySQL separadamente. Os dois viewports não representam todos os dispositivos. A cobertura só vale para o checkout registrado no artefato. WireMock, SonarCloud, teste de carga e divergência de versões exigidas pelo enunciado não são resolvidos por este incremento.
+
+## Resultado da campanha verificada
+
+- PR: [#43](https://github.com/CarlaLDC/projeto-aloca/pull/43).
+- Candidato executável (head): `895d8e7ac9bbd9615e94ed680762a002baedf9d1`.
+- Checkout real do merge temporário: `26a21f63727461dbb491e14ee9d118d5df32819a`.
+- [Campanha 43340838626](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43340838626): **aprovada**.
+- [Artefato original](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43340838626/artifacts/13999950492): `candidato-evidencias-43340838626`, SHA-256 `9e9a8a21202f23eab9abaa4ff45878a8a7b3bfdbcf47304fc4cdda6cb7172176`, retenção registrada até 11/02/2027.
+
+| Verificação | Resultado observado |
+|---|---|
+| Backend completo MySQL/Testcontainers | **164 testes**, zero falhas, erros e ignorados |
+| JaCoCo linhas | **1340/1416 = 94,63%**, meta 80% atingida |
+| JaCoCo branches | **376/475 = 79,16%**, meta 70% atingida |
+| Reinício H2 em arquivo | **Aprovado**: processos distintos, reserva cancelada e cinco eventos do histórico integralmente iguais; recurso preservado |
+| Responsividade | **12 registros aprovados**: seis etapas por viewport (360×900 e 1280×900), incluindo pesquisa, formulário, criação, diálogo, cancelamento e usuários |
+| Overflow horizontal da página | Conteúdo medido de 360/1280 px respectivamente, sem excesso nas etapas registradas; tabela administrativa tem rolagem interna |
+| Gestão de usuários pela interface | Criação com perfil Professor, edição, desativação e reativação aprovadas nos dois viewports |
+
+JSONs e metadados originais baixados do artefato estão preservados em [evidencias-candidato](evidencias-candidato/). Não foram reconstruídos. Capturas PNG, Surefire e JaCoCo completo estão no ZIP original. As capturas locais correspondentes foram inspecionadas visualmente para formulário/cancelamento em 360 px, cancelamento em 1280 px e administração em 360 px; não se presume revisão humana de todos os dispositivos.
+
+O [CI integrado 43340838623](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43340838623) também aprovou frontend, unitários isolados, HTTP, backend e gate. O [BDD integrado 43340838436](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43340838436) e o [BDD de inativos 43340838664](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43340838664) foram aprovados.
+
+Esta campanha valida os seis itens no escopo descrito. Não homologa globalmente os demais requisitos do projeto. Commits posteriores somente de documentação não alteram o candidato executável acima; alterações de código exigem nova campanha.

@@ -1,0 +1,41 @@
+{
+  "checkout_sha": "26a21f63727461dbb491e14ee9d118d5df32819a",
+  "github_sha": "26a21f63727461dbb491e14ee9d118d5df32819a",
+  "run_id": "43340838626",
+  "contadores": {
+    "INSTRUCTION": {
+      "cobertos": 8864,
+      "perdidos": 538
+    },
+    "BRANCH": {
+      "cobertos": 376,
+      "perdidos": 99
+    },
+    "LINE": {
+      "cobertos": 1340,
+      "perdidos": 76
+    },
+    "COMPLEXITY": {
+      "cobertos": 612,
+      "perdidos": 128
+    },
+    "METHOD": {
+      "cobertos": 465,
+      "perdidos": 37
+    },
+    "CLASS": {
+      "cobertos": 101,
+      "perdidos": 0
+    }
+  },
+  "LINE": {
+    "percentual": 94.63,
+    "meta": 80,
+    "aprovado": true
+  },
+  "BRANCH": {
+    "percentual": 79.16,
+    "meta": 70,
+    "aprovado": true
+  }
+}

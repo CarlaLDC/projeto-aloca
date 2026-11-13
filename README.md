@@ -63,7 +63,7 @@ Todas as rotas (exceto o login) exigem o cabeçalho `Authorization: Bearer <toke
 | 02 · Visão geral | `GET /api/painel` | todos | Reservas de hoje, recursos disponíveis, pendências e agenda do dia (inclui a agenda do professor, RF-14) |
 | 03 · Disponibilidade | `GET /api/disponibilidade?data=&tipo=&busca=&capacidadeMinima=` | todos | Recursos com status, próximo horário livre, ocupações e janelas livres do dia |
 | 04 · Nova reserva | `GET /api/reservas/opcoes` | todos | Salas, professores e materiais ativos |
-| | `POST /api/reservas` | Solicitante, Responsável, Administrador | Cria a reserva: **201** se gravada, **409** com conflitos e alternativas |
+| | `POST /api/reservas` | Solicitante, Professor, Responsável, Administrador | Cria a reserva: **201** se gravada, **409** com conflitos e alternativas |
 | 05 · Conflito de horário | (corpo do **409** acima) | | Conflitos encontrados e até 3 alternativas livres |
 | 06 · Minhas reservas | `GET /api/reservas/minhas` | todos | Reservas do usuário (e, para professor, aquelas em que está alocado) |
 | 07 · Detalhe e auditoria | `GET /api/reservas/{codigo}` | dono, professor alocado, Responsável, Administrador | Dados e histórico completo |
@@ -157,3 +157,9 @@ Consulte a [RTM reconciliada](RTM.md), com requisito, risco, implementação, te
 ## Evidências do candidato
 
 Consulte [usuários, professor solicitante, capacidade, reinício, responsividade e cobertura](src/docs/qualidade/CANDIDATO.md).
+
+### Gestão de usuários e professor solicitante
+
+Na Administração → Usuários e perfis, o Administrador cadastra/edita pessoas, atribui perfis, ativa/desativa e redefine senhas. API: GET/POST /api/admin/usuarios, PUT /api/admin/usuarios/{id}, PATCH /api/admin/usuarios/{id}/ativo e PUT /api/admin/usuarios/{id}/senha. Alterações invalidam sessões anteriores; após atualizar esta versão, faça login novamente.
+
+Professor também solicita, altera e cancela **suas próprias** reservas, mantendo consulta da agenda e sem permissão de aprovação/administração. A disponibilidade possui filtro de capacidade mínima. Consulte o relatório do candidato para os resultados reais em 360/1280 px, reinício e JaCoCo.
