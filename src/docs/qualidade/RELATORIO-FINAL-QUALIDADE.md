@@ -7,7 +7,7 @@
 | Projeto | Organização de Recursos — Aloca |
 | Data da avaliação | 13/11/2026 (America/Sao_Paulo) |
 | Repositório | https://github.com/CarlaLDC/projeto-aloca |
-| Base avaliada | develop `f8dc43c51944c60c9a2ffa41cede77eba3db704b` |
+| Base avaliada | develop `f8dc43c51944c60c9a2ffa41cede77eba3db704b`; atualização documental com o PR #64 no head `29f03863ff872c536241503f0c06860feec1189f` |
 | Método | Consolidação documental, inspeção da árvore e consulta de resultados no GitHub; nenhuma nova execução local nesta avaliação |
 | Parecer | **Aprovado com restrições como consolidação das campanhas existentes; homologação integral do SHA final ainda inconclusiva** |
 | Revisão deste relatório | Pendente de integrante independente; assistência automatizada na elaboração |
@@ -70,7 +70,7 @@ Não foi identificada nos resultados consolidados uma ocorrência de dupla reser
 | Backend: linhas ≥80%, branches ≥70% | **95,9% / 85,8%; 502 testes** documentados para develop `31afdd4` | RELATORIO-TESTES; percentuais históricos, não medição nova do SHA avaliado |
 | Frontend: linhas ≥80%, branches ≥70% | **81,04% / 70,58%; 102 testes** documentados | RELATORIO-TESTES; metas obrigatórias no CI |
 | Evidência bruta histórica de cobertura | 94,63% linhas / 79,16% branches | [JSON original](evidencias-candidato/cobertura.json), checkout `26a21f6`; não substitui métricas posteriores |
-| 100% dos requisitos críticos na RTM | Riscos, testes e evidências mapeados | Matriz contém snapshots/adendos de épocas diferentes; percentual de aceite do SHA final não recalculado |
+| 100% dos requisitos críticos na RTM | RNF-08 passa a **Verificado** na RTM proposta pelo #64 | Requisito → risco → teste → evidência mapeados; alteração ainda não integrada. Rastreabilidade completa não equivale à homologação irrestrita da release |
 | Zero bugs/vulnerabilidades críticas | **Não certificado globalmente nesta avaliação** | Exige análise do conteúdo dos relatórios, triagem e vínculo ao candidato; workflow verde isolado é insuficiente |
 
 A cobertura supera as metas nas campanhas registradas. A qualidade também é sustentada por asserções de estado, persistência, auditoria, conflitos e recusa de acesso. Cobertura, sozinha, não constitui aceite.
@@ -102,9 +102,45 @@ Resultados consultados diretamente no GitHub nesta avaliação:
 - [SonarCloud 43505529626](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43505529626): workflow aprovado no SHA `c6809b8`. O relatório de testes também registra Quality Gate aprovado em PRs históricos.
 - No SHA `f8dc43c`, os runs de dependências, candidato, qualidade integrada, backend, Angular, SonarCloud e carga ainda estavam em andamento/pendentes na consulta. Não foram classificados como aprovados antecipadamente.
 
-**Correção de pendência documental:** a análise de dependências do backend já existe e executou com sucesso; a pendência antiga de inexistência da análise está superada. Porém, o workflow de dependências **não reprova por vulnerabilidades encontradas**: tolera avisos e exige a geração dos arquivos. É necessário ler os relatórios e fazer triagem para certificar zero críticas. Não foi extraída nova contagem de vulnerabilidades nesta avaliação. Os 16 avisos moderados de desenvolvimento e zero no `npm audit --omit=dev` são registros históricos do RELATORIO-TESTES.
+**Correção de pendência documental:** a análise de dependências do backend já existe e executou com sucesso; a pendência antiga de inexistência da análise está superada. Porém, o workflow de dependências **não reprova por vulnerabilidades encontradas**: tolera avisos e exige a geração dos arquivos. É necessário ler os relatórios e fazer triagem para certificar zero críticas. O PR #64 registra o resultado do #60: **153 dependências do backend analisadas e zero vulnerabilidades conhecidas**, além de zero no `npm audit --omit=dev`. Esses números são atribuídos à evidência informada no PR/RTM, não a uma nova execução ou recontagem de artefatos nesta avaliação. Os 16 avisos moderados de desenvolvimento e zero no `npm audit --omit=dev` são registros históricos do RELATORIO-TESTES.
 
 O [POM](../../../backend/pom.xml) declara Java 21 e Spring Boot 4.1.2. O [registro de defeitos](../defeitos.md) documenta aceite do professor para Boot 4.1.2 em 13/11/2026; o aceite não foi obtido novamente nesta avaliação. A RTM registra uso histórico de Jupiter 6.0.3, enquanto o enunciado exige JUnit 5. Confirmar a versão resolvida no candidato e registrar aceite específico ou adequação; o aceite de Spring Boot não implica automaticamente aceite de JUnit.
+
+## 7.1. Atualização — correção de segurança e status da RTM (PR #64)
+
+Fonte: [PR #64](https://github.com/CarlaLDC/projeto-aloca/pull/64), head `29f03863ff872c536241503f0c06860feec1189f`, consultado em 13/11/2026. **O PR está aberto, sem merge na consulta**. As alterações abaixo estão implementadas e verificadas pelos checks indicados na branch do PR; não são apresentadas como já integradas à develop ou à main.
+
+### Evidência de cobertura restrita
+
+O apontamento de segurança do Sonar no contexto do [PR #62](https://github.com/CarlaLDC/projeto-aloca/pull/62) motivou a alteração de `scripts/resumo-cobertura.py`. Antes, a saída era construída diretamente de `EVIDENCE_DIR`. O #64 extrai o nome final com `os.path.basename`, aceita somente letras, números, ponto, sublinhado e hífen e recusa nomes vazios, `.` ou `..`. A saída é montada sob o diretório atual. Por exemplo, `../../tmp` passa a usar `./tmp`, em vez de conservar os segmentos ascendentes. O nome padrão `evidencias-candidato` e a geração de `cobertura.json` são preservados.
+
+A mudança reduz o risco de escrita em caminho escolhido por segmentos de diretório na variável de ambiente. A inspeção do diff confirma a implementação; não foi executado novo teste local nesta atualização. O resultado aprovado do Sonar refere-se ao #64 e não deve ser transferido automaticamente para o #62 antes da integração e da análise correspondente.
+
+### Reclassificação da RTM
+
+| Requisito interno | Status no #64 | Fundamentação registrada |
+|---|---|---|
+| RF-03 — pesquisa | Verificado | API e filtro de capacidade na interface do #43; competência e PE-01 com P95 de 6–8 ms |
+| RNF-03 — autorização, entrada e erros | Verificado | Controles dinâmicos e suíte HTTP; Sonar e dependências conforme evidências registradas |
+| RNF-04 — persistência após reinício | Verificado | `ReinicioPersistenciaTest` sobre o mesmo PostgreSQL e script com processos reais no workflow Candidato |
+| RNF-07 — zero crítico | Verificado | RTM registra 153 dependências do backend/zero vulnerabilidades conhecidas no #60, auditoria frontend de produção sem achados e análises Sonar históricas |
+| RNF-08 — críticos rastreados | Verificado | Mapeamento dos requisitos críticos, incluindo concorrência, auditoria, recuperação e segurança |
+| RF-13 / RNF-05 — responsividade | Parcial | Automação em 360/1280 px disponível; registro manual ainda pendente |
+
+Essas reclassificações corrigem pendências documentais antigas; não são novas execuções de todas as modalidades. A contagem de dependências é a registrada no PR/RTM. Não constitui garantia contra vulnerabilidades desconhecidas nem resultado de pentest.
+
+### Validação observada no head do #64
+
+| Verificação | Resultado consultado |
+|---|---|
+| [SonarCloud Code Analysis](https://github.com/CarlaLDC/projeto-aloca/runs/132170787731) | Sucesso |
+| [CI integrado 43508002796](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43508002796) | Gate, Angular, unitários isolados, HTTP/PostgreSQL e backend/Testcontainers/JaCoCo aprovados |
+| [Candidato 43508002737](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43508002737) | Job de evidências aprovado |
+| [BDD integrado 43508002861](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43508002861) | Aprovado |
+
+Os checks foram consultados pela associação ao head do PR. Jobs de pull request podem executar um merge temporário; consultar o checkout registrado no artefato para atribuir métricas. Não foram extraídos novos percentuais de cobertura, contagens de testes ou métricas de carga desses checks.
+
+**Efeito no parecer:** RF-03, RNF-03, RNF-04, RNF-07 e RNF-08 passam a ser relatados com o status Verificado proposto no #64, mantendo sua origem e condição de integração. A pendência funcional/documental parcial indicada nessa RTM é a avaliação manual de responsividade. Permanecem os critérios de fechamento da release: integração do #64, confirmação do Sonar do #62/candidato final, preservação dos artefatos, conformidade de versões e revisão independente. O parecer geral continua aprovado com restrições.
 
 ## 8. Defeitos e revisão por pares
 
@@ -142,10 +178,10 @@ Presentes: repositório/histórico, instruções, documentação de API/fluxos, 
 | Prioridade | Ação | Critério de encerramento | Responsável |
 |---|---|---|---|
 | P1 | Consolidar a campanha do SHA final | Runs obrigatórios concluídos, contagens, cobertura backend/frontend, BDD, reinício, viewports e carga vinculados ao mesmo candidato; preservar artefatos | Equipe |
-| P1 | Triar segurança | Relatórios SonarCloud/OSV consultados, achados classificados, zero críticas comprovado ou impedimento registrado | Equipe |
+| P1 | Consolidar segurança no candidato final | Integrar o #64 e confirmar Sonar do #62/SHA final; preservar e revisar relatórios OSV/Sonar. Resultado histórico registrado: 153 dependências backend, zero vulnerabilidades conhecidas | Equipe |
 | P1 | Confirmar JUnit | Dependência resolvida e conformidade JUnit 5 ou aceite explícito documentado | Equipe/professor |
 | P2 | Completar avaliação manual | Data, avaliador, navegador, viewports, fluxos e resultado; registrar defeitos de usabilidade/acessibilidade | Equipe |
-| P2 | Reconciliar documentação | RTM e revisão por pares com informações atuais; retirar ambiguidades dos adendos históricos | Equipe |
+| P2 | Integrar a reconciliação da RTM do #64 | RF-03/RNF-03/RNF-04/RNF-07/RNF-08 Verificados incorporados; RF-13/RNF-05 permanecem parciais até registro manual; preservar origem das evidências | Equipe |
 | P1 | Fechar entrega e revisão | Revisão independente deste relatório, SHA/tag do candidato, pacote durável de evidências e demonstração registrada | Equipe |
 
 **Decisão final deste relatório:** o projeto apresenta base técnica e evidências suficientes para um parecer consolidado **aprovado com restrições**. A **homologação irrestrita da release permanece inconclusiva** até o fechamento das ações P1. Uma falha de autorização, dupla reserva, aplicação não executável ou pipeline ausente deve bloquear o aceite, conforme os limitadores do enunciado.
