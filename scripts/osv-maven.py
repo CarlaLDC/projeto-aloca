@@ -5,18 +5,30 @@ Entrada: a saída de `mvn dependency:list -DoutputFile=...` (todas as dependênc
 versão que o Maven escolheu). Saída: relatório em markdown e JSON com cada dependência vulnerável, a severidade e o
 escopo (compile/runtime vão para produção; test não).
 
-Uso: python3 scripts/osv-maven.py --lista deps.txt --markdown saida.md --json saida.json
+Uso (na pasta dos arquivos): python3 scripts/osv-maven.py --lista deps.txt --markdown saida.md --json saida.json
 Variável OSV_API (opcional) troca o endereço da API, para testes.
 """
 import argparse
 import json
 import os
+import pathlib
 import re
 import sys
 import urllib.request
 
 API = os.environ.get("OSV_API", "https://api.osv.dev")
 LINHA = re.compile(r"^\s*([\w.\-]+):([\w.\-]+):[\w\-]+(?::[\w.\-]+)?:([\w.\-+]+):(compile|runtime|test|provided|system)\b")
+
+
+NOME_ARQUIVO = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,99}")
+
+
+def arquivo_local(nome):
+    """Só um nome de arquivo simples, sempre na pasta atual (sem caminho vindo de fora)."""
+    base = os.path.basename(nome)
+    if not NOME_ARQUIVO.fullmatch(base):
+        sys.exit(f"Nome de arquivo inválido: {nome!r} (use só o nome, na pasta atual).")
+    return pathlib.Path.cwd() / base
 
 
 def ler_dependencias(caminho):
@@ -51,7 +63,8 @@ def main():
     p.add_argument("--json", required=True)
     a = p.parse_args()
 
-    deps = ler_dependencias(a.lista)
+    lista, saida_md, saida_json = arquivo_local(a.lista), arquivo_local(a.markdown), arquivo_local(a.json)
+    deps = ler_dependencias(lista)
     if not deps:
         sys.exit("Nenhuma dependência encontrada na lista do Maven.")
     chaves = sorted(deps)
@@ -68,9 +81,9 @@ def main():
                                 "resumo": detalhe.get("summary", "")})
 
     producao = [x for x in achados if x["escopo"] in ("compile", "runtime")]
-    json.dump({"dependencias": len(deps), "vulnerabilidades": achados}, open(a.json, "w", encoding="utf-8"),
-              indent=2, ensure_ascii=False)
-    with open(a.markdown, "w", encoding="utf-8") as f:
+    with open(saida_json, "w", encoding="utf-8") as f:
+        json.dump({"dependencias": len(deps), "vulnerabilidades": achados}, f, indent=2, ensure_ascii=False)
+    with open(saida_md, "w", encoding="utf-8") as f:
         f.write(f"### Back-end (Maven): {len(deps)} dependências resolvidas\n\n")
         if not achados:
             f.write("Nenhuma vulnerabilidade conhecida.\n")
