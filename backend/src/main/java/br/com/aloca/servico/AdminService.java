@@ -6,7 +6,10 @@ import br.com.aloca.dominio.*;
 import br.com.aloca.repositorio.*;
 import java.time.Clock;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Comparator;
 import java.util.List;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,15 +23,22 @@ public class AdminService {
     private final Clock relogio;
     private final AuditoriaService auditoria;
     private final UsuarioAtual usuarioAtual;
+    private final ReservaRepositorio reservas;
+    private final NotificacaoService notificacoes;
+    private final ApplicationEventPublisher eventos;
 
     public AdminService(RecursoRepositorio recursos, ProfessorRepositorio professores, BloqueioRepositorio bloqueios,
-                        Clock relogio, AuditoriaService auditoria, UsuarioAtual usuarioAtual) {
+                        Clock relogio, AuditoriaService auditoria, UsuarioAtual usuarioAtual,
+                        ReservaRepositorio reservas, NotificacaoService notificacoes, ApplicationEventPublisher eventos) {
         this.recursos = recursos;
         this.professores = professores;
         this.bloqueios = bloqueios;
         this.relogio = relogio;
         this.auditoria = auditoria;
         this.usuarioAtual = usuarioAtual;
+        this.reservas = reservas;
+        this.notificacoes = notificacoes;
+        this.eventos = eventos;
     }
 
     // ---------------------------------------------------------------- recursos
@@ -113,9 +123,51 @@ public class AdminService {
             throw RegraNegocioException.invalida("O bloqueio precisa terminar no futuro.");
         }
         Recurso r = recurso(p.recursoId());
-        Bloqueio salvo = bloqueios.save(new Bloqueio(r, p.inicio(), p.fim(), p.motivo().trim(), admin));
-        auditoria.registrar(admin, "CRIAR", "BLOQUEIO", salvo.getId(), "Bloqueio criado: " + p.motivo().trim());
-        return dto(salvo);
+        String motivo = p.motivo().trim();
+        List<Reserva> afetadas = reservasAfetadas(r, p.inicio(), p.fim());
+
+        // Uma aula em andamento não é interrompida: o bloqueio precisa começar depois dela.
+        afetadas.stream().filter(x -> x.getStatus() == StatusReserva.EM_USO).findFirst().ifPresent(x -> {
+            throw RegraNegocioException.conflito("Não é possível bloquear: a reserva " + x.getCodigo()
+                + " está em uso no período, até " + x.getFim().format(HORA) + ". Comece o bloqueio depois desse horário.");
+        });
+
+        Bloqueio b = bloqueios.save(new Bloqueio(r, p.inicio(), p.fim(), motivo, admin));
+        auditoria.registrar(admin, "CRIAR", "BLOQUEIO", b.getId(), "Bloqueio criado: " + motivo);
+        LocalDateTime agora = LocalDateTime.now(relogio);
+        List<String> canceladas = new java.util.ArrayList<>();
+        List<String> pendentes = new java.util.ArrayList<>();
+        for (Reserva x : afetadas) {
+            if (x.getStatus() == StatusReserva.SOLICITADA) {
+                // Solicitação pendente fica como está: o Responsável não consegue aprová-la enquanto houver
+                // manutenção no período (AprovacaoService) e decide rejeitá-la com justificativa.
+                pendentes.add(x.getCodigo());
+                continue;
+            }
+            // Reserva aprovada: cancelada, para não deixar a atividade marcada num recurso em manutenção.
+            // Material já retirado: o módulo de materiais recusa a mudança (e o bloqueio inteiro é desfeito).
+            eventos.publishEvent(new ReservaEventos.AntesDeModificar(x));
+            x.mudarStatus(StatusReserva.CANCELADA, admin.getNome(), admin, "Cancelada", "Manutenção: " + motivo, agora);
+            eventos.publishEvent(new ReservaEventos.Cancelada(x));
+            notificacoes.notificar(x.getSolicitante(), "A reserva " + x.getCodigo() + " foi cancelada por manutenção de "
+                + r.getNome() + " (" + x.getData().format(DIA) + ", " + x.getInicio().format(HORA) + "–" + x.getFim().format(HORA)
+                + "): " + motivo + ". Escolha outro horário ou recurso.", x);
+            canceladas.add(x.getCodigo());
+        }
+        return dto(b, canceladas, pendentes);
+    }
+
+    private static final DateTimeFormatter HORA = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter DIA = DateTimeFormatter.ofPattern("dd/MM");
+
+    /** Reservas ativas (Solicitada, Aprovada ou Em uso) que usam o recurso, como sala ou material, no período. */
+    private List<Reserva> reservasAfetadas(Recurso recurso, LocalDateTime inicio, LocalDateTime fim) {
+        return reservas.noPeriodo(inicio.toLocalDate(), fim.toLocalDate(), StatusReserva.OCUPAM_AGENDA).stream()
+            .filter(x -> x.getEspaco().getId().equals(recurso.getId())
+                || x.getMateriais().stream().anyMatch(m -> m.getId().equals(recurso.getId())))
+            .filter(x -> x.inicioEm().isBefore(fim) && inicio.isBefore(x.fimEm()))
+            .sorted(Comparator.comparing(Reserva::inicioEm))
+            .toList();
     }
 
     @Transactional
@@ -153,7 +205,11 @@ public class AdminService {
     }
 
     private static BloqueioDto dto(Bloqueio b) {
+        return dto(b, List.of(), List.of());
+    }
+
+    private static BloqueioDto dto(Bloqueio b, List<String> reservasCanceladas, List<String> reservasPendentes) {
         return new BloqueioDto(b.getId(), b.getRecurso().getId(), b.getRecurso().getNome(), b.getInicio(), b.getFim(),
-            b.getMotivo(), b.getCriadoPor() == null ? null : b.getCriadoPor().getNome());
+            b.getMotivo(), b.getCriadoPor() == null ? null : b.getCriadoPor().getNome(), reservasCanceladas, reservasPendentes);
     }
 }

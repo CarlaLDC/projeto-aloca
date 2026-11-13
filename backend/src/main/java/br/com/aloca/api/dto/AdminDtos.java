@@ -1,9 +1,13 @@
 package br.com.aloca.api.dto;
 
+import br.com.aloca.dominio.Perfil;
 import br.com.aloca.dominio.TipoRecurso;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
+import java.util.Set;
 
 /** Cadastros e bloqueios (RF-02 e RF-08). Ainda não há tela no front para estes endpoints. */
 public final class AdminDtos {
@@ -39,5 +43,11 @@ public final class AdminDtos {
         @NotBlank(message = "Informe o motivo.") @Size(max = 300) String motivo) {}
 
     public record BloqueioDto(Long id, Long recursoId, String recurso, LocalDateTime inicio, LocalDateTime fim,
-                              String motivo, String criadoPor) {}
+                              String motivo, String criadoPor,
+                              @Schema(description = "Ao criar: reservas aprovadas no período que foram canceladas "
+                                  + "por causa do bloqueio (os solicitantes são avisados). Vazio na listagem.")
+                              List<String> reservasCanceladas,
+                              @Schema(description = "Ao criar: solicitações pendentes no período. Continuam Solicitadas e não podem "
+                                  + "ser aprovadas enquanto houver manutenção. Vazio na listagem.")
+                              List<String> reservasPendentes) {}
 }
