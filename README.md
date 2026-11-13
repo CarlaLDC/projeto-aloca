@@ -145,3 +145,7 @@ Em `backend/src/main/resources/application.properties`:
 Consulte [a arquitetura da implementação atual](src/docs/arquitetura.md) para contexto, contêineres, componentes e sequências de autenticação, criação e concorrência de reservas, aprovação, alteração/cancelamento e materiais. O documento identifica o commit inspecionado, as fontes no código e as diferenças em relação ao enunciado.
 
 As propostas anteriores foram preservadas em [arquitetura-historica.md](src/docs/arquitetura-historica.md). A [ADR-0005](src/docs/adr/ADR-0005-arquitetura-implementada.md) registra as decisões observadas no código.
+
+## Defeitos, correções e regressões
+
+Consulte o [registro priorizado](src/docs/defeitos.md), com causas, commits, testes de regressão, evidências históricas e pendências de entrega. Novas ocorrências devem usar o [template de defeito](.github/ISSUE_TEMPLATE/defeito.md).
