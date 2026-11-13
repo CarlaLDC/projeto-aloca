@@ -27,7 +27,7 @@ PORTA_BANCO="${PORTA_BANCO:-5434}"
 BANCO_CONTAINER="aloca-carga-postgres-$RUN_ID"
 JMETER="${JMETER_HOME:+$JMETER_HOME/bin/}jmeter"
 
-[ -e "$OUT" ] && { echo "Diretório $OUT já existe; use outro RUN_ID." >&2; exit 2; }
+[[ -e "$OUT" ]] && { echo "Diretório $OUT já existe; use outro RUN_ID." >&2; exit 2; }
 mkdir -p "$OUT/massa"
 # Senha sintética da massa: só em memória (variável), nunca gravada nos artefatos.
 export CARGA_SENHA="carga-$(head -c 12 /dev/urandom | od -An -tx1 | tr -d ' \n')"
@@ -38,7 +38,7 @@ printf 'senha=%s\n' "$CARGA_SENHA" > "$SENHA_PROPS"   # via -q: o jmeter.log nã
 API_PID=""
 limpar() {
   rm -f "$SENHA_PROPS"
-  [ -n "$API_PID" ] && kill "$API_PID" 2>/dev/null && wait "$API_PID" 2>/dev/null || true
+  [[ -n "$API_PID" ]] && kill "$API_PID" 2>/dev/null && wait "$API_PID" 2>/dev/null || true
   docker rm -f "$BANCO_CONTAINER" >/dev/null 2>&1 || true
 }
 trap limpar EXIT
@@ -74,7 +74,7 @@ echo "banco_versao=$(docker exec "$BANCO_CONTAINER" postgres --version)" >> "$OU
 
 echo "== API"
 JAR="$(ls "$RAIZ"/backend/target/aloca-backend-*.jar 2>/dev/null | head -1)"
-if [ -z "$JAR" ]; then
+if [[ -z "$JAR" ]]; then
   mvn -q -f "$RAIZ/backend/pom.xml" -DskipTests package
   JAR="$(ls "$RAIZ"/backend/target/aloca-backend-*.jar | head -1)"
 fi
@@ -102,8 +102,8 @@ TOKEN_ADMIN="$(curl -s -X POST -H 'Content-Type: application/json' \
   -d "{\"email\":\"${ADMIN_EMAIL:-patricia.souza@aloca.edu.br}\",\"senha\":\"${ADMIN_SENHA:-aloca123}\"}" \
   "http://localhost:$PORTA_API/api/auth/login" | python3 -c 'import json,sys; print(json.load(sys.stdin)["token"])')"
 PE01_PROFESSORES=false
-[ "$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TOKEN_ADMIN" \
-  "http://localhost:$PORTA_API/api/disponibilidade/professores")" = 200 ] && PE01_PROFESSORES=true
+[[ "$(curl -s -o /dev/null -w '%{http_code}' -H "Authorization: Bearer $TOKEN_ADMIN" \
+  "http://localhost:$PORTA_API/api/disponibilidade/professores")" == 200 ]] && PE01_PROFESSORES=true
 unset TOKEN_ADMIN
 echo "pe01_pesquisa_professores=$PE01_PROFESSORES" >> "$OUT/ambiente.txt"
 

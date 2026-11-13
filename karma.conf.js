@@ -22,6 +22,11 @@ module.exports = function (config) {
     },
     reporters: ['progress', 'kjhtml'],
     browsers: ['Chrome'],
+    // No CI o Chrome pode demorar a abrir (máquina ocupada): mais tempo e tolerância a uma reconexão.
+    captureTimeout: 180000,
+    browserNoActivityTimeout: 120000,
+    browserDisconnectTimeout: 30000,
+    browserDisconnectTolerance: 2,
     restartOnFileChange: true,
   });
 };
