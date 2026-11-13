@@ -28,16 +28,20 @@ public class MovimentacaoService {
     // ---------------------------------------------------------- reações às reservas
 
     @EventListener
+    @Transactional
     public void aoAprovar(ReservaEventos.Aprovada e) { gerar(e.reserva()); }
 
     @EventListener
+    @Transactional
     public void aoAlterar(ReservaEventos.Alterada e) { regenerar(e.reserva()); }
 
     @EventListener
+    @Transactional
     public void aoCancelar(ReservaEventos.Cancelada e) { cancelarPendentes(e.reserva()); }
 
     /** Reserva com material já retirado está em uso e não pode ser alterada nem cancelada (RF-10). */
     @EventListener
+    @Transactional
     public void antesDeModificar(ReservaEventos.AntesDeModificar e) {
         if (possuiMaterialEmUso(e.reserva())) {
             throw RegraNegocioException.conflito("Esta reserva já está em uso e permanece no histórico.");
@@ -47,8 +51,7 @@ public class MovimentacaoService {
     // ---------------------------------------------------------- regras
 
     /** Cria uma movimentação "Aguardando retirada" para cada material de uma reserva aprovada. */
-    @Transactional
-    public void gerar(Reserva reserva) {
+    private void gerar(Reserva reserva) {
         for (Recurso material : reserva.getMateriais()) {
             Movimentacao m = movimentacoes.save(new Movimentacao(reserva, material));
             m.setCodigo("MOV-%04d".formatted(m.getId()));
@@ -56,23 +59,21 @@ public class MovimentacaoService {
     }
 
     /** Após alteração da reserva: descarta o que ainda não foi retirado e gera de novo se estiver aprovada. */
-    @Transactional
-    public void regenerar(Reserva reserva) {
+    private void regenerar(Reserva reserva) {
         cancelarPendentes(reserva);
         if (reserva.getStatus() == StatusReserva.APROVADA) {
             gerar(reserva);
         }
     }
 
-    @Transactional
+    /** Público para os testes unitários; a transação vem de quem chama (ouvintes de evento). */
     public void cancelarPendentes(Reserva reserva) {
         movimentacoes.findByReservaId(reserva.getId()).stream()
             .filter(m -> m.getStatus() == StatusMovimentacao.AGUARDANDO_RETIRADA)
             .forEach(Movimentacao::cancelar);
     }
 
-    @Transactional(readOnly = true)
-    public boolean possuiMaterialEmUso(Reserva reserva) {
+    private boolean possuiMaterialEmUso(Reserva reserva) {
         return movimentacoes.findByReservaId(reserva.getId()).stream()
             .anyMatch(m -> m.getStatus() == StatusMovimentacao.EM_USO);
     }
