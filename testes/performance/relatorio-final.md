@@ -1,5 +1,8 @@
 # Relatório final — Testes de desempenho e rastreabilidade
 
+> **Diagnóstico histórico:** as afirmações abaixo sobre ausência de backend, persistência, auditoria e testes referem-se à interface antiga desta branch. Para avaliar o sistema integrado, use a [RTM reconciliada](RTM.md), baseada na develop 3fb1f0d, e suas evidências. Este relatório não certifica a versão integrada; a execução de carga continua pendente.
+
+
 - Data: 2026-11-12
 - Repositório: https://github.com/CarlaLDC/projeto-aloca
 - Branch: qa/performance-jmeter
