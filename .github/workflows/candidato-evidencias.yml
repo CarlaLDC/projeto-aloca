@@ -55,10 +55,10 @@ jobs:
         env:
           PGPASSWORD: aloca
         run: psql -h localhost -U aloca -d aloca_reinicio -c "create database aloca_responsivo"
-      - run: npm ci
+      - run: npm ci --ignore-scripts
       - run: npm run build
-      - run: npm ci --prefix bdd
-      - run: npx --prefix bdd playwright install --with-deps chromium
+      - run: npm ci --ignore-scripts --prefix bdd
+      - run: node bdd/node_modules/playwright/cli.js install --with-deps chromium
       - name: Iniciar aplicação isolada e executar fluxos nos dois viewports
         run: |
           java -jar backend/target/aloca-backend-*.jar '--spring.datasource.url=jdbc:postgresql://localhost:5432/aloca_responsivo' > evidencias-candidato/responsivo-backend.log 2>&1 &

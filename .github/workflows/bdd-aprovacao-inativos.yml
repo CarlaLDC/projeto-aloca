@@ -36,7 +36,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm install --prefix bdd --no-audit --no-fund
+      - run: npm ci --ignore-scripts --prefix bdd --no-audit --no-fund
       - name: Iniciar API real com banco descartável
         run: |
           mkdir -p bdd/reports
@@ -55,7 +55,7 @@ jobs:
           printf '%s\n' "$GITHUB_RUN_ID" > bdd/reports/run-id.txt
       - name: Executar exemplos BDD de aprovação
         working-directory: bdd
-        run: npx cucumber-js --config aprovacao-inativos.cjs
+        run: node node_modules/@cucumber/cucumber/bin/cucumber.js --config aprovacao-inativos.cjs
       - name: Preservar evidências mesmo quando exemplos falham
         if: always()
         uses: actions/upload-artifact@v4

@@ -44,7 +44,7 @@ jobs:
       # Chrome pode não abrir a tempo.
       - name: "Front-end: testes e cobertura (lcov)"
         run: |
-          npm ci
+          npm ci --ignore-scripts
           npm test -- --watch=false --code-coverage --browsers=ChromeHeadless
           test -f coverage/projeto-aloca/lcov.info
 

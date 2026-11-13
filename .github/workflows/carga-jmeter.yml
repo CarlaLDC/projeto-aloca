@@ -53,7 +53,7 @@ jobs:
         if: steps.cache-jmeter.outputs.cache-hit != 'true'
         run: |
           mkdir -p ~/jmeter
-          curl -sSfL "https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz" \
+          curl --proto "=https" --proto-redir "=https" --tlsv1.2 -sSfL "https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz" \
             | tar xz -C ~/jmeter --strip-components=1
       - name: Empacotar API
         run: mvn -f backend/pom.xml --batch-mode --no-transfer-progress -DskipTests package

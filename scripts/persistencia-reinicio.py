@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Reinício de processo real com PostgreSQL (ALOCA_DB_URL); toda preparação/consulta usa HTTP."""
 import datetime as dt
-import json, os, pathlib, re, socket, subprocess, tempfile, time, urllib.request, urllib.error
+import json, os, pathlib, re, socket, subprocess, tempfile, time, urllib.request, urllib.error, urllib.parse
 
 # Pasta de evidências: só um nome de pasta, sempre dentro do diretório atual (sem caminho vindo de fora).
 nome_saida=os.path.basename(os.getenv('EVIDENCE_DIR','evidencias-candidato'))
@@ -13,7 +13,10 @@ db_url=os.getenv('ALOCA_DB_URL','jdbc:postgresql://localhost:5432/aloca')
 def call(base,path,token=None,data=None,method=None):
     # O código da reserva vem de uma resposta HTTP. Não permitir que introduza
     # segmentos, query strings ou outro endpoint nas consultas autenticadas.
-    if not re.fullmatch(r'http://127[.]0[.]0[.]1:[0-9]{1,5}', base):
+    destino=urllib.parse.urlsplit(base)
+    if (destino.scheme != 'http' or destino.hostname != '127.0.0.1'
+            or destino.username is not None or destino.password is not None
+            or destino.port is None or destino.path or destino.query or destino.fragment):
         raise ValueError('A evidência só acessa a API local iniciada pelo script.')
     if not re.fullmatch(r'/api/(?:auth/login|admin/recursos|reservas(?:/RES-[0-9]+(?:/cancelamento)?)?)', path):
         raise ValueError('Rota inválida para a evidência de reinício.')

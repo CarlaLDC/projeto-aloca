@@ -35,9 +35,9 @@ jobs:
         with:
           node-version: '22'
           cache: npm
-      - run: npm ci
-      - run: npm install --prefix bdd --no-audit --no-fund
-      - run: npx --prefix bdd playwright install --with-deps chromium
+      - run: npm ci --ignore-scripts
+      - run: npm ci --ignore-scripts --prefix bdd --no-audit --no-fund
+      - run: node bdd/node_modules/playwright/cli.js install --with-deps chromium
       - name: Iniciar backend com PostgreSQL isolado (serviço do job)
         run: |
           cd backend
