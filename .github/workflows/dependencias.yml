@@ -1,0 +1,77 @@
+name: Dependências - vulnerabilidades conhecidas
+
+# Análise de dependências (RNF-07) com o OSV-Scanner (base OSV.dev, que reúne GitHub Advisory, NVD e outras).
+# Back-end: backend/pom.xml com as dependências transitivas. Front-end: package-lock.json (e bdd/).
+# Publica o relatório no resumo da execução e como artefato. Só falha por erro da ferramenta, não por aviso
+# encontrado: a triagem fica registrada no relatório (ex.: avisos moderados do @angular/cli só em desenvolvimento).
+on:
+  pull_request:
+    paths:
+      - "backend/pom.xml"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/dependencias.yml"
+  push:
+    branches: [develop, main]
+    paths:
+      - "backend/pom.xml"
+      - "package-lock.json"
+  schedule:
+    - cron: "17 9 * * 1" # toda segunda-feira, para pegar avisos novos sem mudança no código
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  osv:
+    name: OSV-Scanner (back-end e front-end)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      # Varre o repositório inteiro: backend/pom.xml (com as dependências transitivas), package-lock.json e bdd/.
+      - name: OSV-Scanner (relatório em markdown)
+        uses: google/osv-scanner-action/osv-scanner-action@v2.0.2
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=markdown
+            --output=dependencias.md
+            -r
+            ./
+
+      - name: OSV-Scanner (relatório em JSON)
+        uses: google/osv-scanner-action/osv-scanner-action@v2.0.2
+        continue-on-error: true
+        with:
+          scan-args: |-
+            --format=json
+            --output=dependencias.json
+            -r
+            ./
+
+      # Avisos encontrados não reprovam o PR (a triagem fica no relatório); só falha se a ferramenta não gerar o relatório.
+      - name: Resumo
+        run: |
+          test -s dependencias.json || { echo "O OSV-Scanner não gerou o relatório."; exit 1; }
+          total=$(python3 -c "import json; d=json.load(open('dependencias.json')); print(sum(len(p.get('vulnerabilities', [])) for r in d.get('results', []) for p in r.get('packages', [])))")
+          {
+            echo "## Dependências com vulnerabilidade conhecida (OSV-Scanner)"
+            echo
+            echo "Total de avisos: **${total}**"
+            echo
+            if [ -s dependencias.md ]; then cat dependencias.md; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Preservar relatório
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependencias-${{ github.run_id }}
+          path: |
+            dependencias.md
+            dependencias.json
+          if-no-files-found: warn
+          retention-days: 90
