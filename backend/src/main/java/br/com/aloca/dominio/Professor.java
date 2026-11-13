@@ -36,6 +36,9 @@ public class Professor {
         this.competencia = competencia;
     }
 
+    /** Liga (ou desliga, com null) a conta de acesso do professor. */
+    public void vincularUsuario(Usuario usuario) { this.usuario = usuario; }
+
     public Long getId() { return id; }
     public String getNome() { return nome; }
     public String getCompetencia() { return competencia; }
