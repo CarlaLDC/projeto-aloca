@@ -1,9 +1,13 @@
 #!/usr/bin/env python3
 """Reinício de processo real com PostgreSQL (ALOCA_DB_URL); toda preparação/consulta usa HTTP."""
 import datetime as dt
-import json, os, pathlib, socket, subprocess, tempfile, time, urllib.request, urllib.error
+import json, os, pathlib, re, socket, subprocess, tempfile, time, urllib.request, urllib.error
 
-out=pathlib.Path(os.getenv('EVIDENCE_DIR','evidencias-candidato'));out.mkdir(parents=True,exist_ok=True)
+# Pasta de evidências: só um nome de pasta, sempre dentro do diretório atual (sem caminho vindo de fora).
+nome_saida=os.path.basename(os.getenv('EVIDENCE_DIR','evidencias-candidato'))
+if not re.fullmatch(r'[A-Za-z0-9._-]+',nome_saida) or nome_saida in ('.','..'):
+    raise SystemExit('EVIDENCE_DIR deve ser só o nome de uma pasta (letras, números, ".", "_" ou "-").')
+out=pathlib.Path.cwd()/nome_saida;out.mkdir(parents=True,exist_ok=True)
 jar=pathlib.Path(os.getenv('ALOCA_JAR') or next(pathlib.Path('backend/target').glob('aloca-backend-*.jar'))).resolve()
 db_url=os.getenv('ALOCA_DB_URL','jdbc:postgresql://localhost:5432/aloca')
 def call(base,path,token=None,data=None,method=None):
