@@ -22,3 +22,7 @@ O CI anexa relatórios Cucumber HTML/JSON e capturas em falhas. O banco é isola
 ## Funcionalidade nova desenvolvida com BDD
 
 O bloqueio da aprovação após desativação de sala, material ou professor foi especificado e executado antes da implementação. Consulte [o ciclo BDD comprovado](EVIDENCIAS-APROVACAO-INATIVOS.md), com commits, execução com falha, execução aprovada (3 cenários / 27 passos), relatórios originais versionados e requisitos correspondentes.
+
+## Aprovação e bloqueio — evidências da técnica
+
+Os [cenários de aprovação/manutenção](features/aprovacao-bloqueio.feature) cobrem cinco casos executáveis de autorização, aprovação, bloqueio e auditoria com API real. Consulte [EVIDENCIAS-BDD.md](EVIDENCIAS-BDD.md) para rastreabilidade, comandos, relatórios e a distinção entre cobertura de regressão e prova de desenvolvimento de uma funcionalidade nova guiado por BDD. A ordem histórica teste → implementação não foi comprovada para essas regras existentes.
