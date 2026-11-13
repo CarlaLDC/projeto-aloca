@@ -1,17 +1,42 @@
-# MySQL local para rodar a API com o perfil "mysql" (mesma imagem dos testes).
+# Bancos PostgreSQL do Aloca.
+#
+#   docker compose up -d                 # banco da aplicação (porta 5432), antes de "mvn spring-boot:run"
+#   docker compose --profile e2e up -d   # também o banco dos testes end-to-end (porta 5433)
+#
+# Os testes automáticos do back-end (mvn verify) não usam este arquivo: eles sobem o próprio
+# container com o Testcontainers.
 services:
-  mysql:
-    image: mysql:8.4
+  postgres:
+    image: postgres:17-alpine
     environment:
-      MYSQL_DATABASE: aloca
-      MYSQL_USER: aloca
-      MYSQL_PASSWORD: aloca
-      MYSQL_ROOT_PASSWORD: aloca-root
-    command: --default-time-zone=-03:00 --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci
+      POSTGRES_DB: aloca
+      POSTGRES_USER: aloca
+      POSTGRES_PASSWORD: aloca
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - aloca-mysql:/var/lib/mysql
+      - aloca-dados:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aloca -d aloca"]
+      interval: 5s
+      retries: 10
+
+  # Banco descartável dos testes end-to-end (Playwright): fica só na memória do container.
+  postgres-e2e:
+    image: postgres:17-alpine
+    profiles: ["e2e"]
+    environment:
+      POSTGRES_DB: aloca_e2e
+      POSTGRES_USER: aloca
+      POSTGRES_PASSWORD: aloca
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aloca -d aloca_e2e"]
+      interval: 2s
+      retries: 20
 
 volumes:
-  aloca-mysql:
+  aloca-dados:

@@ -2,7 +2,7 @@ package br.com.aloca.http;
 
 import static org.assertj.core.api.Assertions.*;
 
-import br.com.aloca.BancoMySqlTeste;
+import br.com.aloca.PostgresTestcontainer;
 import com.jayway.jsonpath.*;
 import java.net.URI;
 import java.net.http.*;
@@ -23,7 +23,7 @@ import org.springframework.context.annotation.Import;
  */
 @Tag("http")
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@Import(BancoMySqlTeste.class)
+@Import(PostgresTestcontainer.class)
 class RegrasCriticasHttpTest {
     @Value("${local.server.port}") private int porta;
     private final HttpClient cliente = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();

@@ -3,30 +3,25 @@ package br.com.aloca;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import br.com.aloca.config.DadosUsuarios;
 import com.jayway.jsonpath.JsonPath;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.boot.webmvc.test.autoconfigure.MockMvcBuilderCustomizer;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import java.nio.charset.StandardCharsets;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
 /**
- * Base dos testes de integração: sobe a aplicação com MySQL em contêiner (Testcontainers)
- * e os dados de demonstração. Sem mocks: persistência e regras rodam no banco real.
+ * Base dos testes de integração (API em caixa-preta via HTTP simulado): sobe a aplicação inteira
+ * ligada a um PostgreSQL em container e com os dados de demonstração.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(BancoMySqlTeste.class)
+@Import({PostgresTestcontainer.class, MockMvcUtf8.class})
 public abstract class ApiTesteBase {
 
     // Ids dos dados de demonstração (ordem de criação em DadosIniciais).
@@ -41,23 +36,17 @@ public abstract class ApiTesteBase {
     protected static final String ANDRE = "andre.lima@aloca.edu.br";
 
     /** Cada teste usa um dia futuro diferente para não interferir nos outros. */
+    /** Senha dos usuários de demonstração (aloca.dados-demo.senha nos testes). */
+    protected static final String SENHA_DEMO = "aloca123";
+
     private static final AtomicInteger proximoDia = new AtomicInteger(30);
 
     @Autowired
     protected MockMvc mvc;
 
-    /** Lê as respostas como UTF-8 (o JSON não informa charset e o padrão do MockMvc é ISO-8859-1). */
-    @TestConfiguration
-    static class Utf8 {
-        @Bean
-        MockMvcBuilderCustomizer utf8() {
-            return builder -> builder.defaultResponseCharacterEncoding(StandardCharsets.UTF_8);
-        }
-    }
-
     protected String token(String email) throws Exception {
         String corpo = mvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"email\":\"%s\",\"senha\":\"%s\"}".formatted(email, DadosUsuarios.SENHA_DEMO)))
+                .content("{\"email\":\"%s\",\"senha\":\"%s\"}".formatted(email, SENHA_DEMO)))
             .andExpect(status().isOk())
             .andReturn().getResponse().getContentAsString();
         return JsonPath.read(corpo, "$.token");

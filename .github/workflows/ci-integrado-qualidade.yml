@@ -19,7 +19,7 @@ concurrency:
 
 jobs:
   api-http:
-    name: API - caixa-preta HTTP e MySQL
+    name: API - caixa-preta HTTP e PostgreSQL
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:

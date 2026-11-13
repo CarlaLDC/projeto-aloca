@@ -9,6 +9,18 @@ jobs:
   evidencias:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: aloca_reinicio
+          POSTGRES_USER: aloca
+          POSTGRES_PASSWORD: aloca
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aloca -d aloca_reinicio"
+          --health-interval 5s --health-timeout 5s --health-retries 20
     env:
       EVIDENCE_DIR: evidencias-candidato
     steps:
@@ -31,19 +43,25 @@ jobs:
           printf '%s\n' "$GITHUB_RUN_ID" > evidencias-candidato/run-id.txt
           java -version 2> evidencias-candidato/java.txt
           node --version > evidencias-candidato/node.txt
-      - name: Suíte completa MySQL e cobertura do candidato
+      - name: Suíte completa PostgreSQL (Testcontainers) e cobertura do candidato
         run: mvn -B -f backend/pom.xml clean verify
       - name: Preservar percentuais e verificar metas
         run: python3 scripts/resumo-cobertura.py
       - name: Reiniciar processo e conferir reserva e histórico
+        env:
+          ALOCA_DB_URL: jdbc:postgresql://localhost:5432/aloca_reinicio
         run: python3 scripts/persistencia-reinicio.py
+      - name: Criar banco isolado para os fluxos responsivos
+        env:
+          PGPASSWORD: aloca
+        run: psql -h localhost -U aloca -d aloca_reinicio -c "create database aloca_responsivo"
       - run: npm ci
       - run: npm run build
       - run: npm ci --prefix bdd
       - run: npx --prefix bdd playwright install --with-deps chromium
       - name: Iniciar aplicação isolada e executar fluxos nos dois viewports
         run: |
-          java -jar backend/target/aloca-backend-0.1.0.jar '--spring.datasource.url=jdbc:h2:mem:responsivo;DB_CLOSE_DELAY=-1' --spring.h2.console.enabled=false > evidencias-candidato/responsivo-backend.log 2>&1 &
+          java -jar backend/target/aloca-backend-*.jar '--spring.datasource.url=jdbc:postgresql://localhost:5432/aloca_responsivo' > evidencias-candidato/responsivo-backend.log 2>&1 &
           api_pid=$!
           npm start -- --host 127.0.0.1 > evidencias-candidato/responsivo-frontend.log 2>&1 &
           front_pid=$!
