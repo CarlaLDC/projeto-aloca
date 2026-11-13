@@ -3,6 +3,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DEMO_RESERVATIONS, DemoReservation } from './reservation-data';
+import { DemoAuditLog } from '../../core/demo-audit-log';
 
 type Draft = Pick<DemoReservation, 'activity' | 'date' | 'start' | 'end' | 'room' | 'teacher' | 'material'>;
 
@@ -22,7 +23,7 @@ export class ReservationDetail {
   draft: Draft = { activity: '', date: '', start: '', end: '', room: '', teacher: '', material: '' };
   reason = '';
 
-  constructor() {
+  constructor(private readonly audit: DemoAuditLog) {
     inject(ActivatedRoute).paramMap.pipe(takeUntilDestroyed()).subscribe(params => {
       const item = DEMO_RESERVATIONS.find(reservation => reservation.id === params.get('id'));
       this.reservation.set(item ? { ...item, history: item.history.map(event => ({ ...event })) } : null);
@@ -71,6 +72,7 @@ export class ReservationDetail {
       timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit'
     }).format(new Date());
     const updated = editing ? { ...item, ...this.draft } : { ...item, status: 'Cancelada' as const, statusClass: 'cancelled' };
+    this.audit.append({ entityId: item.id, entityType: 'Reserva', fromState: item.status, toState: updated.status, action: editing ? 'Edição' : 'Cancelamento', description: editing ? 'Dados alterados na demonstração' : this.reason.trim() });
     this.reservation.set({ ...updated, history: [...item.history, {
       date, actor: item.requester, action: editing ? 'Alterada · simulação' : 'Cancelada · simulação',
       description: editing ? 'Dados alterados nesta demonstração' : this.reason.trim()

@@ -1,6 +1,7 @@
 import { Component, computed, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { DemoAuditLog } from '../../core/demo-audit-log';
 
 type MovementStatus = 'Aguardando retirada' | 'Em uso' | 'Devolução pendente' | 'Devolvido';
 type FilterStatus = 'Todos' | MovementStatus;
@@ -26,6 +27,7 @@ interface Movement {
   styleUrl: './withdrawals-returns.css'
 })
 export class WithdrawalsReturns {
+  constructor(private readonly audit: DemoAuditLog) {}
   readonly searchTerm = signal('');
   readonly selectedStatus = signal<FilterStatus>('Todos');
   readonly feedback = signal('');
@@ -67,6 +69,7 @@ export class WithdrawalsReturns {
   private updateMovement(id: string, status: MovementStatus, action: string): void {
     const movement = this.movements().find(item => item.id === id);
     if (!movement) return;
+    this.audit.append({ entityId: movement.id, entityType: 'Movimentação', fromState: movement.status, toState: status, action, description: `${movement.item} · reserva ${movement.reservation}` });
     this.movements.update(items => items.map(item =>
       item.id === id ? { ...item, status, protocol: status === 'Devolvido' ? this.createProtocol() : item.protocol } : item
     ));
