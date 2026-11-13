@@ -18,7 +18,8 @@ module.exports = function (config) {
     coverageReporter: {
       dir: require('path').join(__dirname, './coverage/projeto-aloca'),
       subdir: '.',
-      reporters: [{ type: 'html' }, { type: 'text-summary' }, { type: 'lcovonly' }],
+      reporters: [{ type: 'html' }, { type: 'text-summary' }, { type: 'lcovonly' }, { type: 'json-summary' }],
+      check: { global: { lines: 80, branches: 70 } },
     },
     reporters: ['progress', 'kjhtml'],
     browsers: ['Chrome'],
