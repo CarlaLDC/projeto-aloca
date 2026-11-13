@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PessimisticLockingFailureException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -32,7 +33,11 @@ public class TratadorErros {
 
     @ExceptionHandler(RegraNegocioException.class)
     ResponseEntity<Erro> regra(RegraNegocioException e) {
-        return ResponseEntity.status(e.getStatus()).body(new Erro(e.getMessage()));
+        ResponseEntity.BodyBuilder resposta = ResponseEntity.status(e.getStatus());
+        if (e.getTentarApos() != null) {
+            resposta.header(HttpHeaders.RETRY_AFTER, String.valueOf(Math.max(1, e.getTentarApos().toSeconds())));
+        }
+        return resposta.body(new Erro(e.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

@@ -1,10 +1,15 @@
 #!/usr/bin/env python3
-"""Reinício de processo real com H2 em arquivo; toda preparação/consulta usa HTTP."""
+"""Reinício de processo real com PostgreSQL (ALOCA_DB_URL); toda preparação/consulta usa HTTP."""
 import datetime as dt
-import json, os, pathlib, socket, subprocess, tempfile, time, urllib.request, urllib.error
+import json, os, pathlib, re, socket, subprocess, tempfile, time, urllib.request, urllib.error
 
-out=pathlib.Path(os.getenv('EVIDENCE_DIR','evidencias-candidato'));out.mkdir(parents=True,exist_ok=True)
-jar=pathlib.Path(os.getenv('ALOCA_JAR','backend/target/aloca-backend-0.1.0.jar')).resolve()
+# Pasta de evidências: só um nome de pasta, sempre dentro do diretório atual (sem caminho vindo de fora).
+nome_saida=os.path.basename(os.getenv('EVIDENCE_DIR','evidencias-candidato'))
+if not re.fullmatch(r'[A-Za-z0-9._-]+',nome_saida) or nome_saida in ('.','..'):
+    raise SystemExit('EVIDENCE_DIR deve ser só o nome de uma pasta (letras, números, ".", "_" ou "-").')
+out=pathlib.Path.cwd()/nome_saida;out.mkdir(parents=True,exist_ok=True)
+jar=pathlib.Path(os.getenv('ALOCA_JAR') or next(pathlib.Path('backend/target').glob('aloca-backend-*.jar'))).resolve()
+db_url=os.getenv('ALOCA_DB_URL','jdbc:postgresql://localhost:5432/aloca')
 def call(base,path,token=None,data=None,method=None):
     headers={'Content-Type':'application/json'}
     if token:headers['Authorization']='Bearer '+token
@@ -19,7 +24,7 @@ def stop(p):
     assert p.poll() is not None
 
 def start(db,port,log):
-    p=subprocess.Popen(['java','-jar',str(jar),f'--server.port={port}',f'--spring.datasource.url=jdbc:h2:file:{db};LOCK_TIMEOUT=10000','--spring.h2.console.enabled=false'],stdout=log,stderr=subprocess.STDOUT)
+    p=subprocess.Popen(['java','-jar',str(jar),f'--server.port={port}',f'--spring.datasource.url={db}'],stdout=log,stderr=subprocess.STDOUT)
     base=f'http://127.0.0.1:{port}'
     deadline=time.monotonic()+120
     while time.monotonic()<deadline:
@@ -29,7 +34,7 @@ def start(db,port,log):
     stop(p);raise TimeoutError('API não iniciou')
 
 with tempfile.TemporaryDirectory(prefix='aloca-reinicio-') as folder:
-    db=str(pathlib.Path(folder)/'aloca')
+    db=db_url
     with socket.socket() as s:s.bind(('127.0.0.1',0));port=s.getsockname()[1]
     with (out/'reinicio-backend.log').open('w') as log:
         p,base=start(db,port,log)
@@ -52,7 +57,7 @@ with tempfile.TemporaryDirectory(prefix='aloca-reinicio-') as folder:
             recursos=call(base,'/api/admin/recursos',login(base,'patricia.souza@aloca.edu.br'))
             assert any(x['id']==sala['id'] and x['nome']==sala['nome'] for x in recursos)
             assert p.pid!=pid_antes
-            result={'status':'APROVADO','banco':'H2 em arquivo','processos_distintos':True,'reserva':codigo,'estado':depois['status'],'eventos_iguais':len(depois['historico']),'consulta_integral_igual':True,'recurso_preservado':True}
+            result={'status':'APROVADO','banco':'PostgreSQL','processos_distintos':True,'reserva':codigo,'estado':depois['status'],'eventos_iguais':len(depois['historico']),'consulta_integral_igual':True,'recurso_preservado':True}
             (out/'persistencia-reinicio.json').write_text(json.dumps(result,indent=2,ensure_ascii=False))
             print(json.dumps(result,ensure_ascii=False))
         finally:stop(p)

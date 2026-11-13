@@ -15,7 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 /**
  * RF-04/RF-05/RF-13: partições e valores de fronteira pela API,
- * com aplicação e MySQL real herdados de ApiTesteBase (Testcontainers).
+ * com aplicação e PostgreSQL real herdados de ApiTesteBase (Testcontainers).
  */
 class ReservaParametrizadaApiTest extends ApiTesteBase {
 
