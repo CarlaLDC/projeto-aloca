@@ -8,6 +8,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import br.com.aloca.servico.RegrasDeHorario.Periodo;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -70,12 +71,16 @@ public class ReservaService {
     // ------------------------------------------------------------------ consultas
 
     @Transactional(readOnly = true)
-    public OpcoesReserva opcoes() {
+    public OpcoesReserva opcoes(Usuario usuario) {
         List<Recurso> ativos = recursos.findByAtivoTrueOrderByNome();
+        Long professorDoUsuario = usuario.getPerfis().contains(Perfil.PROFESSOR)
+            ? professores.findByUsuarioId(usuario.getId()).filter(Professor::isAtivo).map(Professor::getId).orElse(null)
+            : null;
         return new OpcoesReserva(
             ativos.stream().filter(r -> r.getTipo().espaco()).map(mapeador::recurso).toList(),
             professores.findByAtivoTrueOrderByNome().stream().map(mapeador::professor).toList(),
-            ativos.stream().filter(r -> !r.getTipo().espaco()).map(mapeador::recurso).toList());
+            ativos.stream().filter(r -> !r.getTipo().espaco()).map(mapeador::recurso).toList(),
+            professorDoUsuario);
     }
 
     /** Tela 06: reservas que o usuário pediu e, se for professor, as reservas em que ele está alocado. */
@@ -196,12 +201,10 @@ public class ReservaService {
             throw RegraNegocioException.proibida("Somente o responsável pode registrar não comparecimento.");
         }
         LocalDateTime agora = agora();
-        if (r.getStatus() != StatusReserva.APROVADA && r.getStatus() != StatusReserva.EM_USO) {
-            throw RegraNegocioException.conflito("Somente reservas aprovadas ou em uso admitem não comparecimento.");
-        }
-        if (agora.isBefore(r.inicioEm().plusMinutes(15)) || !agora.isBefore(r.fimEm())) {
-            throw RegraNegocioException.conflito("A ausência pode ser registrada somente de 15 minutos após o início até o fim da reserva.");
-        }
+        // Mesma regra do registro pela tela de aprovações (CicloDeVidaReserva): de 15 min após o início
+        // até o fim, para reservas aprovadas ou em uso.
+        CicloDeVidaReserva.impedimentoParaNaoComparecimento(r.getStatus(), agora, r.inicioEm(), r.fimEm())
+            .ifPresent(motivoRecusa -> { throw RegraNegocioException.conflito(motivoRecusa); });
         // Ouvintes recusam a alteração se houve retirada de material.
         eventos.publishEvent(new ReservaEventos.AntesDeModificar(r));
         r.mudarStatus(StatusReserva.NAO_COMPARECEU, responsavel.getNome(), responsavel,
@@ -219,11 +222,11 @@ public class ReservaService {
         LocalDateTime agora = agora();
         int alteradas = 0;
         for (Reserva r : reservas.ateData(agora.toLocalDate(), EnumSet.of(StatusReserva.APROVADA, StatusReserva.EM_USO))) {
-            if (!agora.isBefore(r.fimEm())) {
-                r.mudarStatus(StatusReserva.CONCLUIDA, SISTEMA, null, "Concluída", "Período da reserva encerrado", agora);
-                alteradas++;
-            } else if (r.getStatus() == StatusReserva.APROVADA && !agora.isBefore(r.inicioEm())) {
-                r.mudarStatus(StatusReserva.EM_USO, SISTEMA, null, "Em uso", "Período da reserva iniciado", agora);
+            var proximo = CicloDeVidaReserva.proximoPeloRelogio(r.getStatus(), agora, r.inicioEm(), r.fimEm());
+            if (proximo.isPresent()) {
+                boolean concluida = proximo.get() == StatusReserva.CONCLUIDA;
+                r.mudarStatus(proximo.get(), SISTEMA, null, concluida ? "Concluída" : "Em uso",
+                    concluida ? "Período da reserva encerrado" : "Período da reserva iniciado", agora);
                 alteradas++;
             }
         }
@@ -233,16 +236,7 @@ public class ReservaService {
     // ------------------------------------------------------------------ regras internas
 
     private void validarHorario(ReservaRequest p) {
-        if (!p.fim().isAfter(p.inicio())) {
-            throw RegraNegocioException.invalida("O término deve ser posterior ao início.");
-        }
-        LocalDateTime agora = agora();
-        if (p.data().isBefore(agora.toLocalDate())) {
-            throw RegraNegocioException.invalida("Escolha a data de hoje ou uma data futura.");
-        }
-        if (p.data().equals(agora.toLocalDate()) && p.inicio().isBefore(agora.toLocalTime().withSecond(0).withNano(0))) {
-            throw RegraNegocioException.invalida("O horário de início já passou. Escolha um horário futuro.");
-        }
+        RegrasDeHorario.validarPedido(p.data(), p.inicio(), p.fim(), agora());
         if (p.materiais().size() != new HashSet<>(p.materiais()).size()) {
             throw RegraNegocioException.invalida("O mesmo material foi selecionado mais de uma vez.");
         }
@@ -292,7 +286,7 @@ public class ReservaService {
         if (sel.professor() != null && !sel.professor().isAtivo()) {
             throw RegraNegocioException.invalida(sel.professor().getNome() + " está desativado e não pode ser alocado.");
         }
-        if (p.inicio().isBefore(espaco.getAbertura()) || p.fim().isAfter(espaco.getFechamento())) {
+        if (!RegrasDeHorario.dentroDoFuncionamento(new Periodo(p.inicio(), p.fim()), espaco.getAbertura(), espaco.getFechamento())) {
             throw RegraNegocioException.invalida(espaco.getNome() + " funciona das " + espaco.getAbertura().format(HORA)
                 + " às " + espaco.getFechamento().format(HORA) + ".");
         }
@@ -308,12 +302,12 @@ public class ReservaService {
             LocalTime bf = b.getFim().toLocalDate().isAfter(data) ? LocalTime.MAX : b.getFim().toLocalTime();
             lista.add(new Colisao(b.getRecurso(), null, new ItemConflito("Manutenção", b.getRecurso().getNome(),
                 b.getRecurso().getLocalizacao(), bi.withNano(0), bf.withNano(0), b.getMotivo(), null,
-                sobreposicao(inicio, fim, bi, bf))));
+                RegrasDeHorario.minutosSobrepostos(new Periodo(inicio, fim), new Periodo(bi, bf)))));
         }
 
         long professorId = sel.professor() == null ? SEM_ID : sel.professor().getId();
         for (Reserva r : reservas.conflitantes(data, inicio, fim, ids, professorId, ignorarId, StatusReserva.OCUPAM_AGENDA)) {
-            long minutos = sobreposicao(inicio, fim, r.getInicio(), r.getFim());
+            long minutos = RegrasDeHorario.minutosSobrepostos(new Periodo(inicio, fim), new Periodo(r.getInicio(), r.getFim()));
             for (Recurso usado : Stream.concat(Stream.of(r.getEspaco()), r.getMateriais().stream()).toList()) {
                 if (ids.contains(usado.getId())) {
                     lista.add(new Colisao(usado, null, new ItemConflito(usado.getTipo().espaco() ? "Sala" : "Material",
@@ -363,26 +357,21 @@ public class ReservaService {
         List<ItemConflito> itens = colisoes.stream().map(Colisao::item).toList();
         String mensagem = "Este horário não está disponível: " + descrever(itens.getFirst()) + ".";
         return new EmConflito(new ConflitoResposta(mensagem, p.atividade(), p.data(), p.inicio(), p.fim(),
-            p.espacoId(), p.professorId(), p.materiais(), itens, alternativas(p, sel, ignorarId)));
+            p.espacoId(), p.professorId(), p.materiais(), itens, alternativas(p, sel, colisoes, ignorarId)));
     }
 
     /**
      * Até 3 sugestões sem conflito: o mesmo local em outro horário do dia,
      * o mesmo horário nos próximos dias e outro local do mesmo tipo no mesmo horário.
      */
-    private List<Alternativa> alternativas(ReservaRequest p, Selecao sel, long ignorarId) {
+    private List<Alternativa> alternativas(ReservaRequest p, Selecao sel, List<Colisao> colisoes, long ignorarId) {
         Duration duracao = Duration.between(p.inicio(), p.fim());
         Recurso espaco = sel.espaco();
         List<Alternativa> sugestoes = new ArrayList<>();
 
         // 1) Mesmo local, mesmo dia, horário mais próximo do pedido.
-        List<LocalTime> horarios = new ArrayList<>();
-        for (LocalTime t = espaco.getAbertura(); !t.plus(duracao).isAfter(espaco.getFechamento()); t = t.plusMinutes(30)) {
-            if (!t.equals(p.inicio())) horarios.add(t);
-            if (t.plusMinutes(30).isBefore(t)) break;
-        }
-        horarios.sort(Comparator.comparingLong(t -> Math.abs(Duration.between(p.inicio(), t).toMinutes())));
-        horarios.stream()
+        RegrasDeHorario.horariosAlternativos(espaco.getAbertura(), espaco.getFechamento(), duracao,
+                Duration.ofMinutes(30), p.inicio()).stream()
             .filter(t -> livre(p.data(), t, t.plus(duracao), sel, ignorarId))
             .findFirst()
             .ifPresent(t -> sugestoes.add(alternativa(p.data(), t, t.plus(duracao), espaco, "Mesmo local, outro horário")));
@@ -398,15 +387,25 @@ public class ReservaService {
         }
 
         // 3) Outro local do mesmo tipo, com capacidade igual ou maior, no mesmo horário.
+        //    Só adianta quando todos os conflitos são do próprio local: professor ou material ocupado
+        //    continua ocupado em qualquer sala. Sem este corte, cada sala ativa era testada no banco
+        //    sob a trava do pedido, e o 409 de professor/material demorava ~0,9 s (DEF-PERF-001).
+        if (!somenteOLocalConflita(colisoes, espaco)) {
+            return sugestoes.stream().limit(3).toList();
+        }
         recursos.findByAtivoTrueOrderByNome().stream()
             .filter(r -> r.getTipo() == espaco.getTipo() && !r.getId().equals(espaco.getId()))
             .filter(r -> r.getCapacidade() >= espaco.getCapacidade())
-            .filter(r -> !p.inicio().isBefore(r.getAbertura()) && !p.fim().isAfter(r.getFechamento()))
+            .filter(r -> RegrasDeHorario.dentroDoFuncionamento(new Periodo(p.inicio(), p.fim()), r.getAbertura(), r.getFechamento()))
             .filter(r -> livre(p.data(), p.inicio(), p.fim(), new Selecao(r, sel.professor(), sel.materiais()), ignorarId))
             .findFirst()
             .ifPresent(r -> sugestoes.add(alternativa(p.data(), p.inicio(), p.fim(), r, "Outro local, mesmo horário")));
 
         return sugestoes.stream().limit(3).toList();
+    }
+
+    private static boolean somenteOLocalConflita(List<Colisao> colisoes, Recurso espaco) {
+        return colisoes.stream().allMatch(c -> c.recurso() != null && c.recurso().getId().equals(espaco.getId()));
     }
 
     private boolean livre(LocalDate data, LocalTime inicio, LocalTime fim, Selecao sel, long ignorarId) {
@@ -417,12 +416,6 @@ public class ReservaService {
 
     private Alternativa alternativa(LocalDate data, LocalTime inicio, LocalTime fim, Recurso espaco, String motivo) {
         return new Alternativa(data, inicio, fim, espaco.getId(), espaco.getNome(), espaco.getLocalizacao(), motivo);
-    }
-
-    private static long sobreposicao(LocalTime aInicio, LocalTime aFim, LocalTime bInicio, LocalTime bFim) {
-        LocalTime inicio = aInicio.isAfter(bInicio) ? aInicio : bInicio;
-        LocalTime fim = aFim.isBefore(bFim) ? aFim : bFim;
-        return Math.max(0, Duration.between(inicio, fim).toMinutes());
     }
 
     private static String descrever(ItemConflito c) {
@@ -461,13 +454,9 @@ public class ReservaService {
         if (!r.getSolicitante().getId().equals(usuario.getId())) {
             throw RegraNegocioException.proibida("Você só pode " + acao + " reservas feitas por você.");
         }
-        if (!r.getStatus().gerenciavel()) {
-            throw RegraNegocioException.conflito("Reservas com status \"" + r.getStatus().rotulo()
-                + "\" não podem ser alteradas nem canceladas.");
-        }
-        if (!agora().isBefore(r.inicioEm())) {
-            throw RegraNegocioException.conflito("Esta reserva já está em uso e permanece no histórico.");
-        }
+        CicloDeVidaReserva.impedimentoParaGerenciar(r.getStatus(), agora(), r.inicioEm()).ifPresent(motivo -> {
+            throw RegraNegocioException.conflito(motivo);
+        });
         eventos.publishEvent(new ReservaEventos.AntesDeModificar(r));
     }
 

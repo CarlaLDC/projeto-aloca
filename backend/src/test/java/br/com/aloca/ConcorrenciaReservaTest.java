@@ -18,7 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * RF-06 / RNF-02: duas solicitações simultâneas para o mesmo recurso e horário,
- * no banco real (MySQL em contêiner). Exatamente uma deve ser aceita.
+ * no banco real (PostgreSQL em container). Exatamente uma deve ser aceita.
  */
 class ConcorrenciaReservaTest extends ApiTesteBase {
 

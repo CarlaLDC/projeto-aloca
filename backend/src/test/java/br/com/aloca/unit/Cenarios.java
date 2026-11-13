@@ -20,8 +20,17 @@ final class Cenarios {
         Reserva r = new Reserva("Aula", DIA, LocalTime.of(10, 0), LocalTime.of(11, 0),
             recurso("Sala", TipoRecurso.SALA, false), null, List.of(), ANA, CRIADA);
         r.setCodigo("RES-TESTE");
-        if (status != StatusReserva.SOLICITADA) {
-            r.mudarStatus(status, "Preparação", null, "Preparação", "Estado inicial do caso", CRIADA);
+        // Chega ao estado pedido por um caminho válido da matriz de estados (CicloDeVidaReserva),
+        // porque a entidade recusa transições que não existem no fluxo real.
+        List<StatusReserva> caminho = switch (status) {
+            case SOLICITADA -> List.of();
+            case APROVADA, REJEITADA, CANCELADA -> List.of(status);
+            case EM_USO -> List.of(StatusReserva.APROVADA, StatusReserva.EM_USO);
+            case CONCLUIDA -> List.of(StatusReserva.APROVADA, StatusReserva.EM_USO, StatusReserva.CONCLUIDA);
+            case NAO_COMPARECEU -> List.of(StatusReserva.APROVADA, StatusReserva.NAO_COMPARECEU);
+        };
+        for (StatusReserva passo : caminho) {
+            r.mudarStatus(passo, "Preparação", null, "Preparação", "Estado inicial do caso", CRIADA);
         }
         return r;
     }
