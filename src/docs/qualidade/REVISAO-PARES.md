@@ -82,9 +82,13 @@ Não usar este modelo preenchido automaticamente como assinatura de outra pessoa
 
 | PR | Revisor | SHA | Data | Link da avaliação | Parecer |
 |---|---|---|---|---|---|
-| #27 | A definir, diferente do autor | Pendente | Pendente | Pendente | Não revisado neste registro |
-| #28 | A definir, diferente do autor | Pendente | Pendente | Pendente | Não revisado neste registro |
-| #29 | A definir, diferente do autor | Pendente | Pendente | Pendente | Não revisado neste registro |
-| #43 | A definir, diferente do autor | Pendente | Pendente | Pendente | Não revisado neste registro |
+| #27 | CarolinaMagalhaesLopes | Pendente | Pendente | Pendente | Revisão solicitada; avaliação pendente |
+| #28 | CarolinaMagalhaesLopes | Pendente | Pendente | Pendente | Revisão solicitada; avaliação pendente |
+| #29 | CarolinaMagalhaesLopes | Pendente | Pendente | Pendente | Revisão solicitada; avaliação pendente |
+| #43 | CarolinaMagalhaesLopes | Pendente | Pendente | Pendente | Revisão solicitada; avaliação pendente |
 
 Somente alterar o status de revisão por pares na RTM após vincular avaliações reais. Uma aprovação com escopo restrito não equivale à homologação global da aplicação.
+
+## Solicitação registrada
+
+Em 12/11/2026 (America/Sao_Paulo), a equipe indicou CarolinaMagalhaesLopes. O GitHub confirmou solicitações de revisão para os PRs #27, #28, #29, #43 e #44. A colaboradora possui permissão write e não é autora dos PRs indicados. As solicitações nos PRs já mesclados são retrospectivas; não comprovam revisão anterior ao merge. O status permanece pendente até que a própria revisora publique sua avaliação e seus links sejam registrados.
