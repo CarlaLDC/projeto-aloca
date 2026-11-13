@@ -36,7 +36,7 @@ P0 não é sinônimo de severidade de defeito; prioridade do teste e severidade 
 | E2E | Navegador → Angular → API → banco | Cucumber/Playwright, Chromium, H2 descartável no CI | bdd/features; nem todo cenário usa interface |
 | BDD de incremento | Exemplos antes da regra, falha observada e aprovação posterior | Cenários de desativação antes da aprovação | Ciclo com JSONs originais versionados |
 | Integração externa | Sucesso, timeout, erro e resposta inválida | WireMock; sem chamada à API de terceiros nos testes | Não localizada na base; implementação/evidência pendentes |
-| Carga | Percentis, throughput, erros e disputas sob carga | JMeter em API/BD real e ambiente controlado | Planos em qa/performance-jmeter; execução de negócio pendente |
+| Carga | Percentis, throughput, erros e disputas sob carga | JMeter em API/BD real e ambiente controlado | PE-02/PE-03 em `testes/carga` executados ([RELATORIO-CARGA](RELATORIO-CARGA.md)); PE-01 pendente |
 | Segurança/robustez | Perfil, propriedade, entradas, erros seguros e dependências | API, SonarCloud e análise de dependências | Casos funcionais existem; parecer consolidado depende de relatórios |
 | Manual/usabilidade | Fluxos e mensagens em 360/1280 px | Navegador e capturas datadas | Roteiros neste plano; evidências pendentes |
 | Recuperação | Reserva e histórico após reinício da API | MySQL persistente fora do ciclo descartável de teste | Roteiro neste plano; execução específica pendente |
@@ -109,7 +109,7 @@ Decisões possíveis: aprovado, aprovado com restrições documentadas, reprovad
 - PE-02: criar/alterar/cancelar com massa exclusiva, sem restritos pendentes acidentais; medir P95 de cada operação, consistência e limpeza.
 - PE-03: grupos simultâneos disputam sala, professor e material; correlacionar tentativas por alvo/intervalo e verificar uma única aceitação e estado persistido.
 - Registrar duração, ramp-up, iterações, think time, threads e tamanho da massa no plano aprovado. Como proposta inicial de campanha, usar ramp-up de 60 s e medição de 10 min, ajustando somente com justificativa.
-- Os JMX disponíveis em outra branch medem SPA ou API de leitura; não comprovam PE-02/PE-03. Antes de executar, validar a versão da API, conferir asserções e implementar o perfil mutável ausente.
+- PE-02 e PE-03 estão implementados em [testes/carga](../../../testes/carga/README.md) e executados ([RELATORIO-CARGA](RELATORIO-CARGA.md)). Os JMX de outra branch medem SPA ou API de leitura e não comprovam PE-02/PE-03. Antes de executar, validar a versão da API, conferir asserções e implementar o perfil mutável ausente.
 
 ### Integrações externas WireMock — EX-01 a EX-04
 

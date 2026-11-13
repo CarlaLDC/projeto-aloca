@@ -1,0 +1,306 @@
+2026-11-13 01:54:45,372 INFO o.a.j.u.JMeterUtils: Setting Locale to en_EN
+2026-11-13 01:54:45,385 INFO o.a.j.JMeter: Loading user properties from: /tmp/claude-0/-home-user-projeto-aloca/96d5485b-d9d4-598c-8fef-032c6c6c4366/scratchpad/jm/apache-jmeter-5.6.3/bin/user.properties
+2026-11-13 01:54:45,386 INFO o.a.j.JMeter: Loading system properties from: /tmp/claude-0/-home-user-projeto-aloca/96d5485b-d9d4-598c-8fef-032c6c6c4366/scratchpad/jm/apache-jmeter-5.6.3/bin/system.properties
+2026-11-13 01:54:45,386 INFO o.a.j.JMeter: Loading additional properties from: /home/user/projeto-aloca/testes/carga/carga.properties
+2026-11-13 01:54:45,386 INFO o.a.j.JMeter: Loading additional properties from: /tmp/tmp.JEJ8x5yToV
+2026-11-13 01:54:45,386 INFO o.a.j.JMeter: Setting JMeter property: host=localhost
+2026-11-13 01:54:45,386 INFO o.a.j.JMeter: Setting JMeter property: port=8080
+2026-11-13 01:54:45,386 INFO o.a.j.JMeter: Setting JMeter property: massa=/home/user/projeto-aloca/testes/carga/resultados/20261113-campanha-01/massa
+2026-11-13 01:54:45,386 INFO o.a.j.JMeter: Setting JMeter property: duracao=660
+2026-11-13 01:54:45,386 INFO o.a.j.JMeter: Setting JMeter property: rampup=60
+2026-11-13 01:54:45,386 INFO o.a.j.JMeter: Setting JMeter property: pe02.threads=40
+2026-11-13 01:54:45,386 INFO o.a.j.JMeter: Setting JMeter property: pe03.threads=10
+2026-11-13 01:54:45,386 INFO o.a.j.JMeter: Setting JMeter property: pe03.disputas=150
+2026-11-13 01:54:45,387 INFO o.a.j.JMeter: Setting JMeter property: pe03.atraso=60
+2026-11-13 01:54:45,391 INFO o.a.j.JMeter: Copyright (c) 1998-2024 The Apache Software Foundation
+2026-11-13 01:54:45,391 INFO o.a.j.JMeter: Version 5.6.3
+2026-11-13 01:54:45,391 INFO o.a.j.JMeter: java.version=21.0.12.1
+2026-11-13 01:54:45,391 INFO o.a.j.JMeter: java.vm.name=OpenJDK 64-Bit Server VM
+2026-11-13 01:54:45,391 INFO o.a.j.JMeter: os.name=Linux
+2026-11-13 01:54:45,391 INFO o.a.j.JMeter: os.arch=amd64
+2026-11-13 01:54:45,391 INFO o.a.j.JMeter: os.version=6.18.44-fc-v445
+2026-11-13 01:54:45,391 INFO o.a.j.JMeter: file.encoding=UTF-8
+2026-11-13 01:54:45,391 INFO o.a.j.JMeter: java.awt.headless=true
+2026-11-13 01:54:45,391 INFO o.a.j.JMeter: Max memory     =1073741824
+2026-11-13 01:54:45,392 INFO o.a.j.JMeter: Available Processors =4
+2026-11-13 01:54:45,400 INFO o.a.j.JMeter: Default Locale=English (EN)
+2026-11-13 01:54:45,400 INFO o.a.j.JMeter: JMeter  Locale=English (EN)
+2026-11-13 01:54:45,400 INFO o.a.j.JMeter: JMeterHome=/tmp/claude-0/-home-user-projeto-aloca/96d5485b-d9d4-598c-8fef-032c6c6c4366/scratchpad/jm/apache-jmeter-5.6.3
+2026-11-13 01:54:45,400 INFO o.a.j.JMeter: user.dir  =/home/user/projeto-aloca
+2026-11-13 01:54:45,400 INFO o.a.j.JMeter: PWD       =/home/user/projeto-aloca
+2026-11-13 01:54:45,401 INFO o.a.j.JMeter: IP: 127.0.0.1 Name: vm FullName: localhost
+2026-11-13 01:54:45,410 INFO o.a.j.JMeter: Setting property 'jmeter.reportgenerator.outputdir' to:'/home/user/projeto-aloca/testes/carga/resultados/20261113-campanha-01/dashboard'
+2026-11-13 01:54:45,412 INFO o.a.j.s.FileServer: Default base='/home/user/projeto-aloca'
+2026-11-13 01:54:45,413 INFO o.a.j.s.FileServer: Set new base='/home/user/projeto-aloca/testes/carga'
+2026-11-13 01:54:45,572 INFO o.a.j.s.SaveService: Testplan (JMX) version: 2.2. Testlog (JTL) version: 2.2
+2026-11-13 01:54:45,602 INFO o.a.j.s.SaveService: Using SaveService properties version 5.0
+2026-11-13 01:54:45,607 INFO o.a.j.s.SaveService: Using SaveService properties file encoding UTF-8
+2026-11-13 01:54:45,611 INFO o.a.j.s.SaveService: Loading file: /home/user/projeto-aloca/testes/carga/aloca-reservas-carga.jmx
+2026-11-13 01:54:45,707 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/html is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-11-13 01:54:45,707 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xhtml+xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-11-13 01:54:45,707 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for application/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-11-13 01:54:45,707 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/xml is org.apache.jmeter.protocol.http.parser.LagartoBasedHtmlParser
+2026-11-13 01:54:45,707 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/vnd.wap.wml is org.apache.jmeter.protocol.http.parser.RegexpHTMLParser
+2026-11-13 01:54:45,707 INFO o.a.j.p.h.s.HTTPSamplerBase: Parser for text/css is org.apache.jmeter.protocol.http.parser.CssParser
+2026-11-13 01:54:45,745 INFO o.a.j.JMeter: Creating summariser <summary>
+2026-11-13 01:54:45,754 INFO o.a.j.r.d.ReportGenerator: ReportGenerator will use for Parsing the separator: ','
+2026-11-13 01:54:45,754 INFO o.a.j.r.d.ReportGenerator: Will generate report at end of test from  results file: /home/user/projeto-aloca/testes/carga/resultados/20261113-campanha-01/resultados.jtl
+2026-11-13 01:54:45,754 INFO o.a.j.r.d.ReportGenerator: Reading report generator properties from: /tmp/claude-0/-home-user-projeto-aloca/96d5485b-d9d4-598c-8fef-032c6c6c4366/scratchpad/jm/apache-jmeter-5.6.3/bin/reportgenerator.properties
+2026-11-13 01:54:45,755 INFO o.a.j.r.d.ReportGenerator: Merging with JMeter properties
+2026-11-13 01:54:45,758 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.temp_dir' not found, using default value 'temp' instead.
+2026-11-13 01:54:45,760 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.apdex_per_transaction' not found, using default value 'null' instead.
+2026-11-13 01:54:45,760 INFO o.a.j.r.c.ReportGeneratorConfiguration: apdex_per_transaction is empty, not APDEX per transaction customization
+2026-11-13 01:54:45,760 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.start_date' not found, using default value 'null' instead.
+2026-11-13 01:54:45,760 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.end_date' not found, using default value 'null' instead.
+2026-11-13 01:54:45,761 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.date_format' not found, using default value 'null' instead.
+2026-11-13 01:54:45,761 INFO o.a.j.r.c.ReportGeneratorConfiguration: Will use date range start date: null, end date: null
+2026-11-13 01:54:45,764 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.totalTPS.exclude_controllers' not found, using default value 'false' instead.
+2026-11-13 01:54:45,764 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.activeThreadsOverTime.exclude_controllers' not found, using default value 'false' instead.
+2026-11-13 01:54:45,764 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.timeVsThreads.exclude_controllers' not found, using default value 'false' instead.
+2026-11-13 01:54:45,764 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimeDistribution.exclude_controllers' not found, using default value 'false' instead.
+2026-11-13 01:54:45,764 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.transactionsPerSecond.exclude_controllers' not found, using default value 'false' instead.
+2026-11-13 01:54:45,765 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimePercentiles.exclude_controllers' not found, using default value 'false' instead.
+2026-11-13 01:54:45,765 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimePercentilesOverTime.exclude_controllers' not found, using default value 'false' instead.
+2026-11-13 01:54:45,765 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.responseTimesOverTime.exclude_controllers' not found, using default value 'false' instead.
+2026-11-13 01:54:45,765 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.connectTimeOverTime.exclude_controllers' not found, using default value 'false' instead.
+2026-11-13 01:54:45,765 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.graph.latenciesOverTime.exclude_controllers' not found, using default value 'false' instead.
+2026-11-13 01:54:45,766 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.filters_only_sample_series' not found, using default value 'true' instead.
+2026-11-13 01:54:45,766 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.series_filter' not found, using default value '' instead.
+2026-11-13 01:54:45,766 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.json.show_controllers_only' not found, using default value 'false' instead.
+2026-11-13 01:54:45,766 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.filters_only_sample_series' not found, using default value 'true' instead.
+2026-11-13 01:54:45,766 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.series_filter' not found, using default value '' instead.
+2026-11-13 01:54:45,767 INFO o.a.j.r.c.ReportGeneratorConfiguration: Property 'jmeter.reportgenerator.exporter.html.show_controllers_only' not found, using default value 'false' instead.
+2026-11-13 01:54:45,776 INFO o.a.j.e.StandardJMeterEngine: Running the test!
+2026-11-13 01:54:45,777 INFO o.a.j.s.SampleEvent: List of sample_variables: [disputa, tipoDisputa, alvoId, atividade]
+2026-11-13 01:54:45,777 INFO o.a.j.s.SampleEvent: List of sample_variables: [disputa, tipoDisputa, alvoId, atividade]
+2026-11-13 01:54:45,781 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must contain the string: '.functions.'
+2026-11-13 01:54:45,781 INFO o.a.j.e.u.CompoundVariable: Note: Function class names must not contain the string: '.gui.'
+2026-11-13 01:54:46,031 INFO o.a.j.JMeter: Running test (1794534886031)
+2026-11-13 01:54:46,033 INFO o.a.j.e.StandardJMeterEngine: Starting setUp thread groups
+2026-11-13 01:54:46,033 INFO o.a.j.e.StandardJMeterEngine: Starting setUp ThreadGroup: 1 : SETUP carregar massa 
+2026-11-13 01:54:46,033 INFO o.a.j.e.StandardJMeterEngine: Starting 1 threads for group SETUP carregar massa.
+2026-11-13 01:54:46,033 INFO o.a.j.e.StandardJMeterEngine: Test will stop on error
+2026-11-13 01:54:46,033 INFO o.a.j.t.ThreadGroup: Starting thread group... number=1 threads=1 ramp-up=0 delayedStart=false
+2026-11-13 01:54:46,036 INFO o.a.j.t.ThreadGroup: Started thread group number 1
+2026-11-13 01:54:46,036 INFO o.a.j.e.StandardJMeterEngine: Waiting for all setup thread groups to exit
+2026-11-13 01:54:46,037 INFO o.a.j.t.JMeterThread: Thread started: SETUP carregar massa 1-1
+2026-11-13 01:54:46,678 INFO o.a.j.m.J.Ler CSVs da massa: Massa CARGA-20261113-campanha-01 carregada: PE-02=40 PE-03=10x150
+2026-11-13 01:54:46,679 INFO o.a.j.t.JMeterThread: Thread is done: SETUP carregar massa 1-1
+2026-11-13 01:54:46,679 INFO o.a.j.t.JMeterThread: Thread finished: SETUP carregar massa 1-1
+2026-11-13 01:54:46,679 INFO o.a.j.e.StandardJMeterEngine: All Setup Threads have ended
+2026-11-13 01:54:46,718 INFO o.a.j.e.StandardJMeterEngine: Starting ThreadGroup: 1 : PE-02 Ciclo de reserva
+2026-11-13 01:54:46,719 INFO o.a.j.e.StandardJMeterEngine: Starting 40 threads for group PE-02 Ciclo de reserva.
+2026-11-13 01:54:46,719 INFO o.a.j.e.StandardJMeterEngine: Thread will continue on error
+2026-11-13 01:54:46,719 INFO o.a.j.t.ThreadGroup: Starting thread group... number=1 threads=40 ramp-up=60 delayedStart=false
+2026-11-13 01:54:46,725 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-1
+2026-11-13 01:54:46,811 INFO o.a.j.t.ThreadGroup: Started thread group number 1
+2026-11-13 01:54:46,812 INFO o.a.j.e.StandardJMeterEngine: Starting ThreadGroup: 2 : PE-03 Disputa
+2026-11-13 01:54:46,812 INFO o.a.j.e.StandardJMeterEngine: Starting 10 threads for group PE-03 Disputa.
+2026-11-13 01:54:46,812 INFO o.a.j.e.StandardJMeterEngine: Thread will continue on error
+2026-11-13 01:54:46,812 INFO o.a.j.t.ThreadGroup: Starting thread group... number=2 threads=10 ramp-up=5 delayedStart=false
+2026-11-13 01:54:46,831 INFO o.a.j.t.ThreadGroup: Started thread group number 2
+2026-11-13 01:54:46,831 INFO o.a.j.e.StandardJMeterEngine: All thread groups have been started
+2026-11-13 01:54:46,851 INFO o.a.j.p.h.s.HTTPHCAbstractImpl: Local host = vm
+2026-11-13 01:54:46,856 INFO o.a.j.p.h.s.HTTPHC4Impl: HTTP request retry count = 0
+2026-11-13 01:54:46,857 INFO o.a.j.s.SampleResult: Note: Sample TimeStamps are START times
+2026-11-13 01:54:46,857 INFO o.a.j.s.SampleResult: sampleresult.default.encoding is set to UTF-8
+2026-11-13 01:54:46,857 INFO o.a.j.s.SampleResult: sampleresult.useNanoTime=true
+2026-11-13 01:54:46,857 INFO o.a.j.s.SampleResult: sampleresult.nanoThreadSleep=5000
+2026-11-13 01:54:48,223 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-2
+2026-11-13 01:54:49,726 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-3
+2026-11-13 01:54:51,221 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-4
+2026-11-13 01:54:52,720 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-5
+2026-11-13 01:54:54,220 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-6
+2026-11-13 01:54:55,727 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-7
+2026-11-13 01:54:57,221 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-8
+2026-11-13 01:54:58,720 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-9
+2026-11-13 01:55:00,106 INFO o.a.j.r.Summariser: summary +     63 in 00:00:14 =    4.5/s Avg:    35 Min:    11 Max:   120 Err:     0 (0.00%) Active: 9 Started: 9 Finished: 0
+2026-11-13 01:55:00,221 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-10
+2026-11-13 01:55:01,720 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-11
+2026-11-13 01:55:03,220 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-12
+2026-11-13 01:55:04,721 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-13
+2026-11-13 01:55:06,221 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-14
+2026-11-13 01:55:07,721 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-15
+2026-11-13 01:55:09,220 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-16
+2026-11-13 01:55:10,722 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-17
+2026-11-13 01:55:12,223 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-18
+2026-11-13 01:55:13,724 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-19
+2026-11-13 01:55:15,221 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-20
+2026-11-13 01:55:16,722 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-21
+2026-11-13 01:55:18,221 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-22
+2026-11-13 01:55:19,723 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-23
+2026-11-13 01:55:21,221 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-24
+2026-11-13 01:55:22,728 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-25
+2026-11-13 01:55:24,223 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-26
+2026-11-13 01:55:25,723 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-27
+2026-11-13 01:55:27,221 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-28
+2026-11-13 01:55:28,723 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-29
+2026-11-13 01:55:30,075 INFO o.a.j.r.Summariser: summary +    587 in 00:00:30 =   19.6/s Avg:    21 Min:     6 Max:   112 Err:     0 (0.00%) Active: 29 Started: 29 Finished: 0
+2026-11-13 01:55:30,075 INFO o.a.j.r.Summariser: summary =    650 in 00:00:44 =   14.8/s Avg:    22 Min:     6 Max:   120 Err:     0 (0.00%)
+2026-11-13 01:55:30,221 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-30
+2026-11-13 01:55:31,726 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-31
+2026-11-13 01:55:33,221 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-32
+2026-11-13 01:55:34,731 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-33
+2026-11-13 01:55:36,222 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-34
+2026-11-13 01:55:37,723 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-35
+2026-11-13 01:55:39,221 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-36
+2026-11-13 01:55:40,721 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-37
+2026-11-13 01:55:42,227 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-38
+2026-11-13 01:55:43,721 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-39
+2026-11-13 01:55:45,222 INFO o.a.j.t.JMeterThread: Thread started: PE-02 Ciclo de reserva 1-40
+2026-11-13 01:55:46,812 INFO o.a.j.t.JMeterThread: Thread started: PE-03 Disputa 2-1
+2026-11-13 01:55:47,312 INFO o.a.j.t.JMeterThread: Thread started: PE-03 Disputa 2-2
+2026-11-13 01:55:47,813 INFO o.a.j.t.JMeterThread: Thread started: PE-03 Disputa 2-3
+2026-11-13 01:55:48,312 INFO o.a.j.t.JMeterThread: Thread started: PE-03 Disputa 2-4
+2026-11-13 01:55:48,814 INFO o.a.j.t.JMeterThread: Thread started: PE-03 Disputa 2-5
+2026-11-13 01:55:49,312 INFO o.a.j.t.JMeterThread: Thread started: PE-03 Disputa 2-6
+2026-11-13 01:55:49,813 INFO o.a.j.t.JMeterThread: Thread started: PE-03 Disputa 2-7
+2026-11-13 01:55:50,313 INFO o.a.j.t.JMeterThread: Thread started: PE-03 Disputa 2-8
+2026-11-13 01:55:50,818 INFO o.a.j.t.JMeterThread: Thread started: PE-03 Disputa 2-9
+2026-11-13 01:55:51,312 INFO o.a.j.t.JMeterThread: Thread started: PE-03 Disputa 2-10
+2026-11-13 01:56:00,013 INFO o.a.j.r.Summariser: summary +   1119 in 00:00:30 =   37.4/s Avg:    27 Min:     5 Max:  2172 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 01:56:00,014 INFO o.a.j.r.Summariser: summary =   1769 in 00:01:14 =   23.9/s Avg:    25 Min:     5 Max:  2172 Err:     0 (0.00%)
+2026-11-13 01:56:30,006 INFO o.a.j.r.Summariser: summary +   1269 in 00:00:30 =   42.3/s Avg:    57 Min:     5 Max:  1916 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 01:56:30,007 INFO o.a.j.r.Summariser: summary =   3038 in 00:01:44 =   29.2/s Avg:    38 Min:     5 Max:  2172 Err:     0 (0.00%)
+2026-11-13 01:57:00,030 INFO o.a.j.r.Summariser: summary +   1267 in 00:00:30 =   42.2/s Avg:    57 Min:     4 Max:  1775 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 01:57:00,030 INFO o.a.j.r.Summariser: summary =   4305 in 00:02:14 =   32.1/s Avg:    44 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 01:57:30,031 INFO o.a.j.r.Summariser: summary +   1285 in 00:00:30 =   42.8/s Avg:    51 Min:     5 Max:  1705 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 01:57:30,031 INFO o.a.j.r.Summariser: summary =   5590 in 00:02:44 =   34.1/s Avg:    46 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 01:58:00,026 INFO o.a.j.r.Summariser: summary +   1274 in 00:00:30 =   42.5/s Avg:    50 Min:     4 Max:  1662 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 01:58:00,026 INFO o.a.j.r.Summariser: summary =   6864 in 00:03:14 =   35.4/s Avg:    46 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 01:58:30,007 INFO o.a.j.r.Summariser: summary +   1278 in 00:00:30 =   42.6/s Avg:    55 Min:     5 Max:  1697 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 01:58:30,007 INFO o.a.j.r.Summariser: summary =   8142 in 00:03:44 =   36.4/s Avg:    48 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 01:59:00,001 INFO o.a.j.r.Summariser: summary +   1268 in 00:00:30 =   42.3/s Avg:    51 Min:     4 Max:  1648 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 01:59:00,001 INFO o.a.j.r.Summariser: summary =   9410 in 00:04:14 =   37.1/s Avg:    48 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 01:59:30,069 INFO o.a.j.r.Summariser: summary +   1306 in 00:00:30 =   43.4/s Avg:    54 Min:     4 Max:  1664 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 01:59:30,070 INFO o.a.j.r.Summariser: summary =  10716 in 00:04:44 =   37.7/s Avg:    49 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:00:00,004 INFO o.a.j.r.Summariser: summary +   1272 in 00:00:30 =   42.5/s Avg:    49 Min:     4 Max:  1639 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 02:00:00,004 INFO o.a.j.r.Summariser: summary =  11988 in 00:05:14 =   38.2/s Avg:    49 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:00:30,012 INFO o.a.j.r.Summariser: summary +   1306 in 00:00:30 =   43.5/s Avg:    48 Min:     4 Max:  1677 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 02:00:30,012 INFO o.a.j.r.Summariser: summary =  13294 in 00:05:44 =   38.6/s Avg:    49 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:01:00,025 INFO o.a.j.r.Summariser: summary +   1302 in 00:00:30 =   43.4/s Avg:    53 Min:     4 Max:  1584 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 02:01:00,026 INFO o.a.j.r.Summariser: summary =  14596 in 00:06:14 =   39.0/s Avg:    49 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:01:30,013 INFO o.a.j.r.Summariser: summary +   1290 in 00:00:30 =   43.0/s Avg:    49 Min:     4 Max:  1647 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 02:01:30,014 INFO o.a.j.r.Summariser: summary =  15886 in 00:06:44 =   39.3/s Avg:    49 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:02:00,018 INFO o.a.j.r.Summariser: summary +   1282 in 00:00:30 =   42.7/s Avg:    55 Min:     5 Max:  1682 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 02:02:00,018 INFO o.a.j.r.Summariser: summary =  17168 in 00:07:14 =   39.6/s Avg:    50 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:02:30,027 INFO o.a.j.r.Summariser: summary +   1297 in 00:00:30 =   43.2/s Avg:    49 Min:     4 Max:  1620 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 02:02:30,028 INFO o.a.j.r.Summariser: summary =  18465 in 00:07:44 =   39.8/s Avg:    50 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:03:00,018 INFO o.a.j.r.Summariser: summary +   1281 in 00:00:30 =   42.7/s Avg:    49 Min:     4 Max:  1619 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 02:03:00,018 INFO o.a.j.r.Summariser: summary =  19746 in 00:08:14 =   40.0/s Avg:    50 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:03:30,017 INFO o.a.j.r.Summariser: summary +   1293 in 00:00:30 =   43.1/s Avg:    52 Min:     4 Max:  1604 Err:     0 (0.00%) Active: 50 Started: 50 Finished: 0
+2026-11-13 02:03:30,017 INFO o.a.j.r.Summariser: summary =  21039 in 00:08:44 =   40.2/s Avg:    50 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:03:40,153 INFO o.a.j.t.JMeterThread: Thread is done: PE-03 Disputa 2-6
+2026-11-13 02:03:40,153 INFO o.a.j.t.JMeterThread: Thread finished: PE-03 Disputa 2-6
+2026-11-13 02:03:40,324 INFO o.a.j.t.JMeterThread: Thread is done: PE-03 Disputa 2-3
+2026-11-13 02:03:40,324 INFO o.a.j.t.JMeterThread: Thread finished: PE-03 Disputa 2-3
+2026-11-13 02:03:40,515 INFO o.a.j.t.JMeterThread: Thread is done: PE-03 Disputa 2-10
+2026-11-13 02:03:40,515 INFO o.a.j.t.JMeterThread: Thread finished: PE-03 Disputa 2-10
+2026-11-13 02:03:40,693 INFO o.a.j.t.JMeterThread: Thread is done: PE-03 Disputa 2-2
+2026-11-13 02:03:40,693 INFO o.a.j.t.JMeterThread: Thread finished: PE-03 Disputa 2-2
+2026-11-13 02:03:40,864 INFO o.a.j.t.JMeterThread: Thread is done: PE-03 Disputa 2-9
+2026-11-13 02:03:40,865 INFO o.a.j.t.JMeterThread: Thread finished: PE-03 Disputa 2-9
+2026-11-13 02:03:41,031 INFO o.a.j.t.JMeterThread: Thread is done: PE-03 Disputa 2-1
+2026-11-13 02:03:41,031 INFO o.a.j.t.JMeterThread: Thread finished: PE-03 Disputa 2-1
+2026-11-13 02:03:41,209 INFO o.a.j.t.JMeterThread: Thread is done: PE-03 Disputa 2-4
+2026-11-13 02:03:41,209 INFO o.a.j.t.JMeterThread: Thread finished: PE-03 Disputa 2-4
+2026-11-13 02:03:41,376 INFO o.a.j.t.JMeterThread: Thread is done: PE-03 Disputa 2-5
+2026-11-13 02:03:41,377 INFO o.a.j.t.JMeterThread: Thread finished: PE-03 Disputa 2-5
+2026-11-13 02:03:41,567 INFO o.a.j.t.JMeterThread: Thread is done: PE-03 Disputa 2-8
+2026-11-13 02:03:41,567 INFO o.a.j.t.JMeterThread: Thread finished: PE-03 Disputa 2-8
+2026-11-13 02:03:41,729 INFO o.a.j.t.JMeterThread: Thread is done: PE-03 Disputa 2-7
+2026-11-13 02:03:41,729 INFO o.a.j.t.JMeterThread: Thread finished: PE-03 Disputa 2-7
+2026-11-13 02:04:00,008 INFO o.a.j.r.Summariser: summary +   1226 in 00:00:30 =   40.9/s Avg:    29 Min:     4 Max:  1601 Err:     0 (0.00%) Active: 40 Started: 50 Finished: 10
+2026-11-13 02:04:00,008 INFO o.a.j.r.Summariser: summary =  22265 in 00:09:14 =   40.2/s Avg:    49 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:04:30,037 INFO o.a.j.r.Summariser: summary +   1169 in 00:00:30 =   38.9/s Avg:     9 Min:     4 Max:    19 Err:     0 (0.00%) Active: 40 Started: 50 Finished: 10
+2026-11-13 02:04:30,037 INFO o.a.j.r.Summariser: summary =  23434 in 00:09:44 =   40.1/s Avg:    47 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:05:00,041 INFO o.a.j.r.Summariser: summary +   1183 in 00:00:30 =   39.4/s Avg:     9 Min:     4 Max:    21 Err:     0 (0.00%) Active: 40 Started: 50 Finished: 10
+2026-11-13 02:05:00,041 INFO o.a.j.r.Summariser: summary =  24617 in 00:10:14 =   40.1/s Avg:    45 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:05:30,031 INFO o.a.j.r.Summariser: summary +   1197 in 00:00:30 =   39.9/s Avg:     9 Min:     4 Max:    28 Err:     0 (0.00%) Active: 40 Started: 50 Finished: 10
+2026-11-13 02:05:30,032 INFO o.a.j.r.Summariser: summary =  25814 in 00:10:44 =   40.1/s Avg:    43 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:05:45,555 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-37
+2026-11-13 02:05:45,597 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-31
+2026-11-13 02:05:45,664 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-29
+2026-11-13 02:05:45,697 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-5
+2026-11-13 02:05:45,703 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-14
+2026-11-13 02:05:45,749 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-35
+2026-11-13 02:05:45,835 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-10
+2026-11-13 02:05:45,850 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-36
+2026-11-13 02:05:45,979 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-12
+2026-11-13 02:05:45,991 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-17
+2026-11-13 02:05:46,037 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-16
+2026-11-13 02:05:46,069 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-1
+2026-11-13 02:05:46,153 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-4
+2026-11-13 02:05:46,194 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-8
+2026-11-13 02:05:46,195 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-39
+2026-11-13 02:05:46,226 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-13
+2026-11-13 02:05:46,228 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-3
+2026-11-13 02:05:46,232 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-11
+2026-11-13 02:05:46,236 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-38
+2026-11-13 02:05:46,254 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-7
+2026-11-13 02:05:46,268 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-33
+2026-11-13 02:05:46,306 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-21
+2026-11-13 02:05:46,374 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-22
+2026-11-13 02:05:46,402 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-15
+2026-11-13 02:05:46,438 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-40
+2026-11-13 02:05:46,475 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-28
+2026-11-13 02:05:46,501 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-24
+2026-11-13 02:05:46,501 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-32
+2026-11-13 02:05:46,525 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-23
+2026-11-13 02:05:46,545 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-26
+2026-11-13 02:05:46,560 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-9
+2026-11-13 02:05:46,572 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-27
+2026-11-13 02:05:46,599 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-20
+2026-11-13 02:05:46,602 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-19
+2026-11-13 02:05:46,610 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-6
+2026-11-13 02:05:46,637 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-34
+2026-11-13 02:05:46,701 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-2
+2026-11-13 02:05:46,707 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-30
+2026-11-13 02:05:46,734 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-18
+2026-11-13 02:05:46,771 INFO o.a.j.t.JMeterThread: Stopping because end time detected by thread: PE-02 Ciclo de reserva 1-25
+2026-11-13 02:05:46,771 INFO o.a.j.t.JMeterThread: Thread finished: PE-02 Ciclo de reserva 1-25
+2026-11-13 02:05:46,771 INFO o.a.j.e.StandardJMeterEngine: Notifying test listeners of end of test
+2026-11-13 02:05:46,774 INFO o.a.j.r.Summariser: summary +    667 in 00:00:17 =   39.8/s Avg:     9 Min:     4 Max:    34 Err:     0 (0.00%) Active: 0 Started: 50 Finished: 50
+2026-11-13 02:05:46,774 INFO o.a.j.r.Summariser: summary =  26481 in 00:11:01 =   40.1/s Avg:    42 Min:     4 Max:  2172 Err:     0 (0.00%)
+2026-11-13 02:05:46,775 INFO o.a.j.JMeter: Generating Dashboard
+2026-11-13 02:05:46,775 INFO o.a.j.r.d.ReportGenerator: Flushing result collector before report Generation
+2026-11-13 02:05:46,785 INFO o.a.j.r.p.NormalizerSampleConsumer: Using format, 'ms', to parse timeStamp field
+2026-11-13 02:05:47,379 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.AggregateConsumer#stopProducing(): beginDate produced 0 samples
+2026-11-13 02:05:47,379 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.AggregateConsumer#stopProducing(): endDate produced 0 samples
+2026-11-13 02:05:47,381 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.ApdexSummaryConsumer#stopProducing(): apdexSummary produced 0 samples
+2026-11-13 02:05:47,381 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.RequestsSummaryConsumer#stopProducing(): requestsSummary produced 0 samples
+2026-11-13 02:05:47,394 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.StatisticsSummaryConsumer#stopProducing(): statisticsSummary produced 0 samples
+2026-11-13 02:05:47,397 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.Top5ErrorsBySamplerConsumer#stopProducing(): top5ErrorsBySampler produced 0 samples
+2026-11-13 02:05:47,397 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.ErrorsSummaryConsumer#stopProducing(): errorsSummary produced 0 samples
+2026-11-13 02:05:47,397 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.HitsPerSecondGraphConsumer#stopProducing(): hitsPerSecond produced 0 samples
+2026-11-13 02:05:47,743 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.LatencyVSRequestGraphConsumer#stopProducing(): latencyVsRequest produced 0 samples
+2026-11-13 02:05:47,744 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.SyntheticResponseTimeDistributionGraphConsumer#stopProducing(): syntheticResponseTimeDistribution produced 0 samples
+2026-11-13 02:05:47,745 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.BytesThroughputGraphConsumer#stopProducing(): bytesThroughputOverTime produced 0 samples
+2026-11-13 02:05:47,745 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.CodesPerSecondGraphConsumer#stopProducing(): codesPerSecond produced 0 samples
+2026-11-13 02:05:48,017 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimeVSRequestGraphConsumer#stopProducing(): responseTimeVsRequest produced 0 samples
+2026-11-13 02:05:48,018 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.FilterConsumer#stopProducing(): startIntervalControlerFilter produced 185367 samples
+2026-11-13 02:05:48,019 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.TotalTPSGraphConsumer#stopProducing(): totalTPS produced 0 samples
+2026-11-13 02:05:48,019 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ActiveThreadsGraphConsumer#stopProducing(): activeThreadsOverTime produced 0 samples
+2026-11-13 02:05:48,019 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.TimeVSThreadGraphConsumer#stopProducing(): timeVsThreads produced 0 samples
+2026-11-13 02:05:48,020 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimeDistributionGraphConsumer#stopProducing(): responseTimeDistribution produced 0 samples
+2026-11-13 02:05:48,020 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.TransactionsPerSecondGraphConsumer#stopProducing(): transactionsPerSecond produced 0 samples
+2026-11-13 02:05:48,021 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimePercentilesGraphConsumer#stopProducing(): responseTimePercentiles produced 0 samples
+2026-11-13 02:05:48,024 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimePercentilesOverTimeGraphConsumer#stopProducing(): responseTimePercentilesOverTime produced 0 samples
+2026-11-13 02:05:48,030 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ResponseTimeOverTimeGraphConsumer#stopProducing(): responseTimesOverTime produced 0 samples
+2026-11-13 02:05:48,031 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.ConnectTimeOverTimeGraphConsumer#stopProducing(): connectTimeOverTime produced 0 samples
+2026-11-13 02:05:48,031 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.graph.impl.LatencyOverTimeGraphConsumer#stopProducing(): latenciesOverTime produced 0 samples
+2026-11-13 02:05:48,032 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.FilterConsumer#stopProducing(): nameFilter produced 397215 samples
+2026-11-13 02:05:48,032 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.FilterConsumer#stopProducing(): dateRangeFilter produced 79443 samples
+2026-11-13 02:05:48,032 INFO o.a.j.r.p.AbstractSampleConsumer: class org.apache.jmeter.report.processor.NormalizerSampleConsumer#stopProducing(): normalizer produced 26481 samples
+2026-11-13 02:05:48,033 INFO o.a.j.r.p.CsvFileSampleSource: produce(): 26481 samples produced in 1s 231 ms on channel 0
+2026-11-13 02:05:48,033 INFO o.a.j.r.d.ReportGenerator: Exporting data using exporter:'json' of className:'org.apache.jmeter.report.dashboard.JsonExporter'
+2026-11-13 02:05:48,092 INFO o.a.j.r.d.JsonExporter: Found data for consumer statisticsSummary in context
+2026-11-13 02:05:48,092 INFO o.a.j.r.d.JsonExporter: Creating statistics for overall
+2026-11-13 02:05:48,093 INFO o.a.j.r.d.JsonExporter: Creating statistics for other transactions
+2026-11-13 02:05:48,093 INFO o.a.j.r.d.JsonExporter: Checking output folder
+2026-11-13 02:05:48,093 INFO o.a.j.r.d.JsonExporter: Writing statistics JSON to /home/user/projeto-aloca/testes/carga/resultados/20261113-campanha-01/dashboard/statistics.json
+2026-11-13 02:05:48,127 INFO o.a.j.r.d.ReportGenerator: Exporting data using exporter:'html' of className:'org.apache.jmeter.report.dashboard.HtmlTemplateExporter'
+2026-11-13 02:05:48,129 INFO o.a.j.r.d.HtmlTemplateExporter: Will generate dashboard in folder: /home/user/projeto-aloca/testes/carga/resultados/20261113-campanha-01/dashboard
+2026-11-13 02:05:48,220 INFO o.a.j.r.d.HtmlTemplateExporter: Report will be generated in: /home/user/projeto-aloca/testes/carga/resultados/20261113-campanha-01/dashboard, creating folder structure
+2026-11-13 02:05:48,221 INFO o.a.j.r.d.TemplateVisitor: Copying folder from '/tmp/claude-0/-home-user-projeto-aloca/96d5485b-d9d4-598c-8fef-032c6c6c4366/scratchpad/jm/apache-jmeter-5.6.3/bin/report-template' to '/home/user/projeto-aloca/testes/carga/resultados/20261113-campanha-01/dashboard', got message: /home/user/projeto-aloca/testes/carga/resultados/20261113-campanha-01/dashboard, found non empty folder with following content [/home/user/projeto-aloca/testes/carga/resultados/20261113-campanha-01/dashboard/statistics.json], will be ignored
+2026-11-13 02:05:48,376 INFO o.a.j.JMeter: Dashboard generated

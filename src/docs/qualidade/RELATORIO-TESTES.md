@@ -41,7 +41,7 @@ A retenção registrada para esses artefatos vai até 10/02/2027. Os JSONs do ci
 | BDD funcionalidade nova | Ciclo antes/depois comprovado; não confundir com regressão do #33 ainda aberto |
 | Testcontainers | Presente nas integrações MySQL |
 | WireMock | Suíte não localizada no snapshot; não atendido por notificação simulada |
-| Performance | Planos em outra branch; sem JTL/dashboard de carga de negócio consolidado |
+| Performance | PE-02/PE-03 aprovados ([RELATORIO-CARGA](RELATORIO-CARGA.md)): 50 usuários, 40,1 req/s, P95 total 43 ms, P99 1,25 s, 0% erro inesperado, 150/150 disputas com uma única aceita; PE-01 pendente; DEF-PERF-001 aberto |
 | Segurança dinâmica | Casos de perfil/posse/entrada/erros cobertos; não equivalem a pentest |
 | SonarCloud / dependências | Necessário relatório do SHA candidato e itens abertos; zero crítico não certificado por este documento |
 | Cobertura JaCoCo | Artefatos existentes; percentuais devem ser extraídos do candidato, não de números antigos do README |
@@ -50,7 +50,7 @@ A retenção registrada para esses artefatos vai até 10/02/2027. Os JSONs do ci
 
 ## Decisão desta consolidação
 
-**Plano unificado concluído; aprovação global da release inconclusiva.** Há evidência positiva nas modalidades automatizadas indicadas, mas WireMock, carga de negócio, recuperação/manual e análises da release ainda precisam de resultados. A suíte HTTP já faz parte da base integrada pelo #38.
+**Plano unificado concluído; aprovação global da release inconclusiva.** Há evidência positiva nas modalidades automatizadas indicadas, mas WireMock, carga de pesquisa (PE-01), recuperação/manual e análises da release ainda precisam de resultados. A suíte HTTP já faz parte da base integrada pelo #38.
 
 Este documento não altera retroativamente o parecer de um relatório antigo. A próxima campanha deve usar [REGISTRO-EXECUCAO](REGISTRO-EXECUCAO.md), executar o [plano](PLANO-TESTES.md) no SHA candidato e atualizar esta decisão com resultados reais.
 

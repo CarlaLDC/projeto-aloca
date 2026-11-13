@@ -88,6 +88,7 @@ npx cucumber-js --config aprovacao-inativos.cjs
 
 | Item | Localização | Uso e pendência |
 |---|---|---|
+| **JMeter reservas e disputas (PE-02/PE-03)** | [testes/carga](../../../testes/carga/README.md), workflow `carga-jmeter.yml` | Incorporado: criar/alterar/cancelar com massa isolada + 150 disputas simultâneas; JTL, dashboard e prova por disputa em [RELATORIO-CARGA](RELATORIO-CARGA.md) |
 | JMeter API leitura | [README da branch](https://github.com/CarlaLDC/projeto-aloca/blob/qa/performance-jmeter/testes/performance/README.md) | Login/GETs; fora de develop; não cobre reservas concorrentes sob carga |
 | JMeter SPA | Mesma branch, plano aloca-spa-load-test.jmx | Mede entrega de rotas, não ações client-side nem regras de reserva |
 | WireMock | Não localizado nesta base | Implementar EX-01..04 do plano |

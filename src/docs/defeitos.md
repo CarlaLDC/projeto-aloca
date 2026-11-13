@@ -30,7 +30,8 @@ Estados: Aberto → Triado → Em correção → Corrigido → Validado. Reabrir
 | AUT-001 | Automação: Bearer null no login BDD | S3 | P1 | Validado historicamente no ciclo BDD |
 | AUT-002 | Automação: contagem global no teste de ciclo; RF-10 | S3 | P2 | Corrigido e suíte posterior aprovada |
 | NC-001 | Conformidade: Spring Boot 4.1.2 versus 3.x exigido | S2 | P1 | Aberto; não alterar framework neste PR documental |
-| IMP-003 | Evidência: resultado JMeter não consolidado em develop | S2 | P1 | Aberto; exige execução e análise |
+| IMP-003 | Evidência: resultado JMeter não consolidado em develop | S2 | P1 | Encerrado: PE-02/PE-03 executados, evidências em `testes/carga/resultados/20261113-campanha-01` ([relatório](qualidade/RELATORIO-CARGA.md)) |
+| DEF-PERF-001 | Produto: 409 de disputa por professor/material leva ~0,9 s (P95 1,6 s) por varrer todos os espaços nas alternativas sob trava; RNF-01 | S3 | P2 | Aberto; dentro da meta de 3 s, risco ao crescer o número de salas |
 
 ## DEF-001 — solicitação com cadastro desativado continuava válida no painel
 
@@ -64,15 +65,24 @@ Estados: Aberto → Triado → Em correção → Corrigido → Validado. Reabrir
 - **Evidência posterior:** [CI 43330605457](https://github.com/CarlaLDC/projeto-aloca/actions/runs/43330605457) concluído com sucesso; [relatório da suíte](testes-unitarios-backend.md) registra 126 testes sem falhas/erros/ignorados. É validação posterior da suíte, não prova preservada de vermelho/verde exclusivo deste defeito.
 - **Prevenção:** asserções sobre dados exclusivos do cenário, preservando as verificações de auditoria e idempotência.
 
+## DEF-PERF-001 — 409 lento em disputa por professor ou material
+
+- **Ambiente:** campanha `20261113-campanha-01`, API `ca5919c`, MySQL 8.4 descartável, 50 usuários ([relatório](qualidade/RELATORIO-CARGA.md)).
+- **Reprodução:** 10 Solicitantes, cada um com sua própria sala, pedem simultaneamente o mesmo professor (ou material) em horários sobrepostos, com cerca de 190 espaços ativos.
+- **Esperado:** 1×201 e 9×409 em tempo comparável à disputa por sala.
+- **Obtido:** regra correta (1×201, 9×409 em 100 de 100 disputas), mas o 409 tem mediana de ~0,9 s e P95 de 1,6 s, contra 83 ms nas disputas por sala; o 201 leva ~15 ms.
+- **Causa provável:** `ReservaService.alternativas`, passo “outro local, mesmo horário”, consulta conflitos em cada espaço ativo dentro da transação com as travas; quando o choque é do professor ou do material, nenhum local resolve e a varredura é completa. As perdedoras são serializadas pela trava.
+- **Correção proposta:** pular o passo quando o conflito não é do espaço, ou calcular alternativas após liberar as travas. **Regressão:** repetir PE-03 e comparar o P95 do 409 por tipo (`disputas.csv` e `RESULTADO.md`).
+
 ## Pendências e reavaliação do registro de performance
 
 Fonte histórica: [defeitos.md na branch qa/performance-jmeter](https://github.com/CarlaLDC/projeto-aloca/blob/qa/performance-jmeter/testes/performance/defeitos.md). O documento original pertence a outro snapshot; não deve ser apresentado como diagnóstico atual de develop.
 
 | ID original / atual | Triagem atual | Próxima ação e critério de encerramento |
 |---|---|---|
-| IMP-001 — API/ambiente | Parcialmente superado: README atual documenta API e execução local; homologação de carga não comprovada | Identificar ambiente autorizado e commit testado no relatório JMeter |
-| IMP-002 — credenciais/massa | Parcialmente superado: README tem contas de demonstração; isso não comprova massa de carga isolada | Documentar massa sintética, perfis e limpeza na execução de carga |
-| IMP-003 — JMeter sem resultado | Aberto, S2/P1; plano e resultados não estão na árvore develop inspecionada | Executar plano, preservar JTL/dashboard/log, parâmetros, commit, métricas, análise e decisão; não declarar aprovação sem dados |
+| IMP-001 — API/ambiente | Superado para PE-02/PE-03: `executar-carga.sh` sobe API + MySQL descartável e registra commit e máquina em `ambiente.txt` | Ambiente de homologação dedicado continua desejável |
+| IMP-002 — credenciais/massa | Superado: `preparar_massa.py` cria massa sintética exclusiva por execução (prefixo `CARGA-<RUN_ID>`), senha aleatória fora dos artefatos e banco descartável | — |
+| IMP-003 — JMeter sem resultado | Encerrado: plano, JTL, dashboard, logs, parâmetros, commit, métricas, análise e decisão em [RELATORIO-CARGA](qualidade/RELATORIO-CARGA.md) | Repetir no SHA candidato; PE-01 (pesquisa) ainda não executado |
 | GAP-004/005 — auditoria em memória/ator fictício | Diagnóstico histórico superado na implementação integrada; ciclo e auditoria têm testes reais vinculados acima | Manter origem histórica; não converter a inspeção antiga em bug de runtime reproduzido nem declarar AUD-01..10 executados |
 | NC-001 — versão Spring Boot | Aberto, S2/P1: [pom.xml](../../backend/pom.xml) declara 4.1.2; enunciado exige 3.x | Alinhar versão ao requisito e executar integração MySQL, unitários, BDD e build; registrar commit/relatórios antes de encerrar |
 

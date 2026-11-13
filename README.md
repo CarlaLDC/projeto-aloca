@@ -146,6 +146,10 @@ Consulte [a arquitetura da implementação atual](src/docs/arquitetura.md) para 
 
 As propostas anteriores foram preservadas em [arquitetura-historica.md](src/docs/arquitetura-historica.md). A [ADR-0005](src/docs/adr/ADR-0005-arquitetura-implementada.md) registra as decisões observadas no código.
 
+## Teste de carga (JMeter)
+
+Criação/alteração/cancelamento com massa isolada e disputas simultâneas pela mesma sala, professor e material, sob 50 usuários: [testes/carga](testes/carga/README.md). Resultado com p95/p99, req/s, taxa de erro e comprovação de uma única reserva aceita por disputa: [RELATORIO-CARGA](src/docs/qualidade/RELATORIO-CARGA.md).
+
 ## Defeitos, correções e regressões
 
 Consulte o [registro priorizado](src/docs/defeitos.md), com causas, commits, testes de regressão, evidências históricas e pendências de entrega. Novas ocorrências devem usar o [template de defeito](.github/ISSUE_TEMPLATE/defeito.md).
