@@ -29,7 +29,7 @@ Pré-requisitos: Java 21 e Maven. Dependências Maven precisam estar disponívei
 mvn -f backend/pom.xml clean verify
 ```
 
-A suíte completa inclui os unitários e as integrações existentes, que exigem Docker/MySQL em Testcontainers. Ela gera Surefire e JaCoCo como antes.
+A suíte completa inclui os unitários e as integrações existentes, que exigem Docker/PostgreSQL em Testcontainers. Ela gera Surefire e JaCoCo como antes.
 
 ## CI
 

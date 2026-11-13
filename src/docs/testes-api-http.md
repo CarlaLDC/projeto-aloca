@@ -2,7 +2,7 @@
 
 A classe [RegrasCriticasHttpTest](../../backend/src/test/java/br/com/aloca/http/RegrasCriticasHttpTest.java) inicia a aplicação em porta aleatória e envia requisições por socket usando java.net.http.HttpClient. Não usa MockMvc, mocks ou acesso direto a serviços, repositórios ou entidades para preparar/verificar casos.
 
-SpringBootTest/Import são usados somente pelo harness para iniciar servidor e MySQL 8.4/Testcontainers. O cliente conhece contratos HTTP/JSON, credenciais de demonstração e IDs retornados pela própria API. Persistência e locks são reais. Os dados de cada caso usam cadastros exclusivos, criados pela API administrativa.
+SpringBootTest/Import são usados somente pelo harness para iniciar servidor e PostgreSQL 17/Testcontainers (MySQL 8.4 até a troca de banco no PR #45). O cliente conhece contratos HTTP/JSON, credenciais de demonstração e IDs retornados pela própria API. Persistência e locks são reais. Os dados de cada caso usam cadastros exclusivos, criados pela API administrativa.
 
 ## Matriz de cobertura
 

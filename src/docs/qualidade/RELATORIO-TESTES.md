@@ -35,22 +35,22 @@ A retenção registrada para esses artefatos vai até 10/02/2027. Os JSONs do ci
 |---|---|
 | Unitários isolados | Resultado específico aprovado e classes incorporadas |
 | Parametrizados e integração | Suítes e campanhas aprovadas disponíveis; repetir para o SHA candidato |
-| Concorrência | Teste MySQL existente; disputa HTTP de três alvos comprovada no #38 |
+| Concorrência | ConcorrenciaReservaTest com PostgreSQL; disputa HTTP de três alvos comprovada no #38; 150/150 disputas sob carga (campanha 03) |
 | HTTP caixa-preta | Aprovada e incorporada pelo #38 |
-| Frontend e BDD/E2E | Workflows existentes; vincular ao SHA candidato e preservar logs/capturas pertinentes |
-| BDD funcionalidade nova | Ciclo antes/depois comprovado; não confundir com regressão do #33 ainda aberto |
-| Testcontainers | Presente nas integrações MySQL |
+| Frontend e BDD/E2E | Front: 102 testes, 81,04% linhas / 70,58% ramos, meta 80/70 obrigatória no CI; BDD integrado com PostgreSQL aprovado no CI, incluindo os 5 cenários de aprovação/bloqueio do #33 |
+| BDD funcionalidade nova | Ciclo antes/depois comprovado; os cenários de regressão do #33 foram incorporados e aprovados no CI |
+| Testcontainers | PostgreSQL 17 em todas as integrações (`PostgresTestcontainer`) |
 | WireMock | EX-01 a EX-04 aprovados: 21 testes, 3 defeitos encontrados e corrigidos (DEF-INT-001 a 003) ([RELATORIO-WIREMOCK](RELATORIO-WIREMOCK.md)) |
 | Performance | PE-01/PE-02/PE-03 aprovados no PostgreSQL ([RELATORIO-CARGA](RELATORIO-CARGA.md)): 50 usuários, 43,4 req/s, P95 da pesquisa 6–8 ms, P95 total 17 ms, P99 61 ms, 0% erro inesperado, 150/150 disputas com uma única aceita; DEF-PERF-001 corrigido e validado |
 | Segurança dinâmica | Casos de perfil/posse/entrada/erros cobertos; não equivalem a pentest |
-| SonarCloud / dependências | Necessário relatório do SHA candidato e itens abertos; zero crítico não certificado por este documento |
-| Cobertura JaCoCo | Artefatos existentes; percentuais devem ser extraídos do candidato, não de números antigos do README |
-| Manual responsivo, instalação e reinício | Roteiros definidos no plano; evidência da campanha ainda pendente |
-| RTM e defeitos | Precisam ser reconciliados com testes/SHAs atuais; documento de outra branch não fecha automaticamente a RTM |
+| SonarCloud / dependências | SonarCloud integrado; Quality Gate aprovado nos PRs #54, #55, #57 e #58 (o #56 reprovou e foi corrigido pelo #57); `npm audit --omit=dev` = 0 (16 avisos moderados só em ferramentas de desenvolvimento). Pendente: análise de dependências do back-end |
+| Cobertura JaCoCo | develop `31afdd4`: 502 testes, 95,9% linhas / 85,8% ramos; meta 80/70 obrigatória no `mvn verify` |
+| Manual responsivo, instalação e reinício | Reinício: verificado (`ReinicioPersistenciaTest`). Responsivo: automatizado em 360/1280 px no candidato; falta o registro manual. Instalação: instruções com PostgreSQL no README |
+| RTM e defeitos | Reconciliados em 13/11/2026: RTM com carga, WireMock e auditoria de todas as transições (AUD-01 a AUD-15); defeitos DEF-PERF-001, DEF-INT-001 a 003 validados e NC-001 encerrado |
 
 ## Decisão desta consolidação
 
-**Plano unificado concluído; aprovação global da release inconclusiva.** Há evidência positiva nas modalidades automatizadas indicadas, incluindo WireMock e carga de pesquisa (PE-01), mas recuperação/manual e análises da release ainda precisam de resultados. A suíte HTTP já faz parte da base integrada pelo #38.
+**Aprovado com restrições documentadas (develop `31afdd4`, 13/11/2026).** Todas as modalidades automatizadas do plano têm evidência aprovada: unitários, parametrizados, integração com PostgreSQL, caixa-preta HTTP, concorrência, auditoria de todas as transições, reinício, WireMock, BDD, front com cobertura 80/70 e carga PE-01/02/03. Restrições: registro manual de responsividade (RNF-05), análise de dependências do back-end (RNF-07) e revisão do PR #28. A suíte HTTP faz parte da base integrada pelo #38.
 
 Este documento não altera retroativamente o parecer de um relatório antigo. A próxima campanha deve usar [REGISTRO-EXECUCAO](REGISTRO-EXECUCAO.md), executar o [plano](PLANO-TESTES.md) no SHA candidato e atualizar esta decisão com resultados reais.
 

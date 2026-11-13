@@ -39,7 +39,7 @@ P0 não é sinônimo de severidade de defeito; prioridade do teste e severidade 
 | Carga | Percentis, throughput, erros e disputas sob carga | JMeter em API/BD real e ambiente controlado | PE-01/PE-02/PE-03 em `testes/carga` executados no PostgreSQL ([RELATORIO-CARGA](RELATORIO-CARGA.md)) |
 | Segurança/robustez | Perfil, propriedade, entradas, erros seguros e dependências | API, SonarCloud e análise de dependências | Casos funcionais existem; parecer consolidado depende de relatórios |
 | Manual/usabilidade | Fluxos e mensagens em 360/1280 px | Navegador e capturas datadas | Roteiros neste plano; evidências pendentes |
-| Recuperação | Reserva e histórico após reinício da API | PostgreSQL persistente fora do ciclo descartável de teste | Roteiro neste plano; execução específica pendente |
+| Recuperação | Reserva e histórico após reinício da API | PostgreSQL persistente fora do ciclo descartável de teste | Executado: `ReinicioPersistenciaTest` (aplicação reiniciada sobre o mesmo PostgreSQL) no `mvn verify` e `scripts/persistencia-reinicio.py` no workflow Candidato |
 | Instalação/release | Executar a partir de checkout limpo e instruções | Java 21/Maven/Node 22; Docker quando necessário | Checklist e evidência por release |
 | Análise estática/cobertura | Linhas, branches, bugs e vulnerabilidades | JaCoCo e SonarCloud | Relatórios por SHA; percentual antigo no README não é aceite atual |
 
