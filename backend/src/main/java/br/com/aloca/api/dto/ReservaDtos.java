@@ -1,5 +1,6 @@
 package br.com.aloca.api.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -18,21 +19,32 @@ public final class ReservaDtos {
     public record OpcaoProfessor(Long id, String nome, String competencia, String rotulo) {}
 
     public record OpcoesReserva(List<OpcaoRecurso> espacos, List<OpcaoProfessor> professores,
-                                List<OpcaoRecurso> materiais) {}
+                                List<OpcaoRecurso> materiais,
+                                @Schema(description = "Cadastro de professor do usuário logado, quando ele é professor e "
+                                    + "também solicitante: a tela já o sugere como professor da reserva", nullable = true)
+                                Long professorDoUsuario) {}
 
     public record ReservaRequest(
+        @Schema(example = "Aula de Programação Web")
         @NotBlank(message = "Informe a atividade.") @Size(max = 150, message = "A atividade pode ter até 150 caracteres.") String atividade,
+        @Schema(description = "Data de hoje ou futura", example = "2030-03-12")
         @NotNull(message = "Informe a data.") LocalDate data,
+        @Schema(type = "string", format = "time", example = "09:00")
         @NotNull(message = "Informe o horário de início.") LocalTime inicio,
+        @Schema(type = "string", format = "time", description = "Precisa ser posterior ao início", example = "11:00")
         @NotNull(message = "Informe o horário de término.") LocalTime fim,
+        @Schema(description = "Id da sala ou laboratório (veja GET /api/reservas/opcoes)", example = "1")
         @NotNull(message = "Selecione a sala ou laboratório.") Long espacoId,
+        @Schema(description = "Id do professor (opcional)", example = "2", nullable = true)
         Long professorId,
+        @Schema(description = "Ids dos materiais (opcional)", example = "[8]")
         List<Long> materialIds) {
 
         public List<Long> materiais() { return materialIds == null ? List.of() : materialIds; }
     }
 
     public record CancelamentoRequest(
+        @Schema(example = "Atividade remarcada")
         @NotBlank(message = "Informe o motivo do cancelamento.") @Size(max = 500, message = "O motivo pode ter até 500 caracteres.") String motivo) {}
 
     public record ReservaResumo(String codigo, String atividade, String recurso, LocalDate data, LocalTime inicio,
