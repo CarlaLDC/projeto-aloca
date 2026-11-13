@@ -357,14 +357,14 @@ public class ReservaService {
         List<ItemConflito> itens = colisoes.stream().map(Colisao::item).toList();
         String mensagem = "Este horário não está disponível: " + descrever(itens.getFirst()) + ".";
         return new EmConflito(new ConflitoResposta(mensagem, p.atividade(), p.data(), p.inicio(), p.fim(),
-            p.espacoId(), p.professorId(), p.materiais(), itens, alternativas(p, sel, ignorarId)));
+            p.espacoId(), p.professorId(), p.materiais(), itens, alternativas(p, sel, colisoes, ignorarId)));
     }
 
     /**
      * Até 3 sugestões sem conflito: o mesmo local em outro horário do dia,
      * o mesmo horário nos próximos dias e outro local do mesmo tipo no mesmo horário.
      */
-    private List<Alternativa> alternativas(ReservaRequest p, Selecao sel, long ignorarId) {
+    private List<Alternativa> alternativas(ReservaRequest p, Selecao sel, List<Colisao> colisoes, long ignorarId) {
         Duration duracao = Duration.between(p.inicio(), p.fim());
         Recurso espaco = sel.espaco();
         List<Alternativa> sugestoes = new ArrayList<>();
@@ -387,6 +387,12 @@ public class ReservaService {
         }
 
         // 3) Outro local do mesmo tipo, com capacidade igual ou maior, no mesmo horário.
+        //    Só adianta quando todos os conflitos são do próprio local: professor ou material ocupado
+        //    continua ocupado em qualquer sala. Sem este corte, cada sala ativa era testada no banco
+        //    sob a trava do pedido, e o 409 de professor/material demorava ~0,9 s (DEF-PERF-001).
+        if (!somenteOLocalConflita(colisoes, espaco)) {
+            return sugestoes.stream().limit(3).toList();
+        }
         recursos.findByAtivoTrueOrderByNome().stream()
             .filter(r -> r.getTipo() == espaco.getTipo() && !r.getId().equals(espaco.getId()))
             .filter(r -> r.getCapacidade() >= espaco.getCapacidade())
@@ -396,6 +402,10 @@ public class ReservaService {
             .ifPresent(r -> sugestoes.add(alternativa(p.data(), p.inicio(), p.fim(), r, "Outro local, mesmo horário")));
 
         return sugestoes.stream().limit(3).toList();
+    }
+
+    private static boolean somenteOLocalConflita(List<Colisao> colisoes, Recurso espaco) {
+        return colisoes.stream().allMatch(c -> c.recurso() != null && c.recurso().getId().equals(espaco.getId()));
     }
 
     private boolean livre(LocalDate data, LocalTime inicio, LocalTime fim, Selecao sel, long ignorarId) {
