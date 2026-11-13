@@ -1,4 +1,4 @@
-name: BDD integrado - Angular + API + H2
+name: BDD integrado - Angular + API + PostgreSQL
 on:
   push:
     branches: [feat/integracao-bdd]
@@ -11,6 +11,18 @@ jobs:
   bdd-integrado:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: aloca_bdd
+          POSTGRES_USER: aloca
+          POSTGRES_PASSWORD: aloca
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aloca -d aloca_bdd"
+          --health-interval 5s --health-timeout 5s --health-retries 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -26,10 +38,10 @@ jobs:
       - run: npm ci
       - run: npm install --prefix bdd --no-audit --no-fund
       - run: npx --prefix bdd playwright install --with-deps chromium
-      - name: Iniciar backend com banco H2 isolado
+      - name: Iniciar backend com PostgreSQL isolado (serviço do job)
         run: |
           cd backend
-          mvn -B spring-boot:run -Dspring-boot.run.arguments="--spring.datasource.url=jdbc:h2:mem:bdd;DB_CLOSE_DELAY=-1" > /tmp/aloca-backend.log 2>&1 &
+          mvn -B spring-boot:run -Dspring-boot.run.arguments="--spring.datasource.url=jdbc:postgresql://localhost:5432/aloca_bdd" > /tmp/aloca-backend.log 2>&1 &
           for attempt in $(seq 1 120); do
             if curl -fsS http://127.0.0.1:8080/api/auth/login -H 'Content-Type: application/json' -d '{"email":"ana.martins@aloca.edu.br","senha":"aloca123"}' | grep -q token; then exit 0; fi
             sleep 2

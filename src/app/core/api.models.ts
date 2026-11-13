@@ -262,3 +262,8 @@ export interface AdminProfessor { id: number; nome: string; competencia: string;
 export interface AdminBloqueio {
   id: number; recursoId: number; recurso: string; inicio: string; fim: string; motivo: string; criadoPor: string | null;
 }
+
+export interface AdminUsuario {
+  id: number; nome: string; email: string; unidade: string; perfis: PerfilCodigo[]; ativo: boolean;
+}
+export interface UsuarioPedido { nome: string; email: string; unidade: string; perfis: PerfilCodigo[]; senha?: string; }

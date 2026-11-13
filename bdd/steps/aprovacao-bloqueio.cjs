@@ -73,8 +73,9 @@ Then('a solicitação exclusiva fica aprovada com histórico da decisão', async
   expect(this.respostaRegra.status()).toBe(200);
   const reserva = await detalhe(this);
   expect(reserva.status).toBe('APROVADA');
+  // O histórico da API traz os rótulos dos estados ('Solicitada', 'Aprovada'); o status da reserva traz o código.
   expect(reserva.historico).toEqual(expect.arrayContaining([
-    expect.objectContaining({ estadoAnterior: 'SOLICITADA', estadoNovo: 'APROVADA', ator: 'Roberto Almeida' })
+    expect.objectContaining({ estadoAnterior: 'Solicitada', estadoNovo: 'Aprovada', ator: 'Roberto Almeida' })
   ]));
 });
 Then('a aprovação é negada e a solicitação permanece pendente', async function () {

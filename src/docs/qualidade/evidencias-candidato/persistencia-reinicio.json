@@ -1,0 +1,10 @@
+{
+  "status": "APROVADO",
+  "banco": "H2 em arquivo",
+  "processos_distintos": true,
+  "reserva": "RES-0067",
+  "estado": "CANCELADA",
+  "eventos_iguais": 5,
+  "consulta_integral_igual": true,
+  "recurso_preservado": true
+}

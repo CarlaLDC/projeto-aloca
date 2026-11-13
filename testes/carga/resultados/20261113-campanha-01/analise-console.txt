@@ -1,0 +1,16 @@
+Decisão: APROVADO
+OK    Uma única reserva aceita por disputa (JTL + MySQL): 150/150 disputas válidas; violações: []
+OK    Nenhuma dupla reserva: 0 disputas com mais de uma aceita
+OK    Todas as disputas com 10 tentativas simultâneas: 150/150
+OK    Disputas executadas = disputas planejadas: 150/150
+OK    Taxa de erro inesperado total < 1.0%: 0.0%
+OK    Nenhuma resposta 5xx ou falha de conexão: 0
+OK    P95 'PE-02 Alterar reserva' <= 3000 ms (regime): 18 ms
+OK    P95 'PE-02 Cancelar reserva' <= 3000 ms (regime): 14 ms
+OK    P95 'PE-02 Consultar detalhe' <= 3000 ms (regime): 9 ms
+OK    P95 'PE-02 Criar reserva' <= 3000 ms (regime): 15 ms
+OK    P95 'PE-03 Disputa MATERIAL' <= 3000 ms (regime): 1624 ms
+OK    P95 'PE-03 Disputa PROFESSOR' <= 3000 ms (regime): 1606 ms
+OK    P95 'PE-03 Disputa SALA' <= 3000 ms (regime): 145 ms
+OK    PE-02: criadas no JTL = persistidas no MySQL: 6245 x 6245
+OK    PE-02: canceladas com auditoria (>=3 eventos): 0 sem histórico completo

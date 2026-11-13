@@ -3,20 +3,21 @@
 Sistema de reservas de salas, professores e materiais sem conflito de horário.
 
 - **Front-end:** Angular 20 (pasta raiz, código em `src/`)
-- **Back-end:** Java 21 + Spring Boot 4.1 + H2 (dev) ou MySQL (perfil `mysql` e testes com Testcontainers) (pasta `backend/`)
+- **Back-end:** Java 21 + Spring Boot 4.1 + PostgreSQL 17 (Docker Compose na aplicação; Testcontainers nos testes) (pasta `backend/`)
 
 ## Como rodar
 
-Pré-requisitos: **Java 21**, **Maven 3.9+**, **Node 22** e npm.
+Pré-requisitos: **Java 21**, **Maven 3.9+**, **Node 22**, npm e **Docker** (para o PostgreSQL).
 
 **1. Back-end** (porta 8080):
 
 ```bash
 cd backend
+docker compose up -d
 mvn spring-boot:run
 ```
 
-Na primeira execução o banco é criado em `backend/data/` e preenchido com dados de demonstração (datas relativas ao dia de hoje). Para recomeçar do zero, pare o servidor e apague a pasta `backend/data/`.
+O `docker compose` sobe o PostgreSQL na porta 5432 (banco `aloca`, usuário e senha `aloca`). Na primeira execução o back-end cria as tabelas e grava os dados de demonstração (datas relativas ao dia de hoje). Para recomeçar do zero: `docker compose down -v`. Outro banco: variáveis `ALOCA_DB_URL`, `ALOCA_DB_USUARIO` e `ALOCA_DB_SENHA`.
 
 **2. Front-end** (porta 4200), em outro terminal na raiz do projeto:
 
@@ -41,15 +42,11 @@ Todos com a senha **`aloca123`** (as mesmas personas de `src/docs/personas`):
 
 ### Console do banco
 
-http://localhost:8080/h2-console · JDBC URL `jdbc:h2:file:./data/aloca` · usuário `sa` · sem senha.
-
-### Rodar com MySQL (mesmo banco dos testes)
-
 ```bash
-cd backend
-docker compose up -d
-mvn spring-boot:run -Dspring-boot.run.profiles=mysql
+docker compose -f backend/docker-compose.yml exec postgres psql -U aloca -d aloca
 ```
+
+Os testes automáticos (`mvn verify`) não usam esse banco: sobem o próprio PostgreSQL com o Testcontainers.
 
 ## API por tela
 
@@ -63,7 +60,7 @@ Todas as rotas (exceto o login) exigem o cabeçalho `Authorization: Bearer <toke
 | 02 · Visão geral | `GET /api/painel` | todos | Reservas de hoje, recursos disponíveis, pendências e agenda do dia (inclui a agenda do professor, RF-14) |
 | 03 · Disponibilidade | `GET /api/disponibilidade?data=&tipo=&busca=&capacidadeMinima=` | todos | Recursos com status, próximo horário livre, ocupações e janelas livres do dia |
 | 04 · Nova reserva | `GET /api/reservas/opcoes` | todos | Salas, professores e materiais ativos |
-| | `POST /api/reservas` | Solicitante, Responsável, Administrador | Cria a reserva: **201** se gravada, **409** com conflitos e alternativas |
+| | `POST /api/reservas` | Solicitante, Professor, Responsável, Administrador | Cria a reserva: **201** se gravada, **409** com conflitos e alternativas |
 | 05 · Conflito de horário | (corpo do **409** acima) | | Conflitos encontrados e até 3 alternativas livres |
 | 06 · Minhas reservas | `GET /api/reservas/minhas` | todos | Reservas do usuário (e, para professor, aquelas em que está alocado) |
 | 07 · Detalhe e auditoria | `GET /api/reservas/{codigo}` | dono, professor alocado, Responsável, Administrador | Dados e histórico completo |
@@ -93,24 +90,32 @@ Todas as rotas (exceto o login) exigem o cabeçalho `Authorization: Bearer <toke
 - **Histórico (RF-10):** toda mudança registra usuário, data e hora, estado anterior e novo. Reservas em uso não podem ser alteradas nem canceladas.
 - **Ciclo automático:** a cada minuto, reservas aprovadas passam a *Em uso* no início e a *Concluída* no fim.
 - **Materiais (RF-09):** o módulo de materiais reage a eventos das reservas (`ReservaEventos`). A aprovação de uma reserva com materiais cria as movimentações. *Devolução pendente* aparece quando o material está em uso depois do horário previsto.
-- **Persistência (RNF-04):** o H2 grava em arquivo, então os dados continuam após reiniciar o servidor.
+- **Persistência (RNF-04):** o PostgreSQL guarda os dados em volume do Docker, então eles continuam após reiniciar o servidor.
 
-## Testes
+## Testes e evidências de qualidade
 
-**Ambiente realista:** os testes de integração não usam mocks nem banco em memória. Cada execução sobe um MySQL real em contêiner com Testcontainers (`BancoMySqlTeste`), então persistência, travas (`SELECT ... FOR UPDATE`) e o teste de concorrência rodam no mesmo banco usado no perfil `mysql`. No GitHub Actions o Docker já vem instalado no runner `ubuntu-latest`.
+O [plano unificado](src/docs/qualidade/PLANO-TESTES.md) reúne todas as modalidades, prioridades, ambientes e critérios de aceite. Consulte também:
+
+- [Índice da suíte e comandos](src/docs/qualidade/SUITE-TESTES.md).
+- [Relatório consolidado de resultados e pendências](src/docs/qualidade/RELATORIO-TESTES.md).
+- [Modelo de registro de execução](src/docs/qualidade/REGISTRO-EXECUCAO.md).
 
 ```bash
-# Back-end: 43 testes de integração + relatório de cobertura em backend/target/site/jacoco
-# Exige Docker: os testes sobem um MySQL 8.4 em contêiner (Testcontainers).
-cd backend && mvn verify
+# Unitários isolados do backend: Java 21 e Maven, sem Docker
+mvn -f backend/pom.xml -Dgroups=unitario test
 
-# Front-end: 23 testes (Karma)
+# Backend completo, integração PostgreSQL/Testcontainers e JaCoCo: exige Docker
+mvn -f backend/pom.xml clean verify
+
+# Frontend
+npm ci
+npm run build
 npm test -- --watch=false --browsers=ChromeHeadless
 ```
 
-Cobertura atual do back-end: **93,9% das linhas e 75,1% dos ramos** (meta do RNF-06: 80% e 70%).
+BDD/E2E exige a aplicação em execução, conforme [instruções específicas](bdd/README.md). A suíte HTTP de caixa-preta foi incorporada pelo PR #38 e está incluída no índice.
 
-O GitHub Actions (`.github/workflows/main.yml`) roda os dois conjuntos a cada push.
+Metas de cobertura: **80% de linhas e 70% de branches**. Quantidades de testes, percentuais e conclusões devem ser associados ao SHA e ao relatório da execução; números de campanhas anteriores não certificam a versão atual. Os workflows de qualidade estão em `.github/workflows/` e publicam os artefatos indicados no índice.
 
 ## Estrutura do back-end
 
@@ -137,3 +142,25 @@ Em `backend/src/main/resources/application.properties`:
 Consulte [a arquitetura da implementação atual](src/docs/arquitetura.md) para contexto, contêineres, componentes e sequências de autenticação, criação e concorrência de reservas, aprovação, alteração/cancelamento e materiais. O documento identifica o commit inspecionado, as fontes no código e as diferenças em relação ao enunciado.
 
 As propostas anteriores foram preservadas em [arquitetura-historica.md](src/docs/arquitetura-historica.md). A [ADR-0005](src/docs/adr/ADR-0005-arquitetura-implementada.md) registra as decisões observadas no código.
+
+## Teste de carga (JMeter)
+
+Pesquisa de disponibilidade com 50 usuários, criação/alteração/cancelamento com massa isolada e disputas simultâneas pela mesma sala, professor e material, sob 50 usuários: [testes/carga](testes/carga/README.md). Resultado com p95/p99, req/s, taxa de erro e comprovação de uma única reserva aceita por disputa: [RELATORIO-CARGA](src/docs/qualidade/RELATORIO-CARGA.md).
+
+## Defeitos, correções e regressões
+
+Consulte o [registro priorizado](src/docs/defeitos.md), com causas, commits, testes de regressão, evidências históricas e pendências de entrega. Novas ocorrências devem usar o [template de defeito](.github/ISSUE_TEMPLATE/defeito.md).
+
+## Rastreabilidade
+
+Consulte a [RTM reconciliada](RTM.md), com requisito, risco, implementação, teste, evidência por commit e pendências. Resultados históricos e aceite da release são distinguidos explicitamente.
+
+## Evidências do candidato
+
+Consulte [usuários, professor solicitante, capacidade, reinício, responsividade e cobertura](src/docs/qualidade/CANDIDATO.md).
+
+### Gestão de usuários e professor solicitante
+
+Na Administração → Usuários e perfis, o Administrador cadastra/edita pessoas, atribui perfis, ativa/desativa e redefine senhas. API: GET/POST /api/admin/usuarios, PUT /api/admin/usuarios/{id}, PATCH /api/admin/usuarios/{id}/ativo e PUT /api/admin/usuarios/{id}/senha. Alterações invalidam sessões anteriores; após atualizar esta versão, faça login novamente.
+
+Professor também solicita, altera e cancela **suas próprias** reservas, mantendo consulta da agenda e sem permissão de aprovação/administração. A disponibilidade possui filtro de capacidade mínima. Consulte o relatório do candidato para os resultados reais em 360/1280 px, reinício e JaCoCo.

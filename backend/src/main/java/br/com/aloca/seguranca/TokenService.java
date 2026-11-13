@@ -41,6 +41,7 @@ public class TokenService {
             .issuedAt(agora)
             .expiresAt(expira)
             .claim("nome", usuario.getNome())
+            .claim("versao", usuario.getVersaoToken())
             .claim("perfis", usuario.getPerfis().stream().map(Perfil::name).sorted().toList())
             .build();
         JwsHeader cabecalho = JwsHeader.with(MacAlgorithm.HS256).build();

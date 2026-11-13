@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import {
-  AdminRecurso, AdminProfessor, AdminBloqueio, Aprovacoes, Disponibilidade, LoginResposta, Movimentacao, Movimentacoes, Notificacoes, OpcoesReserva, Painel,
+  AdminUsuario, UsuarioPedido, AdminRecurso, AdminProfessor, AdminBloqueio, Aprovacoes, Disponibilidade, LoginResposta, Movimentacao, Movimentacoes, Notificacoes, OpcoesReserva, Painel,
   Relatorio, ReservaDetalhe, ReservaPedido, ReservaResumo, Usuario
 } from './api.models';
 
@@ -29,8 +29,9 @@ export class ApiService {
   }
 
   // 03 · Disponibilidade
-  disponibilidade(data: string, tipo?: string, busca?: string): Observable<Disponibilidade> {
+  disponibilidade(data: string, tipo?: string, busca?: string, capacidadeMinima?: number): Observable<Disponibilidade> {
     let params = new HttpParams().set('data', data);
+    if (capacidadeMinima != null) params = params.set('capacidadeMinima', capacidadeMinima);
     if (tipo) params = params.set('tipo', tipo);
     if (busca?.trim()) params = params.set('busca', busca.trim());
     return this.http.get<Disponibilidade>(`${this.base}/disponibilidade`, { params });
@@ -122,6 +123,12 @@ export class ApiService {
   registrarNaoComparecimento(codigo: string, motivo: string): Observable<ReservaDetalhe> {
     return this.http.post<ReservaDetalhe>(`${this.base}/reservas/${encodeURIComponent(codigo)}/nao-compareceu`, { motivo });
   }
+
+  adminUsuarios(): Observable<AdminUsuario[]> { return this.http.get<AdminUsuario[]>(`${this.base}/admin/usuarios`); }
+  criarUsuario(p: UsuarioPedido): Observable<AdminUsuario> { return this.http.post<AdminUsuario>(`${this.base}/admin/usuarios`, p); }
+  editarUsuario(id: number, p: UsuarioPedido): Observable<AdminUsuario> { return this.http.put<AdminUsuario>(`${this.base}/admin/usuarios/${id}`, p); }
+  ativarUsuario(id: number, ativo: boolean): Observable<AdminUsuario> { return this.http.patch<AdminUsuario>(`${this.base}/admin/usuarios/${id}/ativo`, { ativo }); }
+  senhaUsuario(id: number, senha: string): Observable<void> { return this.http.put<void>(`${this.base}/admin/usuarios/${id}/senha`, { senha }); }
 
   // Topo das telas
   notificacoes(): Observable<Notificacoes> {

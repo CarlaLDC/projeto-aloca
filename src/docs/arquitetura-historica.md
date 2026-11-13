@@ -12,7 +12,7 @@ Esta seção registra o contexto conhecido e os fatores que devem orientar decis
 - O fluxo inclui pesquisa de recursos, criação e manutenção de reservas, aprovação de recursos restritos, bloqueios de manutenção, movimentação de materiais, histórico e relatórios. Fontes: [requisitos-funcionais.md](requisitos-funcionais.md), RF-02 a RF-14.
 - O sistema deve impedir horários inválidos, sobreposição de reservas e dupla alocação em solicitações simultâneas. Fontes: [requisitos-funcionais.md](requisitos-funcionais.md), RF-05 e RF-06; [requisitos-nao-funcionais.md](requisitos-nao-funcionais.md), RNF-02.
 - O projeto define metas para segurança, persistência, usabilidade, cobertura de testes, rastreabilidade e integração contínua. Fonte: [requisitos-nao-funcionais.md](requisitos-nao-funcionais.md), RNF-03 a RNF-09.
-- O README documenta um projeto criado com Angular CLI 21.2.8 e os comandos de desenvolvimento, build e teste. Fonte: [README.md](../README.md).
+- O README documenta um projeto criado com Angular CLI 21.2.8 e os comandos de desenvolvimento, build e teste. Fonte: [README.md](../../README.md).
 - **Restrição obrigatória desta arquitetura:** existe um cron job executado diariamente ao final do dia para treinar ou retreinar usando somente dados novos. Origem: instrução explícita desta solicitação; esse requisito ainda não consta nos documentos de requisitos do repositório.
 
 ### Objetivo
@@ -128,7 +128,7 @@ A prioridade abaixo é uma classificação arquitetural inicial, baseada na crit
 - **Treinamento com dados repetidos ou dados inadequados:** sem definição operacional de “dados novos”, o cron job pode reprocessar registros ou usar um conjunto diferente do esperado. Relacionado à restrição explícita do cron job; detalhes ainda são pergunta aberta.
 - **Execução diária ausente, duplicada ou incompleta:** a janela, a política de repetição e a recuperação de falhas não estão especificadas. Relacionado à restrição explícita do cron job.
 - **Metas de qualidade sem evidência reproduzível:** ambiente, dados e configuração de alguns testes não estão suficientemente definidos; isso pode dificultar a comprovação das metas. Relacionado a RNF-01, RNF-05 a RNF-09.
-- **Cobertura incompatível com a ferramenta documentada:** a exigência de JaCoCo pode não corresponder ao esqueleto Angular descrito no README, deixando a métrica sem forma acordada de comprovação. Relacionado a RNF-06 e [README.md](../README.md).
+- **Cobertura incompatível com a ferramenta documentada:** a exigência de JaCoCo pode não corresponder ao esqueleto Angular descrito no README, deixando a métrica sem forma acordada de comprovação. Relacionado a RNF-06 e [README.md](../../README.md).
 - **Relatórios divergentes da operação real:** ausência de definição para contabilizar “conflitos evitados” pode produzir interpretações distintas do relatório. Relacionado a RF-12.
 
 ## Responsabilidades, limites e interfaces

@@ -59,7 +59,8 @@ public class DadosRecursos implements ApplicationRunner {
         professores.save(new Professor("André Lima", "Desenvolvimento de sistemas", andre));
         professores.save(new Professor("Lucas Oliveira", "Matemática", null));
         professores.save(new Professor("Ricardo Alves", "Robótica educacional", null));
-        professores.save(new Professor("Juliana Lima", "Química", null));
+        Usuario juliana = usuarios.findByEmailIgnoreCase("juliana.lima@aloca.edu.br").orElse(null);
+        professores.save(new Professor("Juliana Lima", "Química", juliana));
 
         Usuario patricia = usuarios.findByEmailIgnoreCase("patricia.souza@aloca.edu.br").orElse(null);
         LocalDate hoje = LocalDate.now(relogio);

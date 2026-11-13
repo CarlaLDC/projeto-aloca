@@ -88,6 +88,9 @@ public class Reserva {
     public HistoricoReserva mudarStatus(StatusReserva novo, String ator, Usuario usuario, String acao,
                                         String descricao, LocalDateTime quando) {
         StatusReserva anterior = this.status;
+        if (!CicloDeVidaReserva.permitida(anterior, novo)) {
+            throw new IllegalStateException("Transição de estado inválida: " + anterior.rotulo() + " → " + novo.rotulo());
+        }
         this.status = novo;
         return registrar(new HistoricoReserva(this, quando, ator, usuario, acao, descricao, anterior, novo));
     }

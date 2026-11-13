@@ -55,7 +55,7 @@ Os IDs RF seguem o enunciado: RF-01 autorização, RF-07 aprovação restrita, R
 
 São quatro exemplos, com cinco casos executáveis porque APR-02 possui dois perfis. Cada caso cria um recurso exclusivo, sem depender dos IDs da massa demonstrativa e sem disputar a sala de outro cenário. Usuários são os da base de demonstração.
 
-São testes da API em caixa-preta, executados pelo mesmo runner integrado com navegador disponível. Não são fluxos novos pela interface. Usam login e persistência reais; não usam mocks. O workflow BDD existente usa H2 em memória, portanto estes cenários não substituem os testes MySQL/Testcontainers nem o teste paralelo de concorrência.
+São testes da API em caixa-preta, executados pelo mesmo runner integrado com navegador disponível. Não são fluxos novos pela interface. Usam login e persistência reais; não usam mocks. O workflow BDD usa um PostgreSQL descartável (serviço `postgres:17-alpine`), mas estes cenários não substituem os testes PostgreSQL/Testcontainers nem o teste paralelo de concorrência.
 
 ## Executar e obter relatório
 
@@ -77,7 +77,7 @@ npm test
 
 O arquivo cucumber.cjs descobre automaticamente features/**/*.feature e steps/**/*.cjs.
 
-No GitHub: abra o PR → Checks → **BDD integrado - Angular + API + H2**, ou Actions → mesmo workflow → execução do PR → Artifacts → **bdd-integrado-evidencias**. O artefato contém reports/cucumber.html e reports/cucumber.json; o hook anexa captura nas falhas. É preciso aguardar a conclusão do job para o artefato aparecer. A publicação usa if: always(), mas ausência de relatório quando a aplicação não inicia não significa aprovação.
+No GitHub: abra o PR → Checks → **BDD integrado - Angular + API + PostgreSQL**, ou Actions → mesmo workflow → execução do PR → Artifacts → **bdd-integrado-evidencias**. O artefato contém reports/cucumber.html e reports/cucumber.json; o hook anexa captura nas falhas. É preciso aguardar a conclusão do job para o artefato aparecer. A publicação usa if: always(), mas ausência de relatório quando a aplicação não inicia não significa aprovação.
 
 Para interpretar: todos os cinco casos novos devem estar PASSED; FAILED, UNDEFINED, PENDING ou SKIPPED não atendem ao critério. Preserve o link da execução e seu SHA: o relatório sozinho não identifica desenvolvimento guiado.
 

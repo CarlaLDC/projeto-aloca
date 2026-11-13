@@ -105,7 +105,7 @@ public class RelatorioService {
 
     /** CSV com separador ";" e BOM para abrir corretamente no Excel. */
     public String csv(Relatorio rel) {
-        StringBuilder sb = new StringBuilder("﻿");
+        StringBuilder sb = new StringBuilder("\uFEFF");
         sb.append(linha("Recurso", "Tipo", "Utilização (%)", "Horas alocadas", "Reservas", "Conflitos evitados"));
         for (LinhaRecurso l : rel.recursos()) {
             sb.append(linha(l.nome(), l.tipoRotulo(), String.valueOf(l.utilizacao()), formatar(l.horas()),
