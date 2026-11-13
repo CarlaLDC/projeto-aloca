@@ -4,10 +4,15 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.jayway.jsonpath.JsonPath;
+import br.com.aloca.repositorio.EventoAuditoriaRepositorio;
+import org.springframework.beans.factory.annotation.Autowired;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 /** Cadastro de recursos e professores (RF-02) e bloqueios de manutenção (RF-08). */
 class AdminRecursosTest extends ApiTesteBase {
+
+    @Autowired EventoAuditoriaRepositorio auditoria;
 
     @Test
     void adminCadastraAlteraEDesativaRecurso() throws Exception {
@@ -21,6 +26,24 @@ class AdminRecursosTest extends ApiTesteBase {
         get(patricia, "/api/admin/recursos").andExpect(jsonPath("$[*].nome", hasItem("Sala 301")));
         postJson(patricia, "/api/admin/recursos/" + id + "/desativar", null).andExpect(jsonPath("$.ativo").value(false));
         postJson(patricia, "/api/admin/recursos/" + id + "/ativar", null).andExpect(jsonPath("$.ativo").value(true));
+    }
+
+    @Test
+    void operacoesAdministrativasGeramAuditoriaPersistidaComAtor() throws Exception {
+        String patricia = token(PATRICIA);
+        String criado = postJson(patricia, "/api/admin/recursos", """
+            {"nome":"Sala auditada","tipo":"SALA","localizacao":"Bloco B","capacidade":20,"restrito":false,
+             "abertura":"07:00","fechamento":"22:00"}""")
+            .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        Integer id = JsonPath.read(criado, "$.id");
+        postJson(patricia, "/api/admin/recursos/" + id + "/desativar", null).andExpect(status().isOk());
+        var eventos = auditoria.findAll().stream()
+            .filter(e -> "RECURSO".equals(e.getTipoEntidade()) && id.toString().equals(e.getEntidadeId())).toList();
+        assertEquals(2, eventos.size());
+        assertTrue(eventos.stream().anyMatch(e -> "CRIAR".equals(e.getAcao())));
+        assertTrue(eventos.stream().anyMatch(e -> "DESATIVAR".equals(e.getAcao())));
+        assertTrue(eventos.stream().allMatch(e -> PATRICIA.equals(e.getUsuario().getEmail())));
+        assertTrue(eventos.stream().allMatch(e -> !e.getAtor().isBlank()));
     }
 
     @Test
