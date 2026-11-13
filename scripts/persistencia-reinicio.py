@@ -11,6 +11,12 @@ out=pathlib.Path.cwd()/nome_saida;out.mkdir(parents=True,exist_ok=True)
 jar=pathlib.Path(os.getenv('ALOCA_JAR') or next(pathlib.Path('backend/target').glob('aloca-backend-*.jar'))).resolve()
 db_url=os.getenv('ALOCA_DB_URL','jdbc:postgresql://localhost:5432/aloca')
 def call(base,path,token=None,data=None,method=None):
+    # O código da reserva vem de uma resposta HTTP. Não permitir que introduza
+    # segmentos, query strings ou outro endpoint nas consultas autenticadas.
+    if not re.fullmatch(r'http://127[.]0[.]0[.]1:[0-9]{1,5}', base):
+        raise ValueError('A evidência só acessa a API local iniciada pelo script.')
+    if not re.fullmatch(r'/api/(?:auth/login|admin/recursos|reservas(?:/RES-[0-9]+(?:/cancelamento)?)?)', path):
+        raise ValueError('Rota inválida para a evidência de reinício.')
     headers={'Content-Type':'application/json'}
     if token:headers['Authorization']='Bearer '+token
     req=urllib.request.Request(base+path,headers=headers,data=json.dumps(data).encode() if data is not None else None,method=method)
@@ -44,6 +50,8 @@ with tempfile.TemporaryDirectory(prefix='aloca-reinicio-') as folder:
             data=(dt.date.today()+dt.timedelta(days=200)).isoformat()
             reserva=call(base,'/api/reservas',token,{'atividade':'Evidência reinício','data':data,'inicio':'10:00','fim':'11:00','espacoId':sala['id'],'professorId':None,'materialIds':[]})
             codigo=reserva['codigo']
+            if not isinstance(codigo,str) or not re.fullmatch(r'RES-[0-9]+',codigo):
+                raise ValueError('Código de reserva inválido na resposta da API')
             # Criação e alteração de estado reais, preservadas antes da parada.
             call(base,'/api/reservas/'+codigo+'/cancelamento',token,{'motivo':'Teste de persistência após reinício'})
             antes=call(base,'/api/reservas/'+codigo,token)
