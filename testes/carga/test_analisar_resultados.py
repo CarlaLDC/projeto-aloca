@@ -26,12 +26,15 @@ def amostra(ts, label, code, ok=True, disputa="null", tipo="null", atividade="x"
 
 class AnalisadorTest(unittest.TestCase):
     def executar(self, amostras, disputas=2, k=3, pe01=0):
-        d = tempfile.mkdtemp()
+        os.makedirs(os.path.join(AQUI, 'resultados'), exist_ok=True)
+        temporario = tempfile.TemporaryDirectory(prefix='teste-', dir=os.path.join(AQUI, 'resultados'))
+        self.addCleanup(temporario.cleanup)
+        d = temporario.name
         os.makedirs(os.path.join(d, "massa"))
         with open(os.path.join(d, "massa", "manifesto.json"), "w") as f:
             json.dump({"runId": "t", "prefixo": "CARGA-t", "pe03Threads": k, "pe03Disputas": disputas, "pe01Threads": pe01,
                        "usuariosCriados": 0, "recursosCriados": 0, "professoresCriados": 0}, f)
-        jtl = os.path.join(d, "r.jtl")
+        jtl = os.path.join(d, "resultados.jtl")
         with open(jtl, "w", newline="") as f:
             w = csv.DictWriter(f, fieldnames=CAMPOS)
             w.writeheader()
@@ -39,7 +42,8 @@ class AnalisadorTest(unittest.TestCase):
         proc = subprocess.run([sys.executable, os.path.join(AQUI, "analisar_resultados.py"), "--jtl", jtl,
                                "--massa", os.path.join(d, "massa"), "--saida", d, "--aquecimento", "0"],
                               capture_output=True, text=True)
-        return proc.returncode, json.load(open(os.path.join(d, "resumo.json")))
+        with open(os.path.join(d, 'resumo.json')) as arquivo:
+            return proc.returncode, json.load(arquivo)
 
     def disputa(self, n, codigos, ts=1000):
         return [amostra(ts + i, "PE-03 Disputa SALA", c, ok=c in ("201", "409"), disputa=str(n), tipo="SALA",

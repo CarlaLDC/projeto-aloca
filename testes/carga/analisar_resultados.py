@@ -26,6 +26,8 @@ import subprocess
 import sys
 from collections import Counter, defaultdict
 
+from caminhos import arquivo_execucao, entrada_jtl, pasta_execucao
+
 ATIVOS = {"SOLICITADA", "APROVADA", "EM_USO"}
 P95_LIMITE_MS = 3000          # RNF-01: demais operações comuns em até 3 s (P95)
 P95_PESQUISA_MS = 2000        # RNF-01: pesquisa de disponibilidade em até 2 s (P95)
@@ -72,7 +74,7 @@ def estatisticas(amostras):
 
 def ler_jtl(caminho):
     amostras = []
-    with open(caminho, newline="", encoding="utf-8") as f:
+    with entrada_jtl(caminho).open(newline="", encoding="utf-8") as f:
         for linha in csv.DictReader(f):
             rotulo = linha["label"]
             if not rotulo.startswith("PE-"):
@@ -130,9 +132,21 @@ def main():
     p.add_argument("--banco-container", default="", help="container PostgreSQL da execução (conferência no banco)")
     a = p.parse_args()
 
-    manifesto = json.load(open(os.path.join(a.massa, "manifesto.json"), encoding="utf-8"))
+    try:
+        saida = pasta_execucao(a.saida)
+        massa = pasta_execucao(a.massa, 'massa')
+        jtl = entrada_jtl(a.jtl)
+        if massa.parent != saida or jtl.parent != saida:
+            raise ValueError('JTL, massa e saída devem pertencer à mesma campanha.')
+        arquivos = {nome: arquivo_execucao(saida, nome) for nome in
+                    ('resumo.json', 'disputas.csv', 'RESULTADO.md')}
+        manifesto_path = arquivo_execucao(massa, 'manifesto.json')
+    except ValueError as erro:
+        p.error(str(erro))
+    with manifesto_path.open(encoding='utf-8') as arquivo:
+        manifesto = json.load(arquivo)
     k_esperado = manifesto["pe03Threads"]
-    amostras = ler_jtl(a.jtl)
+    amostras = ler_jtl(jtl)
     if not amostras:
         sys.exit("JTL sem amostras PE-*")
 
@@ -263,10 +277,10 @@ def main():
         "por_operacao": por_operacao, "por_operacao_regime": por_operacao_regime,
         "banco": banco, "disputas": tabela,
     }
-    os.makedirs(a.saida, exist_ok=True)
-    with open(os.path.join(a.saida, "resumo.json"), "w", encoding="utf-8") as f:
+    saida.mkdir(parents=True, exist_ok=True)
+    with open(arquivos["resumo.json"], "w", encoding="utf-8") as f:
         json.dump(resumo, f, indent=2, ensure_ascii=False)
-    with open(os.path.join(a.saida, "disputas.csv"), "w", newline="", encoding="utf-8") as f:
+    with open(arquivos["disputas.csv"], "w", newline="", encoding="utf-8") as f:
         campos = ["disputa", "tipo", "tentativas", "aceitas_201", "recusadas_409", "outros",
                   "espalhamento_envio_ms", "persistidas_bd", "ativas_bd", "vencedora_jtl", "vencedora_bd",
                   "historico_vencedora"]
@@ -274,7 +288,7 @@ def main():
         w.writeheader()
         for d, info in tabela.items():
             w.writerow({"disputa": d, **info})
-    with open(os.path.join(a.saida, "RESULTADO.md"), "w", encoding="utf-8") as f:
+    with open(arquivos["RESULTADO.md"], "w", encoding="utf-8") as f:
         f.write(markdown(resumo, manifesto, len(violacoes)))
     print(f"Decisão: {decisao}")
     for c in criterios:

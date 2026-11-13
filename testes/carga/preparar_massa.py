@@ -24,6 +24,8 @@ import sys
 import urllib.error
 import urllib.request
 
+from caminhos import IDENTIFICADOR, arquivo_execucao, pasta_execucao
+
 TIPOS_DISPUTA = ("SALA", "PROFESSOR", "MATERIAL")
 
 
@@ -61,6 +63,16 @@ def main():
     p.add_argument("--admin-senha", default=os.environ.get("ADMIN_SENHA", "aloca123"))
     a = p.parse_args()
 
+    # Validar destinos antes de autenticar ou criar qualquer dado remoto.
+    try:
+        saida = pasta_execucao(a.saida, 'massa')
+        if not IDENTIFICADOR.fullmatch(a.run_id) or saida.parent.name != a.run_id:
+            raise ValueError('run-id deve coincidir com a pasta da campanha.')
+        arquivos = {nome: arquivo_execucao(saida, nome) for nome in
+                    ('pe02.csv', 'pe03_usuarios.csv', 'pe03_disputas.csv', 'manifesto.json')}
+    except ValueError as erro:
+        p.error(str(erro))
+
     senha = os.environ.get("CARGA_SENHA")
     if not senha or len(senha) < 8:
         sys.exit("Defina CARGA_SENHA (mínimo 8 caracteres); ela não é gravada nos arquivos de massa.")
@@ -86,22 +98,22 @@ def main():
         return api.chamar("POST", "/api/admin/professores", {
             "nome": f"{prefixo} {rotulo}", "competencia": "Carga"}, esperado=(201,))["id"]
 
-    os.makedirs(a.saida, exist_ok=True)
+    saida.mkdir(parents=True, exist_ok=True)
 
-    with open(os.path.join(a.saida, "pe02.csv"), "w", newline="") as f:
+    with open(arquivos["pe02.csv"], "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["idx", "email", "salaId", "professorId", "materialId"])
         for i in range(a.pe02_threads):
             w.writerow([i, usuario(f"pe02-u{i}"), recurso(f"PE02 sala {i}", "SALA"),
                         professor(f"PE02 prof {i}"), recurso(f"PE02 material {i}", "EQUIPAMENTO")])
 
-    with open(os.path.join(a.saida, "pe03_usuarios.csv"), "w", newline="") as f:
+    with open(arquivos["pe03_usuarios.csv"], "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["idx", "email", "salaPropriaId"])
         for i in range(a.pe03_threads):
             w.writerow([i, usuario(f"pe03-u{i}"), recurso(f"PE03 sala propria {i}", "SALA")])
 
-    with open(os.path.join(a.saida, "pe03_disputas.csv"), "w", newline="") as f:
+    with open(arquivos["pe03_disputas.csv"], "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["disputa", "tipo", "alvoId"])
         for d in range(a.pe03_disputas):
@@ -132,7 +144,7 @@ def main():
         "professoresCriados": a.pe02_threads
                               + sum(1 for d in range(a.pe03_disputas) if TIPOS_DISPUTA[d % 3] == "PROFESSOR"),
     }
-    with open(os.path.join(a.saida, "manifesto.json"), "w") as f:
+    with open(arquivos["manifesto.json"], "w") as f:
         json.dump(manifesto, f, indent=2, ensure_ascii=False)
     print(json.dumps(manifesto, ensure_ascii=False))
 
