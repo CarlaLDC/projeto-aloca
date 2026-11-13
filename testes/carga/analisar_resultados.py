@@ -6,7 +6,7 @@ Produz ``resumo.json`` e ``RESULTADO.md`` no diretório da execução com:
   * requisições por segundo (por operação e global);
   * taxa de erro inesperado (409 das disputas é resposta esperada e é contado à parte);
   * distribuição de códigos HTTP;
-  * por disputa: tentativas, 201, 409, outros, vencedora pelo JTL e linha persistida no MySQL;
+  * por disputa: tentativas, 201, 409, outros, vencedora pelo JTL e linha persistida no PostgreSQL;
   * consistência do PE-02: criadas x canceladas x histórico de auditoria no banco.
 
 Percentis usam o método nearest-rank; o dashboard do JMeter usa outro estimador e pode
@@ -83,13 +83,15 @@ def ler_jtl(caminho):
     return amostras
 
 
-def consultar_banco(container, senha_root, prefixo):
+def consultar_banco(container, prefixo):
     sql = (
         "SELECT r.atividade, r.status, r.codigo, "
         "(SELECT COUNT(*) FROM historico_reserva h WHERE h.reserva_id = r.id) "
         f"FROM reserva r WHERE r.atividade LIKE '{prefixo} %'"
     )
-    cmd = ["docker", "exec", container, "mysql", "-uroot", f"-p{senha_root}", "-N", "-B", "aloca", "-e", sql]
+    # psql sem cabeçalho (-A -t) e com TAB entre as colunas, como a saída anterior.
+    cmd = ["docker", "exec", container, "psql", "-h", "127.0.0.1", "-U", "aloca", "-d", "aloca",
+           "-A", "-t", "-F", "\t", "-c", sql]
     saida = subprocess.run(cmd, capture_output=True, text=True, check=True).stdout
     linhas = []
     for l in saida.splitlines():
@@ -106,8 +108,7 @@ def main():
     p.add_argument("--massa", required=True)
     p.add_argument("--saida", required=True)
     p.add_argument("--aquecimento", type=int, default=60, help="segundos descartados no recorte em regime")
-    p.add_argument("--mysql-container", default="")
-    p.add_argument("--mysql-root-senha", default="aloca-root")
+    p.add_argument("--banco-container", default="", help="container PostgreSQL da execução (conferência no banco)")
     a = p.parse_args()
 
     manifesto = json.load(open(os.path.join(a.massa, "manifesto.json"), encoding="utf-8"))
@@ -149,8 +150,8 @@ def main():
 
     # ---------------------------------------------------------------- banco
     banco = None
-    if a.mysql_container:
-        linhas = consultar_banco(a.mysql_container, a.mysql_root_senha, manifesto["prefixo"])
+    if a.banco_container:
+        linhas = consultar_banco(a.banco_container, manifesto["prefixo"])
         pe03 = defaultdict(list)
         pe02 = []
         for l in linhas:
@@ -196,7 +197,7 @@ def main():
     def criterio(nome, ok, obtido):
         criterios.append({"criterio": nome, "aprovado": bool(ok), "obtido": obtido})
 
-    criterio("Uma única reserva aceita por disputa (JTL + MySQL)", not violacoes and tabela,
+    criterio("Uma única reserva aceita por disputa (JTL + PostgreSQL)", not violacoes and tabela,
              f"{len(tabela) - len(violacoes)}/{len(tabela)} disputas válidas; violações: {violacoes[:10]}")
     criterio("Nenhuma dupla reserva", not duplas, f"{len(duplas)} disputas com mais de uma aceita")
     criterio(f"Todas as disputas com {k_esperado} tentativas simultâneas", len(completas) == len(tabela),
@@ -213,7 +214,7 @@ def main():
         e = por_operacao_regime[r] or por_operacao[r]
         criterio(f"P95 '{r}' <= {P95_LIMITE_MS} ms (regime)", e["p95_ms"] <= P95_LIMITE_MS, f"{e['p95_ms']} ms")
     if banco:
-        criterio("PE-02: criadas no JTL = persistidas no MySQL",
+        criterio("PE-02: criadas no JTL = persistidas no PostgreSQL",
                  banco["pe02_criadas_jtl"] == banco["pe02_reservas_bd"],
                  f"{banco['pe02_criadas_jtl']} x {banco['pe02_reservas_bd']}")
         criterio("PE-02: canceladas com auditoria (>=3 eventos)",
@@ -283,7 +284,7 @@ def markdown(r, manifesto, n_violacoes):
                f"{sum(i['aceitas_201'] for i in d.values())}; recusadas (409): "
                f"{sum(i['recusadas_409'] for i in d.values())}; outros: {sum(i['outros'] for i in d.values())}.\n")
     if r["banco"]:
-        out.append(f"- MySQL: {r['banco']['pe03_reservas_bd']} reservas persistidas para {len(d)} disputas; "
+        out.append(f"- PostgreSQL: {r['banco']['pe03_reservas_bd']} reservas persistidas para {len(d)} disputas; "
                    f"em cada uma, a única linha persistida é a mesma atividade que recebeu 201 no JTL.\n")
     esp = sorted(i["espalhamento_envio_ms"] for i in d.values())
     if esp:

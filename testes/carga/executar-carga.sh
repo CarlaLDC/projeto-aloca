@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# Executa PE-02 + PE-03 contra API + MySQL descartável e preserva as evidências em
+# Executa PE-02 + PE-03 contra API + PostgreSQL descartável e preserva as evidências em
 # testes/carga/resultados/<RUN_ID>/ (JTL, dashboard HTML, logs, massa, análise).
 #
 # Pré-requisitos: Java 21, Maven, Docker, Python 3 e JMeter 5.6.3 (JMETER_HOME ou jmeter no PATH).
 # Variáveis opcionais: RUN_ID, DURACAO (s, padrão 660 = 60 aquecimento + 600 medição), RAMPUP (60),
-#   PE02_THREADS (40), PE03_THREADS (10), PE03_DISPUTAS (150), PORTA_API (8080), PORTA_MYSQL (3307).
+#   PE02_THREADS (40), PE03_THREADS (10), PE03_DISPUTAS (150), PORTA_API (8080), PORTA_BANCO (5434).
 set -euo pipefail
 
 RAIZ="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -17,8 +17,8 @@ PE02_THREADS="${PE02_THREADS:-40}"
 PE03_THREADS="${PE03_THREADS:-10}"
 PE03_DISPUTAS="${PE03_DISPUTAS:-150}"
 PORTA_API="${PORTA_API:-8080}"
-PORTA_MYSQL="${PORTA_MYSQL:-3307}"
-MYSQL_CONTAINER="aloca-carga-mysql-$RUN_ID"
+PORTA_BANCO="${PORTA_BANCO:-5434}"
+BANCO_CONTAINER="aloca-carga-postgres-$RUN_ID"
 JMETER="${JMETER_HOME:+$JMETER_HOME/bin/}jmeter"
 
 [ -e "$OUT" ] && { echo "Diretório $OUT já existe; use outro RUN_ID." >&2; exit 2; }
@@ -33,7 +33,7 @@ API_PID=""
 limpar() {
   rm -f "$SENHA_PROPS"
   [ -n "$API_PID" ] && kill "$API_PID" 2>/dev/null && wait "$API_PID" 2>/dev/null || true
-  docker rm -f "$MYSQL_CONTAINER" >/dev/null 2>&1 || true
+  docker rm -f "$BANCO_CONTAINER" >/dev/null 2>&1 || true
 }
 trap limpar EXIT
 
@@ -48,32 +48,39 @@ echo "== Ambiente"
   echo "memoria=$(free -h | awk '/Mem:/{print $2}')"
   echo "java=$(java -version 2>&1 | grep -m1 version)"
   echo "jmeter=$("$JMETER" -j /dev/null --version 2>/dev/null | grep -o '5\.[0-9.]*' | head -1)"
-  echo "mysql_imagem=mysql:8.4 (tmpfs, descartável)"
-  echo "api=backend/target/aloca-backend-0.1.0.jar, perfil mysql, Hikari padrão (10 conexões)"
-  echo "observacao=JMeter, API e MySQL na mesma máquina"
+  echo "banco_imagem=postgres:17-alpine (tmpfs, descartável)"
+  echo "api=backend/target/aloca-backend-*.jar, PostgreSQL, Hikari padrão (10 conexões)"
+  echo "observacao=JMeter, API e PostgreSQL na mesma máquina"
   echo "parametros=duracao=${DURACAO}s rampup=${RAMPUP}s pe02.threads=$PE02_THREADS pe03.threads=$PE03_THREADS pe03.disputas=$PE03_DISPUTAS"
 } | tee "$OUT/ambiente.txt"
 
-echo "== MySQL descartável"
-docker run -d --name "$MYSQL_CONTAINER" -p "$PORTA_MYSQL:3306" --tmpfs /var/lib/mysql \
-  -e MYSQL_DATABASE=aloca -e MYSQL_USER=aloca -e MYSQL_PASSWORD=aloca -e MYSQL_ROOT_PASSWORD=aloca-root \
-  mysql:8.4 --default-time-zone=-03:00 --character-set-server=utf8mb4 --collation-server=utf8mb4_0900_ai_ci >/dev/null
+echo "== PostgreSQL descartável"
+docker run -d --name "$BANCO_CONTAINER" -p "$PORTA_BANCO:5432" --tmpfs /var/lib/postgresql/data \
+  -e POSTGRES_DB=aloca -e POSTGRES_USER=aloca -e POSTGRES_PASSWORD=aloca -e TZ=America/Sao_Paulo \
+  postgres:17-alpine >/dev/null
+# Espera aceitar conexão TCP (o pg_isready pelo socket responde antes do reinício final da inicialização).
 for _ in $(seq 1 90); do
-  docker exec "$MYSQL_CONTAINER" mysql -ualoca -paloca -e "SELECT 1" aloca >/dev/null 2>&1 && break
+  docker exec "$BANCO_CONTAINER" psql -h 127.0.0.1 -U aloca -d aloca -Atc "SELECT 1" >/dev/null 2>&1 && break
   sleep 2
 done
-echo "mysql_versao=$(docker exec "$MYSQL_CONTAINER" mysql -V)" >> "$OUT/ambiente.txt"
+echo "banco_versao=$(docker exec "$BANCO_CONTAINER" postgres --version)" >> "$OUT/ambiente.txt"
 
 echo "== API"
-JAR="$RAIZ/backend/target/aloca-backend-0.1.0.jar"
-[ -f "$JAR" ] || mvn -q -f "$RAIZ/backend/pom.xml" -DskipTests package
-ALOCA_DB_URL="jdbc:mysql://localhost:$PORTA_MYSQL/aloca" ALOCA_JWT_SEGREDO="carga-$RUN_ID-segredo-local-com-32-caracteres" \
-  java -Xms512m -Xmx1g -jar "$JAR" --spring.profiles.active=mysql --server.port="$PORTA_API" \
+JAR="$(ls "$RAIZ"/backend/target/aloca-backend-*.jar 2>/dev/null | head -1)"
+if [ -z "$JAR" ]; then
+  mvn -q -f "$RAIZ/backend/pom.xml" -DskipTests package
+  JAR="$(ls "$RAIZ"/backend/target/aloca-backend-*.jar | head -1)"
+fi
+ALOCA_DB_URL="jdbc:postgresql://localhost:$PORTA_BANCO/aloca" ALOCA_JWT_SEGREDO="carga-$RUN_ID-segredo-local-com-32-caracteres" \
+  java -Xms512m -Xmx1g -jar "$JAR" --server.port="$PORTA_API" \
   > "$OUT/api.log" 2>&1 &
 API_PID=$!
+# Pronta = o login da administradora de demonstração funciona. O servidor começa a responder antes
+# de os dados de demonstração serem gravados; esperar só pela porta deixava a massa falhar com 401.
 for _ in $(seq 1 90); do
-  curl -s -o /dev/null -w '%{http_code}' -X POST -H 'Content-Type: application/json' -d '{}' \
-    "http://localhost:$PORTA_API/api/auth/login" | grep -q 400 && break
+  curl -s -X POST -H 'Content-Type: application/json' \
+    -d "{\"email\":\"${ADMIN_EMAIL:-patricia.souza@aloca.edu.br}\",\"senha\":\"${ADMIN_SENHA:-aloca123}\"}" \
+    "http://localhost:$PORTA_API/api/auth/login" | grep -q '"token"' && break
   sleep 2
 done
 
@@ -92,7 +99,7 @@ echo "== JMeter"
 echo "== Análise"
 set +e
 python3 "$CARGA/analisar_resultados.py" --jtl "$OUT/resultados.jtl" --massa "$OUT/massa" --saida "$OUT" \
-  --aquecimento "$RAMPUP" --mysql-container "$MYSQL_CONTAINER" | tee "$OUT/analise-console.txt"
+  --aquecimento "$RAMPUP" --banco-container "$BANCO_CONTAINER" | tee "$OUT/analise-console.txt"
 STATUS=${PIPESTATUS[0]}
 set -e
 # Nenhum segredo deve sobrar nos artefatos preservados.
