@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
-"""Analisa o JTL de uma execução de carga e confirma, no banco, uma única reserva por disputa.
+"""Analisa o JTL de uma execução de carga (PE-01, PE-02 e PE-03) e confirma, no banco, uma única
+reserva por disputa.
 
 Produz ``resumo.json`` e ``RESULTADO.md`` no diretório da execução com:
-  * p50/p90/p95/p99, média e máximo por operação (total e após o aquecimento);
+  * p50/p90/p95/p99, média e máximo por operação (total e após o aquecimento; a fase PE-01 tem o
+    próprio aquecimento, contado a partir da primeira pesquisa);
   * requisições por segundo (por operação e global);
   * taxa de erro inesperado (409 das disputas é resposta esperada e é contado à parte);
   * distribuição de códigos HTTP;
@@ -25,8 +27,14 @@ from collections import Counter, defaultdict
 
 ATIVOS = {"SOLICITADA", "APROVADA", "EM_USO"}
 P95_LIMITE_MS = 3000          # RNF-01: demais operações comuns em até 3 s (P95)
+P95_PESQUISA_MS = 2000        # RNF-01: pesquisa de disponibilidade em até 2 s (P95)
 ERRO_LIMITE_PCT = 1.0         # erros inesperados tolerados no total
-OPERACOES_LOGIN = ("PE-02 Login", "PE-03 Login")
+OPERACOES_LOGIN = ("PE-01 Login", "PE-02 Login", "PE-03 Login")
+PREFIXO_PESQUISA = "PE-01 Pesquisa"
+
+
+def limite_p95(rotulo):
+    return P95_PESQUISA_MS if rotulo.startswith(PREFIXO_PESQUISA) else P95_LIMITE_MS
 
 
 def percentil(valores, p):
@@ -117,18 +125,29 @@ def main():
     if not amostras:
         sys.exit("JTL sem amostras PE-*")
 
-    t0 = min(x["ts"] for x in amostras)
-    regime = [x for x in amostras if x["ts"] >= t0 + a.aquecimento * 1000]
+    # PE-01 é uma fase própria (começa depois de PE-02/PE-03): o aquecimento conta do início dela.
+    def inicio_fase(prefixo):
+        ts = [x["ts"] for x in amostras if x["label"].startswith(prefixo)]
+        return min(ts) if ts else None
+
+    outras = [x["ts"] for x in amostras if not x["label"].startswith("PE-01")]
+    t0 = min(outras) if outras else inicio_fase("PE-01")
+    t0_pe01 = inicio_fase("PE-01")
+    regime = [x for x in amostras
+              if x["ts"] >= (t0_pe01 if x["label"].startswith("PE-01") else t0) + a.aquecimento * 1000]
+    pesquisas = [x for x in amostras if x["label"].startswith(PREFIXO_PESQUISA)]
 
     rotulos = sorted({x["label"] for x in amostras})
     por_operacao = {r: estatisticas([x for x in amostras if x["label"] == r]) for r in rotulos}
     por_operacao_regime = {r: estatisticas([x for x in regime if x["label"] == r]) for r in rotulos}
     grupos = {
         "TOTAL": estatisticas(amostras),
+        "PE-01 (pesquisa)": estatisticas(pesquisas),
         "PE-02 (ciclo)": estatisticas([x for x in amostras if x["label"].startswith("PE-02")]),
         "PE-03 (disputas)": estatisticas([x for x in amostras if x["label"].startswith("PE-03 Disputa")]),
     }
-    grupos_regime = {"TOTAL": estatisticas(regime)}
+    grupos_regime = {"TOTAL": estatisticas(regime),
+                     "PE-01 (pesquisa)": estatisticas([x for x in regime if x["label"].startswith(PREFIXO_PESQUISA)])}
 
     # ---------------------------------------------------------------- disputas pelo JTL
     disputas = defaultdict(list)
@@ -197,6 +216,10 @@ def main():
     def criterio(nome, ok, obtido):
         criterios.append({"criterio": nome, "aprovado": bool(ok), "obtido": obtido})
 
+    pe01_planejado = manifesto.get("pe01Threads", 0)
+    if pe01_planejado:
+        criterio(f"PE-01 executado com {pe01_planejado} usuários pesquisando", bool(pesquisas),
+                 f"{len(pesquisas)} pesquisas")
     criterio("Uma única reserva aceita por disputa (JTL + PostgreSQL)", not violacoes and tabela,
              f"{len(tabela) - len(violacoes)}/{len(tabela)} disputas válidas; violações: {violacoes[:10]}")
     criterio("Nenhuma dupla reserva", not duplas, f"{len(duplas)} disputas com mais de uma aceita")
@@ -212,7 +235,8 @@ def main():
         if r in OPERACOES_LOGIN:
             continue
         e = por_operacao_regime[r] or por_operacao[r]
-        criterio(f"P95 '{r}' <= {P95_LIMITE_MS} ms (regime)", e["p95_ms"] <= P95_LIMITE_MS, f"{e['p95_ms']} ms")
+        limite = limite_p95(r)
+        criterio(f"P95 '{r}' <= {limite} ms (regime)", e["p95_ms"] <= limite, f"{e['p95_ms']} ms")
     if banco:
         criterio("PE-02: criadas no JTL = persistidas no PostgreSQL",
                  banco["pe02_criadas_jtl"] == banco["pe02_reservas_bd"],
@@ -260,6 +284,8 @@ def markdown(r, manifesto, n_violacoes):
            f"**Decisão automática: {r['decisao']}** (critérios abaixo; gerado por `analisar_resultados.py`).\n\n",
            f"Massa isolada `{manifesto['prefixo']}`: {manifesto['usuariosCriados']} usuários, "
            f"{manifesto['recursosCriados']} recursos e {manifesto['professoresCriados']} professores criados só para esta execução.\n\n",
+           f"Metas (RNF-01): P95 da pesquisa de disponibilidade (PE-01) <= {P95_PESQUISA_MS} ms; "
+           f"demais operações (PE-02, PE-03) <= {P95_LIMITE_MS} ms; logins fora do critério.\n\n",
            "## Critérios\n\n| Critério | Resultado | Obtido |\n|---|---|---|\n"]
     for c in r["criterios"]:
         out.append(f"| {c['criterio']} | {'✅' if c['aprovado'] else '❌'} | {c['obtido']} |\n")
@@ -270,12 +296,20 @@ def markdown(r, manifesto, n_violacoes):
     out.append(f"\n## Por operação — execução completa\n\n" + cab)
     for nome, e in r["por_operacao"].items():
         out.append(linha_stats(nome, e))
-    out.append(f"\n## Por operação — regime (descartados os primeiros {r['aquecimento_s']} s)\n\n" + cab)
+    out.append(f"\n## Por operação — regime (descartados os primeiros {r['aquecimento_s']} s de cada fase)\n\n" + cab)
     for nome, e in r["por_operacao_regime"].items():
         if e:
             out.append(linha_stats(nome, e))
     out.append("\n“Erro inesperado” exclui o 409 das perdedoras de cada disputa, que é a resposta correta; "
                "qualquer 5xx, timeout, 409 fora de disputa ou asserção violada conta como erro.\n")
+    p1 = r["grupos"].get("PE-01 (pesquisa)")
+    if p1:
+        p1r = r["grupos_regime"].get("PE-01 (pesquisa)") or p1
+        out.append("\n## PE-01: pesquisa de disponibilidade\n\n")
+        out.append(f"- {p1['amostras']} pesquisas ({p1['req_por_s']} req/s) depois de PE-02/PE-03, com a base já carregada "
+                   "pelas reservas da campanha; cada usuário pesquisa um dia com reservas das disputas.\n")
+        out.append(f"- Em regime: P95 {p1r['p95_ms']} ms, P99 {p1r['p99_ms']} ms, máximo {p1r['max_ms']} ms; "
+                   f"erro inesperado {p1['taxa_erro_pct']}% (meta: P95 <= {P95_PESQUISA_MS} ms).\n")
     d = r["disputas"]
     tipos = Counter(i["tipo"] for i in d.values())
     out.append("\n## Comprovação: uma única reserva aceita por disputa\n\n")

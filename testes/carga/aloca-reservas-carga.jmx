@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Aloca · PE-02 (criação/alteração/cancelamento com massa exclusiva) e
-  PE-03 (disputas simultâneas por sala, professor e material sob volume).
+  Aloca · PE-02 (criação/alteração/cancelamento com massa exclusiva),
+  PE-03 (disputas simultâneas por sala, professor e material sob volume) e
+  PE-01 (pesquisa de disponibilidade com 50 usuários, fase própria depois de PE-02/PE-03,
+  com a base já carregada pelas reservas da campanha).
   Executar com testes/carga/executar-carga.sh, que prepara a massa isolada,
-  sobe API + MySQL e preserva JTL, dashboard, log e análise.
+  sobe API + PostgreSQL e preserva JTL, dashboard, log e análise.
   Propriedades (-J): host, port, massa, senha, rampup, duracao,
   pe02.threads, pe02.pensar_min, pe02.pensar_var, pe03.threads, pe03.disputas,
-  pe03.atraso, pe03.pensar, pe03.sync_timeout.
+  pe03.atraso, pe03.pensar, pe03.sync_timeout,
+  pe01.threads, pe01.duracao, pe01.atraso, pe01.pensar_min, pe01.pensar_var, pe01.professores.
 -->
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.6.3">
   <hashTree>
@@ -82,6 +85,8 @@ props.put('massa.pe02', ler('pe02.csv'))
 props.put('massa.pe03.usuarios', ler('pe03_usuarios.csv'))
 props.put('massa.pe03.disputas', ler('pe03_disputas.csv'))
 props.put('massa.manifesto', manifesto)
+// PE-01 reaproveita os mesmos 50 Solicitantes sintéticos (PE-02 + PE-03): só leitura.
+props.put('massa.pe01', props.get('massa.pe02').collect { it.email } + props.get('massa.pe03.usuarios').collect { it.email })
 int t2 = props.getProperty('pe02.threads', '40') as int
 int t3 = props.getProperty('pe03.threads', '10') as int
 int d3 = props.getProperty('pe03.disputas', '150') as int
@@ -89,7 +94,11 @@ if (props.get('massa.pe02').size() &lt; t2 || props.get('massa.pe03.usuarios').s
     || props.get('massa.pe03.disputas').size() &lt; d3) {
   throw new IllegalStateException('Massa menor que threads/disputas configuradas: dados seriam compartilhados.')
 }
-log.info("Massa ${manifesto.prefixo} carregada: PE-02=${t2} PE-03=${t3}x${d3}")</stringProp>
+int t1 = props.getProperty('pe01.threads', '50') as int
+if (t1 &gt; 0 &amp;&amp; props.get('massa.pe01').isEmpty()) {
+  throw new IllegalStateException('PE-01 sem usuários na massa.')
+}
+log.info("Massa ${manifesto.prefixo} carregada: PE-01=${t1} PE-02=${t2} PE-03=${t3}x${d3}")</stringProp>
           </JSR223PreProcessor>
           <hashTree/>
         </hashTree>
@@ -439,6 +448,166 @@ if (codigo == '201') {
 }</stringProp>
           </JSR223Assertion>
           <hashTree/>
+        </hashTree>
+      </hashTree>
+
+      <!-- ============================== PE-01: pesquisa de disponibilidade ============================== -->
+      <!-- Fase própria: começa depois de PE-02/PE-03 (pe01.atraso), com 50 usuários só pesquisando.
+           A base já tem as reservas da campanha (vencedoras das disputas continuam APROVADA). -->
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="PE-01 Pesquisa de disponibilidade">
+        <stringProp name="ThreadGroup.num_threads">${__P(pe01.threads,50)}</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">${__P(rampup,60)}</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">${__P(pe01.duracao,660)}</stringProp>
+        <stringProp name="ThreadGroup.delay">${__P(pe01.atraso,0)}</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <TestAction guiclass="TestActionGui" testclass="TestAction" testname="PE-01 preparar iteração">
+          <intProp name="ActionProcessor.action">1</intProp>
+          <intProp name="ActionProcessor.target">0</intProp>
+          <stringProp name="ActionProcessor.duration">0</stringProp>
+        </TestAction>
+        <hashTree>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Usuário e dia pesquisado">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">import java.time.LocalDate
+import java.util.concurrent.ThreadLocalRandom
+def k = ctx.getThreadNum()
+def emails = props.get('massa.pe01')
+def manifesto = props.get('massa.manifesto')
+vars.put('email', emails[k % emails.size()])
+// Dias com reservas da campanha: as disputas ocupam pe03DataBase + 0..(disputas-1).
+int dias = Math.max(1, (manifesto.pe03Disputas ?: 1) as int)
+vars.put('dataPesquisa', LocalDate.parse(manifesto.pe03DataBase).plusDays(ThreadLocalRandom.current().nextInt(dias)).toString())</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+        </hashTree>
+        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Login uma vez"/>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PE-01 Login">
+            <stringProp name="HTTPSampler.path">/api/auth/login</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">{"email":"${email}","senha":"${__P(senha)}"}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="200">
+              <collectionProp name="Asserion.test_strings"><stringProp name="49586">200</stringProp></collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+              <intProp name="Assertion.test_type">8</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="token">
+              <stringProp name="JSONPostProcessor.referenceNames">token</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.token</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers">1</stringProp>
+              <stringProp name="JSONPostProcessor.defaultValues">SEM_TOKEN</stringProp>
+            </JSONPostProcessor>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <GenericController guiclass="LogicControllerGui" testclass="GenericController" testname="Autenticado"/>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Bearer">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Bearer ${token}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <UniformRandomTimer guiclass="UniformRandomTimerGui" testclass="UniformRandomTimer" testname="Tempo de pensar">
+            <stringProp name="ConstantTimer.delay">${__P(pe01.pensar_min,500)}</stringProp>
+            <stringProp name="RandomTimer.range">${__P(pe01.pensar_var,1000)}</stringProp>
+          </UniformRandomTimer>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PE-01 Pesquisa recursos do dia">
+            <stringProp name="HTTPSampler.path">/api/disponibilidade?data=${dataPesquisa}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="200">
+              <collectionProp name="Asserion.test_strings"><stringProp name="49586">200</stringProp></collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+              <intProp name="Assertion.test_type">8</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="lista no corpo">
+              <collectionProp name="Asserion.test_strings"><stringProp name="5">"recursos"</stringProp></collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <intProp name="Assertion.test_type">16</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PE-01 Pesquisa salas filtradas">
+            <stringProp name="HTTPSampler.path">/api/disponibilidade?data=${dataPesquisa}&amp;tipo=SALA&amp;capacidadeMinima=20&amp;busca=bloco</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="200">
+              <collectionProp name="Asserion.test_strings"><stringProp name="49586">200</stringProp></collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+              <intProp name="Assertion.test_type">8</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="lista no corpo">
+              <collectionProp name="Asserion.test_strings"><stringProp name="5">"recursos"</stringProp></collectionProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <intProp name="Assertion.test_type">16</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+          <IfController guiclass="IfControllerPanel" testclass="IfController" testname="Se a API tem a busca de professores">
+            <stringProp name="IfController.condition">${__groovy(props.getProperty('pe01.professores'\, 'true') == 'true')}</stringProp>
+            <boolProp name="IfController.evaluateAll">false</boolProp>
+            <boolProp name="IfController.useExpression">true</boolProp>
+          </IfController>
+          <hashTree>
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="PE-01 Pesquisa professores">
+              <stringProp name="HTTPSampler.path">/api/disponibilidade/professores?data=${dataPesquisa}&amp;competencia=Carga</stringProp>
+              <stringProp name="HTTPSampler.method">GET</stringProp>
+              <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+                <collectionProp name="Arguments.arguments"/>
+              </elementProp>
+            </HTTPSamplerProxy>
+            <hashTree>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="200">
+                <collectionProp name="Asserion.test_strings"><stringProp name="49586">200</stringProp></collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+                <intProp name="Assertion.test_type">8</intProp>
+              </ResponseAssertion>
+              <hashTree/>
+              <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="lista no corpo">
+                <collectionProp name="Asserion.test_strings"><stringProp name="5">"professores"</stringProp></collectionProp>
+                <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+                <intProp name="Assertion.test_type">16</intProp>
+              </ResponseAssertion>
+              <hashTree/>
+            </hashTree>
+
+          </hashTree>
         </hashTree>
       </hashTree>
     </hashTree>
