@@ -4,10 +4,13 @@ import br.com.aloca.api.dto.AdminDtos.ProfessorDto;
 import br.com.aloca.repositorio.ProfessorRepositorio;
 import java.util.List;
 import java.util.Locale;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
 /** Consulta de docentes ativos por nome ou competência, disponível a usuários autenticados. */
 @RestController
+@Tag(name = "03 · Disponibilidade", description = "Pesquisa de recursos e professores (RF-03).")
 @RequestMapping("/api/professores")
 public class ProfessorConsultaController {
     private final ProfessorRepositorio professores;
@@ -16,6 +19,7 @@ public class ProfessorConsultaController {
         this.professores = professores;
     }
 
+    @Operation(summary = "Buscar professores ativos por nome ou competência", description = "Qualquer usuário autenticado.")
     @GetMapping
     public List<ProfessorDto> buscar(@RequestParam(required = false) String competencia) {
         String termo = competencia == null ? "" : competencia.strip().toLowerCase(Locale.ROOT);
