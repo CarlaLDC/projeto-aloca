@@ -82,13 +82,14 @@ Não usar este modelo preenchido automaticamente como assinatura de outra pessoa
 
 | PR | Revisor | SHA | Data | Link da avaliação | Parecer |
 |---|---|---|---|---|---|
-| #27 | CarolinaMagalhaesLopes | Pendente | Pendente | Pendente | Revisão solicitada; avaliação pendente |
-| #28 | CarolinaMagalhaesLopes | Pendente | Pendente | Pendente | Revisão solicitada; avaliação pendente |
-| #29 | CarolinaMagalhaesLopes | Pendente | Pendente | Pendente | Revisão solicitada; avaliação pendente |
-| #43 | CarolinaMagalhaesLopes | Pendente | Pendente | Pendente | Revisão solicitada; avaliação pendente |
+| #27 | Camila-cvs | Pendente | Pendente | Pendente | Revisão solicitada; avaliação pendente |
+| #28 | Camila-cvs | Pendente | Pendente | Pendente | Revisão solicitada; avaliação pendente |
+| #29 | A definir: Camila-cvs é autora | Pendente | Pendente | Pendente | Revisão solicitada; avaliação pendente |
+| #43 | Camila-cvs | Pendente | Pendente | Pendente | Revisão solicitada; avaliação pendente |
 
 Somente alterar o status de revisão por pares na RTM após vincular avaliações reais. Uma aprovação com escopo restrito não equivale à homologação global da aplicação.
 
+
 ## Solicitação registrada
 
-Em 12/11/2026 (America/Sao_Paulo), a equipe indicou CarolinaMagalhaesLopes. O GitHub confirmou solicitações de revisão para os PRs #27, #28, #29, #43 e #44. A colaboradora possui permissão write e não é autora dos PRs indicados. As solicitações nos PRs já mesclados são retrospectivas; não comprovam revisão anterior ao merge. O status permanece pendente até que a própria revisora publique sua avaliação e seus links sejam registrados.
+A indicação anterior foi substituída por Camila-cvs. O GitHub confirmou a remoção de CarolinaMagalhaesLopes dos PRs #27, #28, #29, #43 e #44 e a solicitação a Camila-cvs nos PRs #27, #28, #43 e #44. O PR #29 ficou sem revisor definido porque Camila-cvs é a autora e não pode fornecer revisão independente da própria alteração. PRs mesclados ficam na lista Closed/Merged; as solicitações neles são retrospectivas, não comprovam revisão antes do merge. Nenhuma avaliação foi presumida.
