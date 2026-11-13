@@ -149,3 +149,7 @@ As propostas anteriores foram preservadas em [arquitetura-historica.md](src/docs
 ## Defeitos, correções e regressões
 
 Consulte o [registro priorizado](src/docs/defeitos.md), com causas, commits, testes de regressão, evidências históricas e pendências de entrega. Novas ocorrências devem usar o [template de defeito](.github/ISSUE_TEMPLATE/defeito.md).
+
+## Rastreabilidade
+
+Consulte a [RTM reconciliada](RTM.md), com requisito, risco, implementação, teste, evidência por commit e pendências. Resultados históricos e aceite da release são distinguidos explicitamente.
