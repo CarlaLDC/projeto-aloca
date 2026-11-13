@@ -1,0 +1,20 @@
+Decisão: APROVADO
+OK    PE-01 executado com 50 usuários pesquisando: 31361 pesquisas
+OK    Uma única reserva aceita por disputa (JTL + PostgreSQL): 150/150 disputas válidas; violações: []
+OK    Nenhuma dupla reserva: 0 disputas com mais de uma aceita
+OK    Todas as disputas com 10 tentativas simultâneas: 150/150
+OK    Disputas executadas = disputas planejadas: 150/150
+OK    Taxa de erro inesperado total < 1.0%: 0.0%
+OK    Nenhuma resposta 5xx ou falha de conexão: 0
+OK    P95 'PE-01 Pesquisa professores' <= 2000 ms (regime): 6 ms
+OK    P95 'PE-01 Pesquisa recursos do dia' <= 2000 ms (regime): 8 ms
+OK    P95 'PE-01 Pesquisa salas filtradas' <= 2000 ms (regime): 8 ms
+OK    P95 'PE-02 Alterar reserva' <= 3000 ms (regime): 19 ms
+OK    P95 'PE-02 Cancelar reserva' <= 3000 ms (regime): 16 ms
+OK    P95 'PE-02 Consultar detalhe' <= 3000 ms (regime): 9 ms
+OK    P95 'PE-02 Criar reserva' <= 3000 ms (regime): 12 ms
+OK    P95 'PE-03 Disputa MATERIAL' <= 3000 ms (regime): 90 ms
+OK    P95 'PE-03 Disputa PROFESSOR' <= 3000 ms (regime): 87 ms
+OK    P95 'PE-03 Disputa SALA' <= 3000 ms (regime): 117 ms
+OK    PE-02: criadas no JTL = persistidas no PostgreSQL: 6252 x 6252
+OK    PE-02: canceladas com auditoria (>=3 eventos): 0 sem histórico completo

@@ -50,7 +50,7 @@ E3/E4/E5 são evidências históricas identificadas, não novas execuções do c
 | Requisito | Risco | Teste/critério | Evidência e situação |
 |---|---|---|---|
 | RNF-01 — 50 usuários, p95 pesquisa até 2 s e demais até 3 s | Alto: degradação | PERF-01 carga autenticada de negócio, duração/massa/ambiente registrados, p95 por operação, throughput e erros | **Verificado** em [RELATORIO-CARGA](src/docs/qualidade/RELATORIO-CARGA.md), PostgreSQL, 50 usuários, 600 s de medição por fase: pesquisa de disponibilidade (PE-01) com P95 de 6–8 ms (meta 2 s); operações de reserva com P95 ≤ 117 ms (meta 3 s); 0% de erro inesperado; JTL e dashboard em `testes/carga/resultados/20261113-campanha-03`. DEF-PERF-001 corrigido e validado |
-| RNF-02 — conflito simultâneo | Crítico: inconsistência | Mesmos testes de RF-06: exatamente 201/409 por disputa HTTP e uma reserva persistida; JMeter PE-03 sob volume | **Verificado em E1 e sob carga** (150/150 disputas com uma única aceita, JTL + MySQL); não garante todos os entrelaçamentos possíveis |
+| RNF-02 — conflito simultâneo | Crítico: inconsistência | Mesmos testes de RF-06: exatamente 201/409 por disputa HTTP e uma reserva persistida; JMeter PE-03 sob volume | **Verificado em E1 e sob carga** (150/150 disputas com uma única aceita, JTL + PostgreSQL, campanha `20261113-campanha-03`; antes, campanha 01 com MySQL); não garante todos os entrelaçamentos possíveis |
 | RNF-03 — autorização/entrada/erros e zero alta/crítica | Crítico: acesso/exposição | AutenticacaoTest; matriz de perfil, dono, validação e erro seguro em RegrasCriticasHttpTest; análise de segurança | **Parcial**: controles dinâmicos aprovados em E1; relatório de vulnerabilidades altas/críticas pendente |
 | RNF-04 — dados após reinício | Alto: perda de reserva/histórico | CT-15 criar dados, reiniciar processo mantendo banco e consultar os mesmos IDs/históricos | **Parcial**: persistência JPA real testada em E1; H2 em arquivo/MySQL configurados. Não foi localizada execução específica de reinício, portanto não aprovado integralmente |
 | RNF-05 — celular/desktop | Médio: falha de usabilidade | CT-13 pesquisa/reserva/cancelamento em 360/1280 px, navegador e capturas | **Pendente de execução manual**; CSS e testes automatizados não substituem o registro |
@@ -65,18 +65,23 @@ AUD-01..AUD-10 preservam IDs de roteiro; cada linha indica os testes reais que o
 
 | ID | Transição/regra | Implementação e teste | Evidência / limite |
 |---|---|---|---|
-| AUD-01 | Inexistente → SOLICITADA | ReservaService.criar; ReservaApiTest.recursoRestritoFicaAguardandoAprovacao; CicloReservaApiTest | E1 |
-| AUD-02 | SOLICITADA → APROVADA | AprovacaoService; AprovacaoApiTest; suíte HTTP de aprovação válida | E1: decisão, ator e histórico |
-| AUD-03 | SOLICITADA → REJEITADA | AprovacaoService; AprovacaoApiTest.rejeicaoExigeJustificativaEGuardaOMotivo; HTTP | E1 |
-| AUD-04 | Reserva → CANCELADA | ReservaService.cancelar; ReservaApiTest.cancelamentoExigeMotivoEliberaOHorario; HTTP | E1: proprietário e motivo, histórico permanece |
-| AUD-05 | Dados alterados / nova aprovação quando restrita | ReservaService.alterar; ReservaApiTest.alteracaoRevalidaConflitosERegistraHistorico | E1; não implica diff completo de cadastros administrativos |
-| AUD-06 | APROVADA → EM_USO → CONCLUIDA | CicloReservaApiTest.percorreSolicitadaAprovadaEmUsoEConcluidaComAuditoria | E1: relógio controlado, estados, ator Sistema e idempotência; não mede temporização real do scheduler |
+| AUD-01 | Inexistente → SOLICITADA | ReservaService.criar; ReservaApiTest.recursoRestritoFicaAguardandoAprovacao; CicloReservaApiTest; CicloDeVidaApiTest.cadaTransicaoEhAuditada (criação) | E1 |
+| AUD-02 | SOLICITADA → APROVADA | AprovacaoService; AprovacaoApiTest; suíte HTTP de aprovação válida; CicloDeVidaApiTest.cadaTransicaoEhAuditada (aprovação automática e pelo responsável) | E1: decisão, ator e histórico |
+| AUD-03 | SOLICITADA → REJEITADA | AprovacaoService; AprovacaoApiTest.rejeicaoExigeJustificativaEGuardaOMotivo; HTTP; CicloDeVidaApiTest.cadaTransicaoEhAuditada (rejeição) | E1 |
+| AUD-04 | Reserva → CANCELADA | ReservaService.cancelar; ReservaApiTest.cancelamentoExigeMotivoEliberaOHorario; HTTP; CicloDeVidaApiTest.cadaTransicaoEhAuditada (cancelamento de solicitada e de aprovada) | E1: proprietário e motivo, histórico permanece |
+| AUD-05 | Dados alterados / nova aprovação quando restrita | ReservaService.alterar; ReservaApiTest.alteracaoRevalidaConflitosERegistraHistorico; CicloDeVidaApiTest.cadaTransicaoEhAuditada (alteração de solicitada, de aprovada e que exige nova aprovação: APROVADA → SOLICITADA) | E1; não implica diff completo de cadastros administrativos |
+| AUD-06 | APROVADA → EM_USO → CONCLUIDA | CicloReservaApiTest.percorreSolicitadaAprovadaEmUsoEConcluidaComAuditoria; CicloDeVidaApiTest.cicloCompleto (um registro de auditoria por passo) | E1: relógio controlado, estados, ator Sistema e idempotência; não mede temporização real do scheduler |
 | AUD-07 | Material aguardando → EM_USO | MovimentacaoService.registrarRetirada; MaterialApiTest | E1: autorização e histórico |
 | AUD-08 | Material em uso → DEVOLVIDO | MovimentacaoService.registrarDevolucao; MaterialApiTest e HTTP | E1: protocolo/histórico; devolução pendente é estado visual calculado |
 | AUD-09 | Impedir alteração/cancelamento com material retirado | MaterialApiTest.reservaComMaterialRetiradoNaoPodeSerCancelada; HTTP retiradaEDevolucaoProtegemReservaEmUsoEPreservamAuditoria | E1. Não há endpoint DELETE de reserva; ausência de DELETE não deve ser descrita como teste de exclusão executado |
-| AUD-10 | Dados/histórico após reinício | CT-15 definido no plano | Pendente conforme RNF-04 |
-| AUD-11 | APROVADA → NAO_COMPARECEU | NaoComparecimentoApiTest.responsavelRegistraAusenciaEEstadoEAuditoriaFicamPersistidos | E1: ator, janela, persistência e tentativa duplicada |
+| AUD-10 | Dados/histórico após reinício | ReinicioPersistenciaTest (aplicação desligada e reiniciada sobre o mesmo PostgreSQL, sem duplicar a demonstração); scripts/persistencia-reinicio.py no workflow Candidato | **Verificado** com PostgreSQL (execução de 13/11/2026 abaixo) |
+| AUD-11 | APROVADA → NAO_COMPARECEU | NaoComparecimentoApiTest.responsavelRegistraAusenciaEEstadoEAuditoriaFicamPersistidos; CicloDeVidaApiTest.cadaTransicaoEhAuditada (não compareceu a partir de Aprovada e de Em uso) | E1: ator, janela, persistência e tentativa duplicada |
 | AUD-12 | Mudanças administrativas | AdminService e EventoAuditoria; AdminRecursosTest.operacoesAdministrativasGeramAuditoriaPersistidaComAtor | E1: criação/desativação de recurso verificadas. Código registra demais operações de recurso/professor/bloqueio; ampliar testes por operação. Registro administrativo contém descrição, não snapshot completo antes/depois |
+| AUD-13 | Matriz completa de transições (permitidas e recusadas) | CicloDeVidaReservaTest: 49 pares de estados (7 × 7), estados finais, ciclo pelo relógio e janelas de alteração/não comparecimento; a entidade recusa transição fora da matriz | E1: 88 casos, 0 falhas |
+| AUD-14 | Todas as 12 transições permitidas da matriz (10 que mudam o estado e 2 alterações no mesmo estado) e a criação, com auditoria | CicloDeVidaApiTest.cadaTransicaoEhAuditada: cada transição pela API grava estado anterior, estado novo, ator e data, e o histórico fica encadeado (o anterior de um evento é o novo do evento anterior); inclui APROVADA → CONCLUIDA sem passar por Em uso | E1: 15 casos, 0 falhas |
+| AUD-15 | Bloqueio de manutenção cancela reservas aprovadas | BloqueioAfetaReservasApiTest: aprovada no período cancelada com auditoria do administrador e aviso; pendente continua Solicitada e não pode ser aprovada; material bloqueado; casos não afetados | E1: 6 casos, 0 falhas |
+
+Execução de 13/11/2026 no develop `34b7bcb` (PostgreSQL 17 via Testcontainers): CicloDeVidaReservaTest 88, CicloDeVidaApiTest 15, BloqueioAfetaReservasApiTest 6, AdminRecursosTest 6, MaterialApiTest 5, AprovacaoApiTest 2, CicloReservaApiTest 1, NaoComparecimentoApiTest 1 e ReinicioPersistenciaTest 1: **125 testes, 0 falhas**. Também fazem parte do `mvn verify` do CI (502 testes).
 
 ## Estratégia obrigatória e entregáveis relacionados
 
@@ -91,7 +96,7 @@ AUD-01..AUD-10 preservam IDs de roteiro; cada linha indica os testes reais que o
 | WireMock | Atendido: EX-01 a EX-04 em `NotificacaoExternaClientTest` e `NotificacaoExternaApiTest`, 21 testes aprovados ([relatório](src/docs/qualidade/RELATORIO-WIREMOCK.md)) |
 | Plano, suíte, relatório e defeitos | [plano](https://github.com/CarlaLDC/projeto-aloca/blob/3fb1f0dc91d58fa06d72d0306db7239f7e2c54bf/src/docs/qualidade/PLANO-TESTES.md), [suíte](https://github.com/CarlaLDC/projeto-aloca/blob/3fb1f0dc91d58fa06d72d0306db7239f7e2c54bf/src/docs/qualidade/SUITE-TESTES.md), [relatório](https://github.com/CarlaLDC/projeto-aloca/blob/3fb1f0dc91d58fa06d72d0306db7239f7e2c54bf/src/docs/qualidade/RELATORIO-TESTES.md), [defeitos](https://github.com/CarlaLDC/projeto-aloca/blob/3fb1f0dc91d58fa06d72d0306db7239f7e2c54bf/src/docs/defeitos.md) |
 | Diagramas | [arquitetura implementada](https://github.com/CarlaLDC/projeto-aloca/blob/3fb1f0dc91d58fa06d72d0306db7239f7e2c54bf/src/docs/arquitetura.md); descrição de snapshot, não certificado de execução |
-| Versões exigidas | [POM](https://github.com/CarlaLDC/projeto-aloca/blob/3fb1f0dc91d58fa06d72d0306db7239f7e2c54bf/backend/pom.xml) continua Java 21/Spring Boot 4.1.2. Enunciado pede Boot 3.x/JUnit 5; evidência histórica usa Jupiter 6.0.3. Adequar ou registrar aceite explícito |
+| Versões exigidas | [POM](https://github.com/CarlaLDC/projeto-aloca/blob/3fb1f0dc91d58fa06d72d0306db7239f7e2c54bf/backend/pom.xml) continua Java 21/Spring Boot 4.1.2. Enunciado pede Boot 3.x/JUnit 5; evidência histórica usa Jupiter 6.0.3. **Aceite do professor** para Spring Boot 4.1.2 em 13/11/2026 |
 | Lacunas de escopo | Gestão completa de usuários/perfis; capacidade na interface; alinhar professor solicitante; não marcar como entregue por existir entidade ou conta de demonstração |
 
 ## Decisão e manutenção
@@ -114,6 +119,20 @@ Fonte: [CANDIDATO.md](src/docs/qualidade/CANDIDATO.md). Head executável `895d8e
 | RF-13 / RNF-05 — 360 e 1280 px | Fluxo inacessível | candidato-responsivo.cjs; pesquisa, criação e cancelamento pela UI, capturas e medidas | Verificado em Chromium nesses viewports, com inspeção visual registrada no relatório; não equivale a certificação de todos os dispositivos/acessibilidade |
 | RNF-04 / AUD-10 — reinício | Perda de reserva/histórico | persistencia-reinicio.py; dois processos reais sobre o mesmo H2 em arquivo | Aprovado: reserva completa/histórico iguais, cinco eventos, recurso preservado. MySQL continua testado separadamente na integração |
 | RNF-06 — cobertura do candidato | Percentuais sem origem | resumo-cobertura.py, XML JaCoCo e metadados de checkout | Aprovado neste candidato: linhas 94,63% (1340/1416), branches 79,16% (376/475); build falha abaixo de 80%/70% |
-| RNF-08 — evidências dos itens acima | Rastreabilidade incompleta | Este adendo, relatório e JSONs originais | Mapeamento atualizado; permanecem pendências globais de SonarCloud/segurança e versões (carga e WireMock executados), sem declarar 100% de aceite global |
+| RNF-08 — evidências dos itens acima | Rastreabilidade incompleta | Este adendo, relatório e JSONs originais | Mapeamento atualizado; permanecem pendências globais de SonarCloud/segurança (carga e WireMock executados; versões com aceite do professor), sem declarar 100% de aceite global |
 
 A suíte completa deste incremento tem **164 testes backend aprovados, zero falhas/erros/ignorados**. As evidências E1–E5 anteriores continuam históricas e não substituem os metadados deste candidato. O incremento está proposto no PR #43; só passa a compor develop após merge. A main não recebe automaticamente a aplicação integrada.
+
+## Incremento verificado — carga JMeter (branch qa/performance-jmeter)
+
+Fonte: [RELATORIO-CARGA](src/docs/qualidade/RELATORIO-CARGA.md) e [testes/carga](testes/carga/README.md). Campanha principal `20261113-campanha-03` sobre o develop com as 9 branches de back-end (PostgreSQL 17, JMeter 5.6.3, 50 usuários por fase, 600 s de medição após 60 s de aquecimento). Linha de base sem a correção do DEF-PERF-001: `20261113-campanha-02`. Histórico: `20261113-campanha-01` (MySQL, só PE-02/PE-03).
+
+| Requisito/item afetado | Risco | Implementação/teste do incremento | Evidência e estado |
+|---|---|---|---|
+| RNF-01 — pesquisa de disponibilidade até 2 s (P95), 50 usuários | Pesquisa lenta sob uso simultâneo | PE-01: 50 usuários pesquisando recursos do dia, salas filtradas e professores por competência, numa base já carregada pela campanha | **Verificado**: 31.361 pesquisas, P95 de 6–8 ms, 0% de erro (`resultados/20261113-campanha-03`) |
+| RNF-01 — demais operações até 3 s (P95), 50 usuários | Degradação de criar/alterar/cancelar | PE-02: 40 usuários no ciclo criar → consultar → alterar → cancelar com massa exclusiva | **Verificado**: P95 de 9–19 ms em regime; 6.252 criadas = 6.252 persistidas, canceladas com auditoria completa |
+| RF-06 / RNF-02 — uma única reserva por disputa sob volume | Dupla reserva | PE-03: 150 disputas (sala, professor, material) com 10 tentativas simultâneas, enquanto PE-02 roda | **Verificado**: 150/150 com exatamente 1×201 e 9×409; no PostgreSQL, a única linha persistida é a vencedora do JTL |
+| DEF-PERF-001 — 409 lento por professor/material | Tempo cresce com o número de salas | Correção em `ReservaService.alternativas`; `AlternativasConflitoUnitTest`; repetição de PE-03 | **Validado**: P95 do 409 (professor/material) de 1.167/1.256 ms na campanha 02 para 90/90 ms na campanha 03 |
+| Regressão contínua | Perder a regra sob carga em mudanças futuras | Workflow `carga-jmeter.yml`: perfil reduzido em PRs que tocam `backend/` ou `testes/carga/`; campanha completa por *workflow_dispatch*; autoteste do analisador | Ativo; repetir a campanha completa no SHA final do develop pelo workflow |
+
+**Limites:** JMeter, API e banco na mesma máquina (4 vCPU); um único nó da API; massa sintética. O JMeter mede o back-end por HTTP, não a renderização do Angular.
