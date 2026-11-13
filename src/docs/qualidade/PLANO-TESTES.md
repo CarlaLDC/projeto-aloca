@@ -28,34 +28,34 @@ P0 não é sinônimo de severidade de defeito; prioridade do teste e severidade 
 | Modalidade | Objetivo / técnica | Ambiente | Artefato / situação na base |
 |---|---|---|---|
 | Unitário backend | Decisões, partições, fronteiras, auditoria e estados | JUnit + Mockito em dependências, relógio fixo, sem Spring/banco | 3 classes isoladas; executáveis |
-| Parametrizado | Matriz de intervalos e fronteiras de sala/material/professor | JUnit MethodSource/CsvSource, aplicação e MySQL | ReservaParametrizadaApiTest; executável |
-| Integração | Controllers/serviços/JPA, transações e estado persistido | Spring + MockMvc + MySQL 8.4/Testcontainers | Suíte ApiTesteBase; executável |
-| API caixa-preta | Contratos/segurança/regras exclusivamente por HTTP/JSON | HttpClient, servidor real, MySQL/Testcontainers | RegrasCriticasHttpTest; incorporada pelo PR #38 |
-| Concorrência | Exatamente uma aceitação por disputa do mesmo alvo | Integração paralela MySQL; HTTP paralelo após #38 | ConcorrenciaReservaTest + suíte HTTP |
+| Parametrizado | Matriz de intervalos e fronteiras de sala/material/professor | JUnit MethodSource/CsvSource, aplicação e PostgreSQL | ReservaParametrizadaApiTest; executável |
+| Integração | Controllers/serviços/JPA, transações e estado persistido | Spring + MockMvc + PostgreSQL 17/Testcontainers | Suíte ApiTesteBase; executável |
+| API caixa-preta | Contratos/segurança/regras exclusivamente por HTTP/JSON | HttpClient, servidor real, PostgreSQL/Testcontainers | RegrasCriticasHttpTest; incorporada pelo PR #38 |
+| Concorrência | Exatamente uma aceitação por disputa do mesmo alvo | Integração paralela PostgreSQL; HTTP paralelo após #38 | ConcorrenciaReservaTest + suíte HTTP |
 | Frontend | Componentes, formulários, estados e formatação | Angular/Karma/Jasmine/ChromeHeadless | Specs existentes; executáveis |
-| E2E | Navegador → Angular → API → banco | Cucumber/Playwright, Chromium, H2 descartável no CI | bdd/features; nem todo cenário usa interface |
+| E2E | Navegador → Angular → API → banco | Cucumber/Playwright, Chromium, PostgreSQL descartável no CI | bdd/features; nem todo cenário usa interface |
 | BDD de incremento | Exemplos antes da regra, falha observada e aprovação posterior | Cenários de desativação antes da aprovação | Ciclo com JSONs originais versionados |
 | Integração externa | Sucesso, timeout, erro e resposta inválida | WireMock; sem chamada à API de terceiros nos testes | EX-01 a EX-04 implementados e executados: 21 testes aprovados ([RELATORIO-WIREMOCK](RELATORIO-WIREMOCK.md)) |
 | Carga | Percentis, throughput, erros e disputas sob carga | JMeter em API/BD real e ambiente controlado | PE-01/PE-02/PE-03 em `testes/carga` executados no PostgreSQL ([RELATORIO-CARGA](RELATORIO-CARGA.md)) |
 | Segurança/robustez | Perfil, propriedade, entradas, erros seguros e dependências | API, SonarCloud e análise de dependências | Casos funcionais existem; parecer consolidado depende de relatórios |
 | Manual/usabilidade | Fluxos e mensagens em 360/1280 px | Navegador e capturas datadas | Roteiros neste plano; evidências pendentes |
-| Recuperação | Reserva e histórico após reinício da API | MySQL persistente fora do ciclo descartável de teste | Roteiro neste plano; execução específica pendente |
+| Recuperação | Reserva e histórico após reinício da API | PostgreSQL persistente fora do ciclo descartável de teste | Roteiro neste plano; execução específica pendente |
 | Instalação/release | Executar a partir de checkout limpo e instruções | Java 21/Maven/Node 22; Docker quando necessário | Checklist e evidência por release |
 | Análise estática/cobertura | Linhas, branches, bugs e vulnerabilidades | JaCoCo e SonarCloud | Relatórios por SHA; percentual antigo no README não é aceite atual |
 
-Mocks são permitidos somente para isolar dependências em unitários. Consultas SQL, integridade, locks e integração crítica precisam das suítes reais. H2 do BDD não substitui MySQL/Testcontainers. Uma feature Gherkin não prova desenvolvimento guiado sem histórico e execuções vinculados.
+Mocks são permitidos somente para isolar dependências em unitários. Consultas SQL, integridade, locks e integração crítica precisam das suítes reais. O banco descartável do BDD não substitui as suítes PostgreSQL/Testcontainers. Uma feature Gherkin não prova desenvolvimento guiado sem histórico e execuções vinculados.
 
 ## 4. Ambientes, dados e isolamento
 
 | Ambiente | Configuração | Uso e restrições |
 |---|---|---|
 | U | Java 21; Maven; dependências disponíveis | Unitários, sem Docker/banco/servidor |
-| I | Java 21, Maven, Docker, MySQL 8.4 descartável | Integração/parametrizados/concorrência; schema recriado; dados sintéticos |
+| I | Java 21, Maven, Docker, PostgreSQL 17 descartável | Integração/parametrizados/concorrência; schema recriado; dados sintéticos |
 | H | Ambiente I + servidor Spring em porta aleatória | HTTP caixa-preta após incorporação do #38 |
 | F | Node 22, npm, Chrome/Chromium | Build e specs Angular |
-| E | API 8080 e Angular 4200; H2 isolado; Chromium | BDD/E2E conforme workflow; usar base demonstrativa |
+| E | API 8080 e Angular 4200; PostgreSQL isolado (porta 5433); Chromium | BDD/E2E conforme workflow; usar base demonstrativa |
 | C | API + banco real, máquina/recursos medidos | JMeter; registrar JVM, CPU/RAM, SO, versões, URL e volume; sem outros testes concorrendo |
-| R | API + MySQL persistente controlado | Reinício sem apagar volume; não usar Testcontainers descartável para comprovar retenção |
+| R | API + PostgreSQL persistente controlado | Reinício sem apagar volume; não usar Testcontainers descartável para comprovar retenção |
 
 Contas são as de demonstração do README. Tokens e senhas não entram em relatório/logs públicos. Cada execução usa massa sintética e identificador exclusivo; a suíte HTTP cria cadastros pela API. IDs e horários só são compartilhados deliberadamente nos casos de conflito. Não executar carga ou alteração de massa contra dados reais.
 
@@ -65,7 +65,7 @@ Datas variáveis usam o fuso America/Sao_Paulo. Testes unitários usam Clock fix
 
 1. Registrar branch, SHA, versões e pré-condições; conferir que testes/documentos do PR pretendido estão incorporados.
 2. Build e unitários isolados; interromper investigação de regressão se o básico não executa.
-3. Backend completo com MySQL: inclui parametrizados, integração e concorrência; HTTP já integra pelo #38.
+3. Backend completo com PostgreSQL (Testcontainers): inclui parametrizados, integração e concorrência; HTTP já integra pelo #38.
 4. Frontend: build e specs; em seguida E2E/BDD com processos e banco isolados.
 5. Regras negativas de segurança, integração externa/WireMock quando disponível e recuperação por reinício.
 6. Manual responsivo e acessibilidade básica dos fluxos críticos.
@@ -132,7 +132,7 @@ Registrar navegador/SO, tamanho do viewport, caso, esperado/obtido, status e cap
 
 ### Recuperação — RE-01
 
-Criar reserva e decisão auditada pela API com MySQL persistente; guardar código e histórico. Parar e reiniciar somente a API, preservando o volume. Consultar os mesmos dados e comparar código, estado, atores e eventos. Guardar logs de parada/início e JSON antes/depois sem tokens. Não usar delete de volume ou recriação automática do schema.
+Criar reserva e decisão auditada pela API com PostgreSQL persistente; guardar código e histórico. Parar e reiniciar somente a API, preservando o volume. Consultar os mesmos dados e comparar código, estado, atores e eventos. Guardar logs de parada/início e JSON antes/depois sem tokens. Não usar delete de volume ou recriação automática do schema.
 
 ### Instalação e segurança — IN-01 / SE-01
 

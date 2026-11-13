@@ -17,7 +17,7 @@ Cada invocação cria seus próprios cadastros e usa um dia futuro exclusivo obt
 
 ## Ambiente e execução
 
-A classe herda `ApiTesteBase`: Spring Boot + MockMvc e MySQL 8.4 em Testcontainers. MockMvc despacha a requisição para a aplicação no processo; não substitui a persistência nem os serviços por mocks. Exige Java 21, Maven e Docker.
+A classe herda `ApiTesteBase`: Spring Boot + MockMvc e PostgreSQL 17 em Testcontainers. MockMvc despacha a requisição para a aplicação no processo; não substitui a persistência nem os serviços por mocks. Exige Java 21, Maven e Docker.
 
 ```bash
 mvn -f backend/pom.xml -Dtest=ReservaParametrizadaApiTest test

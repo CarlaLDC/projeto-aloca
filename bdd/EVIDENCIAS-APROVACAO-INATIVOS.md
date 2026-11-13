@@ -89,11 +89,17 @@ A função agora acumula impedimentos de sala/material/professor inativos junto 
 
 Pré-requisitos: Java 21, Maven, Node 22 e API com dados de demonstração em banco descartável. Não executar contra dados reais: cada cenário cria cadastros e reserva exclusivos.
 
+Desde a troca do banco para PostgreSQL (PR #45), o H2 não faz mais parte do projeto. Banco descartável local (PostgreSQL na memória do contêiner, porta 5433), na raiz:
+
+```bash
+docker compose -f backend/docker-compose.yml --profile e2e up -d postgres-e2e
+```
+
 Terminal 1:
 
 ```bash
 cd backend
-mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.datasource.url=jdbc:h2:mem:bdd-inativos;DB_CLOSE_DELAY=-1"
+mvn spring-boot:run "-Dspring-boot.run.arguments=--spring.datasource.url=jdbc:postgresql://localhost:5433/aloca_e2e"
 ```
 
 Terminal 2:
@@ -104,10 +110,10 @@ cd bdd
 npx cucumber-js --config aprovacao-inativos.cjs
 ```
 
-A configuração dedicada usa Playwright APIRequestContext e não requer navegador nem Angular. O workflow usa Java 21, Node 22 e H2 real em memória, sem mocks. Cada cenário cria recursos próprios para não depender de IDs compartilhados.
+A configuração dedicada usa Playwright APIRequestContext e não requer navegador nem Angular. O workflow usa Java 21, Node 22 e PostgreSQL real descartável (serviço `postgres:17-alpine`), sem mocks; as execuções históricas citadas abaixo (`cbf4878` e `704c339`) usaram H2 em memória. Cada cenário cria recursos próprios para não depender de IDs compartilhados.
 
 Para reproduzir a falha histórica, use o commit cbf4878; para reproduzir a execução aprovada, use 704c339. Não é necessário desfazer a implementação na branch de trabalho atual.
 
 ## Limites
 
-O ciclo comprova este incremento BDD em API/persistência H2; não certifica cobertura total, performance ou concorrência MySQL. Não introduz garantia de atomicidade entre uma desativação administrativa simultânea e a aprovação: o cenário cobre desativação concluída antes da decisão. Os testes MySQL/Testcontainers e demais checks do PR devem ser considerados separadamente. Não houve merge automático.
+O ciclo histórico comprovou este incremento BDD em API/persistência H2; hoje o mesmo workflow roda com PostgreSQL. Não certifica cobertura total, performance ou concorrência. Não introduz garantia de atomicidade entre uma desativação administrativa simultânea e a aprovação: o cenário cobre desativação concluída antes da decisão. Os testes PostgreSQL/Testcontainers e demais checks do PR devem ser considerados separadamente. Não houve merge automático.
