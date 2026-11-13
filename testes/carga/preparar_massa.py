@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Cria, pela API, a massa sintética e isolada de uma execução de carga (PE-01/PE-02/PE-03).
+"""Cria, pela API, a massa sintética e isolada de uma execução de carga (PE-02/PE-03).
 
 Tudo o que é criado leva o prefixo ``CARGA-<run_id>``: usuários Solicitantes, salas,
 professores e materiais exclusivos desta execução. Nenhum dado de demonstração é usado
@@ -10,8 +10,6 @@ Arquivos gerados em ``<saida>`` (sem senha nem token):
   pe03_usuarios.csv   um usuário + sala própria por thread da disputa
   pe03_disputas.csv   alvo exclusivo de cada disputa (sala, professor ou material)
   manifesto.json      parâmetros, datas-base e contagens
-
-PE-01 (pesquisa) não cria dados: reaproveita os Solicitantes de PE-02 e PE-03.
 
 Uso: CARGA_SENHA=... python3 preparar_massa.py --run-id X --saida DIR [--base-url URL]
 """
@@ -56,7 +54,6 @@ def main():
     p.add_argument("--pe02-threads", type=int, default=40)
     p.add_argument("--pe03-threads", type=int, default=10)
     p.add_argument("--pe03-disputas", type=int, default=150)
-    p.add_argument("--pe01-threads", type=int, default=0)
     p.add_argument("--admin-email", default=os.environ.get("ADMIN_EMAIL", "patricia.souza@aloca.edu.br"))
     p.add_argument("--admin-senha", default=os.environ.get("ADMIN_SENHA", "aloca123"))
     a = p.parse_args()
@@ -122,7 +119,6 @@ def main():
         "pe02Threads": a.pe02_threads,
         "pe03Threads": a.pe03_threads,
         "pe03Disputas": a.pe03_disputas,
-        "pe01Threads": a.pe01_threads,
         # Datas distintas por iteração/disputa evitam conflito acidental entre iterações.
         "pe02DataBase": (hoje + dt.timedelta(days=30)).isoformat(),
         "pe03DataBase": (hoje + dt.timedelta(days=30)).isoformat(),

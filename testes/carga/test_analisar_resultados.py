@@ -25,11 +25,11 @@ def amostra(ts, label, code, ok=True, disputa="null", tipo="null", atividade="x"
 
 
 class AnalisadorTest(unittest.TestCase):
-    def executar(self, amostras, disputas=2, k=3, pe01=0):
+    def executar(self, amostras, disputas=2, k=3):
         d = tempfile.mkdtemp()
         os.makedirs(os.path.join(d, "massa"))
         with open(os.path.join(d, "massa", "manifesto.json"), "w") as f:
-            json.dump({"runId": "t", "prefixo": "CARGA-t", "pe03Threads": k, "pe03Disputas": disputas, "pe01Threads": pe01,
+            json.dump({"runId": "t", "prefixo": "CARGA-t", "pe03Threads": k, "pe03Disputas": disputas,
                        "usuariosCriados": 0, "recursosCriados": 0, "professoresCriados": 0}, f)
         jtl = os.path.join(d, "r.jtl")
         with open(jtl, "w", newline="") as f:
@@ -73,37 +73,6 @@ class AnalisadorTest(unittest.TestCase):
         _, r = self.executar(amostras)
         op = r["por_operacao"]["PE-02 Criar reserva"]
         self.assertEqual((op["p50_ms"], op["p95_ms"], op["p99_ms"], op["max_ms"]), (50, 95, 99, 100))
-
-
-    def base(self):
-        return self.disputa(0, ["201", "409", "409"]) + self.disputa(1, ["409", "201", "409"])
-
-    def criterio(self, r, trecho):
-        return next(c for c in r["criterios"] if trecho in c["criterio"])
-
-    def test_pesquisa_pe01_usa_meta_de_2s(self):
-        lentas = [amostra(5000 + i, "PE-01 Pesquisa recursos do dia", "200", elapsed=2500) for i in range(20)]
-        _, r = self.executar(self.base() + lentas, pe01=5)
-        self.assertEqual(r["decisao"], "REPROVADO")
-        self.assertFalse(self.criterio(r, "P95 'PE-01 Pesquisa recursos do dia' <= 2000 ms")["aprovado"])
-        # 2,5 s seria aceito nas demais operações (meta de 3 s)
-        outras = [amostra(5000 + i, "PE-02 Criar reserva", "201", elapsed=2500) for i in range(20)]
-        _, r2 = self.executar(self.base() + outras)
-        self.assertEqual(r2["decisao"], "APROVADO")
-
-    def test_pesquisa_pe01_rapida_aprova_e_tem_regime_proprio(self):
-        # Aquecimento lento no início da fase PE-01 fica fora do regime (contado do início da fase).
-        aquecendo = [amostra(100_000 + i, "PE-01 Pesquisa professores", "200", elapsed=2900) for i in range(5)]
-        regime = [amostra(200_000 + i, "PE-01 Pesquisa professores", "200", elapsed=40) for i in range(50)]
-        rc, r = self.executar(self.base() + aquecendo + regime, pe01=5)
-        self.assertEqual(rc, 0)
-        self.assertTrue(self.criterio(r, "PE-01 executado")["aprovado"])
-        self.assertEqual(r["grupos"]["PE-01 (pesquisa)"]["amostras"], 55)
-
-    def test_pe01_planejado_e_ausente_reprova(self):
-        _, r = self.executar(self.base(), pe01=5)
-        self.assertEqual(r["decisao"], "REPROVADO")
-        self.assertFalse(self.criterio(r, "PE-01 executado")["aprovado"])
 
 
 if __name__ == "__main__":

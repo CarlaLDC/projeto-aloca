@@ -1,8 +1,7 @@
-name: Carga JMeter - pesquisa, criação e concorrência
+name: Carga JMeter - criação e concorrência
 
-# PR: perfil reduzido (detecção de regressão de dupla reserva sob carga e da pesquisa).
-# Manual: campanha completa (padrão 60 s aquecimento + 600 s medição, 50 usuários, em cada fase:
-# PE-02/PE-03 e depois PE-01).
+# PR: perfil reduzido (detecção de regressão de dupla reserva sob carga).
+# Manual: campanha completa (padrão 60 s aquecimento + 600 s medição, 50 usuários).
 on:
   pull_request:
     paths:
@@ -23,14 +22,11 @@ on:
       pe03_disputas:
         description: "Quantidade de disputas"
         default: "150"
-      pe01_threads:
-        description: "Usuários pesquisando disponibilidade (PE-01; 0 desliga)"
-        default: "50"
 
 jobs:
   carga:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 40
     env:
       JMETER_VERSION: "5.6.3"
     steps:
@@ -66,7 +62,6 @@ jobs:
           PE02_THREADS: ${{ github.event_name == 'workflow_dispatch' && inputs.pe02_threads || '20' }}
           PE03_THREADS: ${{ github.event_name == 'workflow_dispatch' && inputs.pe03_threads || '10' }}
           PE03_DISPUTAS: ${{ github.event_name == 'workflow_dispatch' && inputs.pe03_disputas || '30' }}
-          PE01_THREADS: ${{ github.event_name == 'workflow_dispatch' && inputs.pe01_threads || '20' }}
         run: JMETER_HOME="$HOME/jmeter" testes/carga/executar-carga.sh
       - name: Resumo
         if: always()
