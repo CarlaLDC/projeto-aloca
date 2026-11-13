@@ -1,5 +1,8 @@
 # Testes de desempenho e rastreabilidade — Projeto Aloca
 
+> **Diagnóstico histórico:** as afirmações abaixo sobre ausência de backend, persistência, auditoria e testes referem-se à interface antiga desta branch. Para avaliar o sistema integrado, use a [RTM reconciliada](RTM.md), baseada na develop 3fb1f0d, e suas evidências. Este relatório não certifica a versão integrada; a execução de carga continua pendente.
+
+
 Esta pasta reúne planos JMeter, RTM, matriz de auditoria, registro de defeitos e relatório.
 
 ## Estado de validação
