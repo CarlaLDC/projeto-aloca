@@ -116,7 +116,7 @@ npm run build
 npm test -- --watch=false --browsers=ChromeHeadless
 ```
 
-BDD/E2E exige a aplicação em execução, conforme [instruções específicas](bdd/README.md). A suíte HTTP de caixa-preta está no PR #38, ainda fora do snapshot usado no plano; o índice identifica essa dependência.
+BDD/E2E exige a aplicação em execução, conforme [instruções específicas](bdd/README.md). A suíte HTTP de caixa-preta foi incorporada pelo PR #38 e está incluída no índice.
 
 Metas de cobertura: **80% de linhas e 70% de branches**. Quantidades de testes, percentuais e conclusões devem ser associados ao SHA e ao relatório da execução; números de campanhas anteriores não certificam a versão atual. Os workflows de qualidade estão em `.github/workflows/` e publicam os artefatos indicados no índice.
 

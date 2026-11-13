@@ -1,6 +1,6 @@
 # Plano unificado de testes — Aloca
 
-Versão 1.0 — 12/11/2026. Base inspecionada: develop, commit `611c9402c458d395126f014e720fc45a27ceeef8`. Responsáveis são papéis a atribuir pela equipe; não houve aprovação ou revisão por pares presumida.
+Versão 1.0 — 12/11/2026. Base inspecionada: develop, commit `0d3ef6a6e2cb56facc8475ba696ef3dbee55a295`. Responsáveis são papéis a atribuir pela equipe; não houve aprovação ou revisão por pares presumida.
 
 Este é o plano que organiza **todas as modalidades** do projeto. O [índice da suíte](SUITE-TESTES.md) indica testes e comandos; o [relatório consolidado](RELATORIO-TESTES.md) registra resultados e pendências. Planejamento, automação disponível e resultado aprovado são estados distintos.
 
@@ -30,7 +30,7 @@ P0 não é sinônimo de severidade de defeito; prioridade do teste e severidade 
 | Unitário backend | Decisões, partições, fronteiras, auditoria e estados | JUnit + Mockito em dependências, relógio fixo, sem Spring/banco | 3 classes isoladas; executáveis |
 | Parametrizado | Matriz de intervalos e fronteiras de sala/material/professor | JUnit MethodSource/CsvSource, aplicação e MySQL | ReservaParametrizadaApiTest; executável |
 | Integração | Controllers/serviços/JPA, transações e estado persistido | Spring + MockMvc + MySQL 8.4/Testcontainers | Suíte ApiTesteBase; executável |
-| API caixa-preta | Contratos/segurança/regras exclusivamente por HTTP/JSON | HttpClient, servidor real, MySQL/Testcontainers | PR #38; ainda fora da base inspecionada |
+| API caixa-preta | Contratos/segurança/regras exclusivamente por HTTP/JSON | HttpClient, servidor real, MySQL/Testcontainers | RegrasCriticasHttpTest; incorporada pelo PR #38 |
 | Concorrência | Exatamente uma aceitação por disputa do mesmo alvo | Integração paralela MySQL; HTTP paralelo após #38 | ConcorrenciaReservaTest + suíte HTTP |
 | Frontend | Componentes, formulários, estados e formatação | Angular/Karma/Jasmine/ChromeHeadless | Specs existentes; executáveis |
 | E2E | Navegador → Angular → API → banco | Cucumber/Playwright, Chromium, H2 descartável no CI | bdd/features; nem todo cenário usa interface |
@@ -65,7 +65,7 @@ Datas variáveis usam o fuso America/Sao_Paulo. Testes unitários usam Clock fix
 
 1. Registrar branch, SHA, versões e pré-condições; conferir que testes/documentos do PR pretendido estão incorporados.
 2. Build e unitários isolados; interromper investigação de regressão se o básico não executa.
-3. Backend completo com MySQL: inclui parametrizados, integração e concorrência; HTTP passa a integrar após #38.
+3. Backend completo com MySQL: inclui parametrizados, integração e concorrência; HTTP já integra pelo #38.
 4. Frontend: build e specs; em seguida E2E/BDD com processos e banco isolados.
 5. Regras negativas de segurança, integração externa/WireMock quando disponível e recuperação por reinício.
 6. Manual responsivo e acessibilidade básica dos fluxos críticos.
@@ -76,7 +76,7 @@ Em cada PR: executar os workflows configurados. Antes da release: todos os itens
 
 ## 6. Critérios de entrada, suspensão e retomada
 
-Entrada: build instalável, massa sintética, credenciais de teste, ambiente acessível e identificador do código. Integração exige Docker disponível; HTTP exige #38 incorporado; carga exige plano de negócio validado, metas e ambiente registrados.
+Entrada: build instalável, massa sintética, credenciais de teste, ambiente acessível e identificador do código. Integração exige Docker disponível; HTTP está incorporado pelo #38; carga exige plano de negócio validado, metas e ambiente registrados.
 
 Suspender execução se ambiente estiver indisponível, massa contaminada, relógio/configuração divergente, risco de modificar dados reais ou defeito impedir avaliar os próximos passos. Registrar causa e o que não foi executado.
 
@@ -155,4 +155,4 @@ Para cada campanha, usar o [registro de execução](REGISTRO-EXECUCAO.md). Prese
 
 Artefatos Actions expiram; copiar os resultados necessários para o pacote versionado de evidências ou entrega final. Não salvar credenciais, JWTs ou dados reais. JSONs originais do ciclo BDD já estão versionados.
 
-Atualizar este plano ao mudar regra, ferramenta, ambiente, suíte ou requisito. Atualizar SUITE-TESTES após incorporar #38 ou outra branch. Atualizar RELATORIO-TESTES somente com resultados verificáveis e respectivos SHAs. A matriz deste plano orienta cobertura; não substitui uma RTM fechada nem o relatório final de qualidade da release.
+Atualizar este plano ao mudar regra, ferramenta, ambiente, suíte ou requisito. Atualizar SUITE-TESTES após incorporar novas suítes ou branches. Atualizar RELATORIO-TESTES somente com resultados verificáveis e respectivos SHAs. A matriz deste plano orienta cobertura; não substitui uma RTM fechada nem o relatório final de qualidade da release.

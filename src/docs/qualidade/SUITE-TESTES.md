@@ -1,6 +1,6 @@
 # Índice unificado da suíte de testes
 
-Snapshot: develop `611c9402c458d395126f014e720fc45a27ceeef8`, em 12/11/2026. Direção e critérios: [Plano](PLANO-TESTES.md). Resultados: [Relatório](RELATORIO-TESTES.md).
+Snapshot: develop `0d3ef6a6e2cb56facc8475ba696ef3dbee55a295`, em 12/11/2026. Direção e critérios: [Plano](PLANO-TESTES.md). Resultados: [Relatório](RELATORIO-TESTES.md).
 
 ## Backend — disponível na base
 
@@ -35,17 +35,17 @@ O clean verify já inclui os unitários; **não somar** a contagem do job exclus
 
 Relatórios: backend/target/surefire-reports e backend/target/site/jacoco. Documentação: [unitários](../testes-unitarios-backend.md) e [parametrizados](../testes-parametrizados.md).
 
-## API caixa-preta — PR #38, fora da base inspecionada
+## API caixa-preta — incorporada pelo PR #38
 
-[RegrasCriticasHttpTest](https://github.com/CarlaLDC/projeto-aloca/blob/test/api-caixa-preta-http/backend/src/test/java/br/com/aloca/http/RegrasCriticasHttpTest.java) usa HTTP real/MySQL e tag http. [Documentação](https://github.com/CarlaLDC/projeto-aloca/blob/test/api-caixa-preta-http/src/docs/testes-api-http.md) e [PR #38](https://github.com/CarlaLDC/projeto-aloca/pull/38).
+[RegrasCriticasHttpTest](../../../backend/src/test/java/br/com/aloca/http/RegrasCriticasHttpTest.java) usa HTTP real/MySQL e tag http. [Documentação](../testes-api-http.md) e [PR #38](https://github.com/CarlaLDC/projeto-aloca/pull/38).
 
-Após incorporar essa entrega ou no checkout da sua branch:
+Na base integrada:
 
 ```bash
 mvn -f backend/pom.xml -Dgroups=http test
 ```
 
-A tag http ainda não seleciona uma suíte existente na base deste plano. Não interpretar “zero testes selecionados” como aprovação.
+A tag http seleciona a suíte de 32 casos incorporada. Não interpretar “zero testes selecionados” como aprovação.
 
 ## Frontend e E2E/BDD
 
@@ -105,7 +105,7 @@ Não copiar o relatório antigo da branch JMeter como descrição da arquitetura
 | Verificação backend — qualidade funcional | qualidade-funcional-relatorios |
 | BDD integrado — Angular + API + H2 | bdd-integrado-evidencias |
 | BDD — ciclo de aprovação de cadastros | bdd-aprovacao-inativos-RUN_ID |
-| API HTTP após #38 | backend-api-http |
+| API HTTP | backend-api-http |
 | Angular | Logs do build/Karma no job; não presumir artefato específico |
 
 No GitHub: PR → Checks → job → execução; ou Actions → workflow → execução → Artifacts. Identificar SHA e conclusão; baixar ZIP, extrair e abrir HTML ou consultar XML/JSON/TXT. Artefato presente em execução com falha não significa aprovação, pois a publicação pode usar if: always().
