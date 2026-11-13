@@ -6,36 +6,44 @@
       <a class="nav-item" routerLink="/visao-geral" routerLinkActive="active"><span>▦</span>Visão geral</a>
       <a class="nav-item" routerLink="/disponibilidade" routerLinkActive="active"><span>◷</span>Disponibilidade</a>
       <a class="nav-item" routerLink="/minhas-reservas" routerLinkActive="active"><span>▤</span>Minhas reservas</a>
-      <a class="nav-item" routerLink="/aprovacoes" routerLinkActive="active"><span>✓</span>Aprovações</a>
-      <a class="nav-item" routerLink="/retiradas-devolucoes" routerLinkActive="active"><span>▧</span>Materiais</a>
-      <a class="nav-item" routerLink="/administracao" routerLinkActive="active"><span>⚙</span>Administração</a>
+      @if (auth.possui('RESPONSAVEL')) {
+        <a class="nav-item" routerLink="/aprovacoes" routerLinkActive="active"><span>✓</span>Aprovações</a>
+        <a class="nav-item" routerLink="/retiradas-devolucoes" routerLinkActive="active"><span>▧</span>Materiais</a>
+      }
       <a class="nav-item" routerLink="/relatorios" routerLinkActive="active"><span>▥</span>Relatórios</a>
+      @if (auth.possui('ADMINISTRADOR')) {<a class="nav-item" routerLink="/administracao"><span>⚙</span>Administração</a>}
     </nav>
-    <div class="sidebar-profile"><span>Unidade Santo Amaro</span><strong>Ana Martins</strong><small>Responsável / Administrador</small></div>
+    <div class="sidebar-profile"><span>{{ auth.unidade() }}</span><strong>{{ auth.nome() }}</strong><small>{{ auth.perfilRotulo() }}</small></div>
   </aside>
 
   <main class="main-content">
     <header class="topbar">
-      <span class="unit-label">UNIDADE SANTO AMARO</span>
-      <div class="topbar-actions"><span>Notificações <b class="notification-count">3</b></span><span class="separator">·</span><span>Ana Martins <b class="avatar">AM</b></span></div>
+      <span class="unit-label">{{ auth.unidade().toUpperCase() }}</span>
+      <div class="topbar-actions"><span>Notificações <b class="notification-count">{{ auth.naoLidas() }}</b></span><span class="separator">·</span><button type="button" class="logout" title="Sair" (click)="auth.sair()">{{ auth.nome() }} <b class="avatar">{{ auth.iniciais() }}</b></button></div>
     </header>
 
     <section class="page-heading">
       <div class="breadcrumbs"><span>Relatórios</span><span>›</span><strong>Visão consolidada</strong></div>
       <h1>Relatórios</h1>
-      <p>Dados demonstrativos · Período: 01 a 22 de outubro de 2026</p>
+      <p>Período: {{ dataBr(inicio()) }} a {{ dataBr(fim()) }}</p>
+      <form class="period" (ngSubmit)="carregar()">
+        <label>De <input type="date" name="inicio" [ngModel]="inicio()" (ngModelChange)="inicio.set($event)" required></label>
+        <label>Até <input type="date" name="fim" [ngModel]="fim()" (ngModelChange)="fim.set($event)" required></label>
+        <button type="submit" class="export-button">Atualizar</button>
+      </form>
+      @if (erro()) {<p class="report-error" role="alert">{{ erro() }}</p>}
     </section>
 
     <section class="summary-grid" aria-label="Indicadores do período">
-      <article class="summary-card"><strong>76%</strong><span>Utilização dos espaços</span></article>
-      <article class="summary-card"><strong>284 h</strong><span>Carga horária alocada</span></article>
-      <article class="summary-card"><strong>18</strong><span>Conflitos evitados</span></article>
+      <article class="summary-card"><strong>{{ relatorio()?.utilizacaoEspacos ?? 0 }}%</strong><span>Utilização dos espaços</span></article>
+      <article class="summary-card"><strong>{{ horas(relatorio()?.horasAlocadas) }} h</strong><span>Carga horária alocada</span></article>
+      <article class="summary-card"><strong>{{ relatorio()?.conflitosEvitados ?? 0 }}</strong><span>Conflitos evitados</span></article>
     </section>
 
     <section class="panel usage-panel">
       <div class="panel-heading"><h2>Utilização por recurso</h2><p>Horas reservadas / horas disponíveis no período</p></div>
       <div class="usage-list">
-        @for (resource of resources; track resource.name) {
+        @for (resource of resources(); track resource.name) {
           <div class="usage-item">
             <div class="usage-label"><strong>{{ resource.name }}</strong><span>{{ resource.usage }}%</span></div>
             <div class="progress-track" role="progressbar" [attr.aria-valuenow]="resource.usage" aria-valuemin="0" aria-valuemax="100" [attr.aria-label]="'Utilização de ' + resource.name"><span [style.width.%]="resource.usage"></span></div>
@@ -45,13 +53,13 @@
     </section>
 
     <section class="panel table-panel">
-      <div class="table-heading"><h2>Resumo por recurso</h2><span>Período selecionado</span></div>
+      <div class="table-heading"><h2>Resumo por recurso</h2><span>{{ relatorio()?.totalReservas ?? 0 }} reservas no período</span></div>
       <div class="table-scroll">
         <table>
           <thead><tr><th>Recurso</th><th>Horas alocadas</th><th>Reservas</th><th>Conflitos evitados</th></tr></thead>
           <tbody>
-            @for (resource of resources; track resource.name) {
-              <tr><th scope="row">{{ resource.name }}</th><td>{{ resource.hours }} h</td><td>{{ resource.reservations }}</td><td>{{ resource.conflicts }}</td></tr>
+            @for (resource of resources(); track resource.name) {
+              <tr><th scope="row">{{ resource.name }}</th><td>{{ horas(resource.hours) }} h</td><td>{{ resource.reservations }}</td><td>{{ resource.conflicts }}</td></tr>
             }
           </tbody>
         </table>

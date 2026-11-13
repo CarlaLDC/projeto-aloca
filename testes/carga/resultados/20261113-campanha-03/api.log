@@ -1,0 +1,60 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-11-13T04:13:22.046Z  INFO 5681 --- [aloca-backend] [           main] br.com.aloca.AlocaApplication            : Starting AlocaApplication v1.0.0-rc.1 using Java 21.0.12.1 with PID 5681 (<repo>/backend/target/aloca-backend-1.0.0-rc.1.jar started by root in <repo>)
+2026-11-13T04:13:22.051Z  INFO 5681 --- [aloca-backend] [           main] br.com.aloca.AlocaApplication            : No active profile set, falling back to 1 default profile: "default"
+2026-11-13T04:13:23.036Z  INFO 5681 --- [aloca-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-13T04:13:23.104Z  INFO 5681 --- [aloca-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 58 ms. Found 10 JPA repository interfaces.
+2026-11-13T04:13:23.783Z  INFO 5681 --- [aloca-backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 8080 (http)
+2026-11-13T04:13:23.796Z  INFO 5681 --- [aloca-backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-13T04:13:23.797Z  INFO 5681 --- [aloca-backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.27]
+2026-11-13T04:13:23.821Z  INFO 5681 --- [aloca-backend] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1689 ms
+2026-11-13T04:13:24.006Z  INFO 5681 --- [aloca-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-13T04:13:24.053Z  INFO 5681 --- [aloca-backend] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.13.Final
+2026-11-13T04:13:24.440Z  INFO 5681 --- [aloca-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-13T04:13:24.467Z  INFO 5681 --- [aloca-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-13T04:13:24.649Z  INFO 5681 --- [aloca-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7a587e84
+2026-11-13T04:13:24.651Z  INFO 5681 --- [aloca-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-13T04:13:24.722Z  INFO 5681 --- [aloca-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:5434/aloca]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 17.11
+	Default catalog/schema: aloca/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-13T04:13:25.917Z  INFO 5681 --- [aloca-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-13T04:13:26.013Z  WARN 5681 --- [aloca-backend] [           main] org.hibernate.orm.jdbc.warn              : HHH000247: ErrorCode: 0, SQLState: 00000
+2026-11-13T04:13:26.014Z  WARN 5681 --- [aloca-backend] [           main] org.hibernate.orm.jdbc.warn              : constraint "ukahxuikijghx1o0go22fednb9i" of relation "movimentacao" does not exist, skipping
+2026-11-13T04:13:26.016Z  WARN 5681 --- [aloca-backend] [           main] org.hibernate.orm.jdbc.warn              : HHH000247: ErrorCode: 0, SQLState: 00000
+2026-11-13T04:13:26.016Z  WARN 5681 --- [aloca-backend] [           main] org.hibernate.orm.jdbc.warn              : constraint "uk2bs62jxiq7n04xbjn99cywixj" of relation "professor" does not exist, skipping
+2026-11-13T04:13:26.019Z  WARN 5681 --- [aloca-backend] [           main] org.hibernate.orm.jdbc.warn              : HHH000247: ErrorCode: 0, SQLState: 00000
+2026-11-13T04:13:26.019Z  WARN 5681 --- [aloca-backend] [           main] org.hibernate.orm.jdbc.warn              : constraint "ukkwx1d8fj0hieh8kdfsq7401xk" of relation "reserva" does not exist, skipping
+2026-11-13T04:13:26.021Z  WARN 5681 --- [aloca-backend] [           main] org.hibernate.orm.jdbc.warn              : HHH000247: ErrorCode: 0, SQLState: 00000
+2026-11-13T04:13:26.021Z  WARN 5681 --- [aloca-backend] [           main] org.hibernate.orm.jdbc.warn              : constraint "uk5171l57faosmj8myawaucatdw" of relation "usuario" does not exist, skipping
+2026-11-13T04:13:26.054Z  INFO 5681 --- [aloca-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-13T04:13:26.138Z  INFO 5681 --- [aloca-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-13T04:13:28.110Z  INFO 5681 --- [aloca-backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 8080 (http) with context path '/'
+2026-11-13T04:13:28.124Z  INFO 5681 --- [aloca-backend] [           main] br.com.aloca.AlocaApplication            : Started AlocaApplication in 6.523 seconds (process running for 7.065)
+2026-11-13T04:13:28.749Z  INFO 5681 --- [aloca-backend] [           main] br.com.aloca.config.DadosUsuarios        : Usuários de demonstração criados (senha definida em aloca.dados-demo.senha).
+2026-11-13T04:13:29.170Z  INFO 5681 --- [aloca-backend] [nio-8080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-11-13T04:13:29.171Z  INFO 5681 --- [aloca-backend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-11-13T04:13:29.172Z  INFO 5681 --- [aloca-backend] [nio-8080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-11-13T04:13:29.656Z  WARN 5681 --- [aloca-backend] [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /v3/api-docs endpoint is enabled by default. To disable it in production, set the property 'springdoc.api-docs.enabled=false'
+2026-11-13T04:13:29.656Z  WARN 5681 --- [aloca-backend] [           main] o.s.core.events.SpringDocAppInitializer  : SpringDoc /swagger-ui.html endpoint is enabled by default. To disable it in production, set the property 'springdoc.swagger-ui.enabled=false'
+2026-11-13T04:36:10.233Z  INFO 5681 --- [aloca-backend] [ionShutdownHook] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-11-13T04:36:10.236Z  INFO 5681 --- [aloca-backend] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-11-13T04:36:10.242Z  INFO 5681 --- [aloca-backend] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-11-13T04:36:10.245Z  INFO 5681 --- [aloca-backend] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-11-13T04:36:10.248Z  INFO 5681 --- [aloca-backend] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.

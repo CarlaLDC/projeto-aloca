@@ -1,0 +1,80 @@
+name: Carga JMeter - pesquisa, criação e concorrência
+
+# PR: perfil reduzido (detecção de regressão de dupla reserva sob carga e da pesquisa).
+# Manual: campanha completa (padrão 60 s aquecimento + 600 s medição, 50 usuários, em cada fase:
+# PE-02/PE-03 e depois PE-01).
+on:
+  pull_request:
+    paths:
+      - "backend/**"
+      - "testes/carga/**"
+      - ".github/workflows/carga-jmeter.yml"
+  workflow_dispatch:
+    inputs:
+      duracao:
+        description: "Duração total em segundos (inclui aquecimento)"
+        default: "660"
+      pe02_threads:
+        description: "Usuários no ciclo criar/alterar/cancelar"
+        default: "40"
+      pe03_threads:
+        description: "Tentativas simultâneas por disputa"
+        default: "10"
+      pe03_disputas:
+        description: "Quantidade de disputas"
+        default: "150"
+      pe01_threads:
+        description: "Usuários pesquisando disponibilidade (PE-01; 0 desliga)"
+        default: "50"
+
+jobs:
+  carga:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      JMETER_VERSION: "5.6.3"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - name: Autoteste do analisador
+        run: python3 -m unittest discover -s testes/carga -p 'test_*.py' -v
+      - name: Cache do JMeter
+        id: cache-jmeter
+        uses: actions/cache@v4
+        with:
+          path: ~/jmeter
+          key: jmeter-${{ env.JMETER_VERSION }}
+      - name: Instalar JMeter
+        if: steps.cache-jmeter.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p ~/jmeter
+          curl -sSfL "https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-${JMETER_VERSION}.tgz" \
+            | tar xz -C ~/jmeter --strip-components=1
+      - name: Empacotar API
+        run: mvn -f backend/pom.xml --batch-mode --no-transfer-progress -DskipTests package
+      - name: Executar carga
+        env:
+          JMETER_HOME: ~/jmeter
+          RUN_ID: ci-${{ github.run_id }}-${{ github.run_attempt }}
+          DURACAO: ${{ github.event_name == 'workflow_dispatch' && inputs.duracao || '150' }}
+          RAMPUP: ${{ github.event_name == 'workflow_dispatch' && '60' || '20' }}
+          PE02_THREADS: ${{ github.event_name == 'workflow_dispatch' && inputs.pe02_threads || '20' }}
+          PE03_THREADS: ${{ github.event_name == 'workflow_dispatch' && inputs.pe03_threads || '10' }}
+          PE03_DISPUTAS: ${{ github.event_name == 'workflow_dispatch' && inputs.pe03_disputas || '30' }}
+          PE01_THREADS: ${{ github.event_name == 'workflow_dispatch' && inputs.pe01_threads || '20' }}
+        run: JMETER_HOME="$HOME/jmeter" testes/carga/executar-carga.sh
+      - name: Resumo
+        if: always()
+        run: cat testes/carga/resultados/*/RESULTADO.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Preservar JTL, dashboard e análise
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: carga-jmeter-${{ github.run_id }}-${{ github.run_attempt }}
+          path: testes/carga/resultados/
+          retention-days: 90

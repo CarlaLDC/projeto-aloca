@@ -1,0 +1,13 @@
+{
+  "runId": "20261113-campanha-01",
+  "prefixo": "CARGA-20261113-campanha-01",
+  "criadoEm": "2026-11-13T01:54:44+00:00",
+  "pe02Threads": 40,
+  "pe03Threads": 10,
+  "pe03Disputas": 150,
+  "pe02DataBase": "2026-12-13",
+  "pe03DataBase": "2026-12-13",
+  "usuariosCriados": 50,
+  "recursosCriados": 190,
+  "professoresCriados": 90
+}

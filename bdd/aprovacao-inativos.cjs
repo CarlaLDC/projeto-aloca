@@ -1,0 +1,1 @@
+module.exports = { default: { paths: ['features/aprovacao-inativos.feature'], require: ['steps/aprovacao-inativos.cjs'], format: ['progress', 'html:reports/aprovacao-inativos.html', 'json:reports/aprovacao-inativos.json'] } };

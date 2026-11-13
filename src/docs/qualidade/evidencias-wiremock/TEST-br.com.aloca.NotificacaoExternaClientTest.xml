@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="br.com.aloca.NotificacaoExternaClientTest" time="2.072" tests="15" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="respostaDeSucessoComCorpoInvalidoEhAceita" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.315" />
+  <testcase name="notificacaoSemDestinatarioNaoEhEnviada(String)[1]" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.016">
+    </testcase>
+  <testcase name="notificacaoSemDestinatarioNaoEhEnviada(String)[2]" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.004">
+    </testcase>
+  <testcase name="enviaANotificacaoComoJsonComOToken" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.038" />
+  <testcase name="semUrlConfiguradaNaoChamaOServico" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.001" />
+  <testcase name="erroDoServicoExternoEhTratadoSemExcecao(int)[1]" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.01">
+    </testcase>
+  <testcase name="erroDoServicoExternoEhTratadoSemExcecao(int)[2]" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.006">
+    </testcase>
+  <testcase name="erroDoServicoExternoEhTratadoSemExcecao(int)[3]" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.006">
+    </testcase>
+  <testcase name="erroDoServicoExternoEhTratadoSemExcecao(int)[4]" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.008">
+    </testcase>
+  <testcase name="erroDoServicoExternoEhTratadoSemExcecao(int)[5]" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.006">
+    </testcase>
+  <testcase name="servicoLentoEstouraOTempoLimiteSemTravar" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.307">
+    </testcase>
+  <testcase name="respostaQuebradaEhTratadaSemExcecao(Fault, CapturedOutput)[1]" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.013">
+    </testcase>
+  <testcase name="respostaQuebradaEhTratadaSemExcecao(Fault, CapturedOutput)[2]" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.008">
+    </testcase>
+  <testcase name="respostaQuebradaEhTratadaSemExcecao(Fault, CapturedOutput)[3]" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.006">
+    </testcase>
+  <testcase name="erroExternoNaoExpoePayloadNemCredencialNoLog(CapturedOutput)" classname="br.com.aloca.NotificacaoExternaClientTest" time="0.006">
+    </testcase>
+</testsuite>

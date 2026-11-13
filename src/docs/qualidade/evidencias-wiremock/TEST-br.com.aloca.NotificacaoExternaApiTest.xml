@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="br.com.aloca.NotificacaoExternaApiTest" time="5.474" tests="6" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="reservaCriadaNotificaOSolicitantePeloServicoExterno" classname="br.com.aloca.NotificacaoExternaApiTest" time="0.167">
+    </testcase>
+  <testcase name="solicitacaoRestritaAvisaOResponsavel" classname="br.com.aloca.NotificacaoExternaApiTest" time="0.113" />
+  <testcase name="servicoLentoNaoDesfazAReserva" classname="br.com.aloca.NotificacaoExternaApiTest" time="1.136">
+    </testcase>
+  <testcase name="reservaRecusadaPorConflitoNaoEnviaNotificacao" classname="br.com.aloca.NotificacaoExternaApiTest" time="0.136" />
+  <testcase name="servicoExternoForaDoArNaoImpedeAReserva" classname="br.com.aloca.NotificacaoExternaApiTest" time="0.119">
+    </testcase>
+  <testcase name="respostaQuebradaNaoImpedeAReserva" classname="br.com.aloca.NotificacaoExternaApiTest" time="0.121">
+    </testcase>
+</testsuite>

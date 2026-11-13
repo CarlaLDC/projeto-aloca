@@ -1,0 +1,117 @@
+name: CI integrado - qualidade
+
+on:
+  push:
+    branches:
+      - chore/ci-integrado-qualidade
+  pull_request:
+    branches:
+      - develop
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-integrado-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  api-http:
+    name: API - caixa-preta HTTP e PostgreSQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - name: Executar somente a suíte HTTP
+        run: mvn --batch-mode --no-transfer-progress -f backend/pom.xml -Dgroups=http test
+      - name: Publicar evidências HTTP
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-api-http
+          path: backend/target/surefire-reports/
+          if-no-files-found: error
+
+  unitarios:
+    name: Backend - regras unitárias sem banco
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - name: Executar somente a tag unitario
+        run: mvn --batch-mode --no-transfer-progress -f backend/pom.xml -Dgroups=unitario test
+      - name: Publicar relatórios unitários
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-unitarios
+          path: backend/target/surefire-reports/
+          if-no-files-found: error
+
+  frontend:
+    name: Angular - build e testes
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Build de produção
+        run: npm run build
+      - name: Testes unitários
+        run: npm test -- --watch=false --browsers=ChromeHeadless
+
+  backend:
+    name: Spring Boot - testes, Testcontainers e JaCoCo
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+      - name: Verificar Docker para Testcontainers
+        run: docker info
+      - name: Executar testes e gerar cobertura
+        run: mvn --batch-mode --no-transfer-progress -f backend/pom.xml clean verify
+      - name: Publicar relatórios do backend
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-testcontainers-jacoco
+          path: |
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
+            backend/target/site/jacoco/
+          if-no-files-found: warn
+
+  quality-gate:
+    name: Gate de qualidade
+    runs-on: ubuntu-24.04
+    needs:
+      - frontend
+      - backend
+      - unitarios
+      - api-http
+    steps:
+      - run: echo "Frontend, backend e regras unitárias aprovados."

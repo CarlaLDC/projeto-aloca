@@ -1,9 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { DemoAuditLog } from '../../core/demo-audit-log';
-
-type ApprovalStatus = 'Pendente' | 'Aprovada' | 'Rejeitada';
+import { ApiService } from '../../core/api.service';
+import { AuthService } from '../../core/auth.service';
+import { Aprovacoes, Solicitacao } from '../../core/api.models';
+import { dataBr, hm, mensagemErro, tempoDecorrido } from '../../core/formato';
 
 @Component({
   selector: 'app-approvals',
@@ -12,41 +13,70 @@ type ApprovalStatus = 'Pendente' | 'Aprovada' | 'Rejeitada';
   templateUrl: './approvals.html',
   styleUrl: './approvals.css'
 })
-export class Approvals {
-  constructor(private readonly audit: DemoAuditLog) {}
-  readonly status = signal<ApprovalStatus>('Pendente');
-  readonly pendingCount = signal(3);
-  readonly approvedToday = signal(7);
-  readonly awaitingAdjustment = signal(1);
-  readonly rejectionDialogOpen = signal(false);
+export class Approvals implements OnInit {
+  private readonly api = inject(ApiService);
+  readonly auth = inject(AuthService);
+
+  readonly dados = signal<Aprovacoes | null>(null);
+  readonly erro = signal('');
+  readonly enviando = signal<string | null>(null);
+  readonly rejecting = signal<Solicitacao | null>(null);
   readonly rejectionReason = signal('');
   readonly feedback = signal('');
+  readonly hm = hm;
+  readonly dataBr = dataBr;
+  readonly tempoDecorrido = tempoDecorrido;
 
-  approve(): void {
-    if (this.status() !== 'Pendente') return;
-    this.audit.append({ entityId: 'RES-DEMO-APPROVAL', entityType: 'Reserva', fromState: 'Pendente', toState: 'Aprovada', action: 'Aprovação', description: 'Aprovação demonstrativa' });
-    this.status.set('Aprovada');
-    this.pendingCount.update(value => Math.max(0, value - 1));
-    this.approvedToday.update(value => value + 1);
-    this.feedback.set('Solicitação aprovada nesta demonstração. Nenhuma alteração foi enviada ao servidor.');
+  ngOnInit(): void {
+    this.carregar();
   }
 
-  openRejection(): void {
-    if (this.status() !== 'Pendente') return;
+  carregar(): void {
+    this.api.aprovacoes().subscribe({
+      next: d => { this.dados.set(d); this.erro.set(''); },
+      error: e => this.erro.set(mensagemErro(e, 'Não foi possível carregar as solicitações.'))
+    });
+  }
+
+  dois(n: number | undefined): string {
+    return String(n ?? 0).padStart(2, '0');
+  }
+
+  approve(item: Solicitacao): void {
+    if (this.enviando()) return;
+    this.enviando.set(item.codigo);
+    this.api.aprovar(item.codigo).subscribe({
+      next: () => {
+        this.enviando.set(null);
+        this.feedback.set(`Solicitação #${item.codigo} aprovada. ${item.solicitante} foi notificado(a).`);
+        this.carregar();
+      },
+      error: e => { this.enviando.set(null); this.feedback.set(mensagemErro(e)); this.carregar(); }
+    });
+  }
+
+  openRejection(item: Solicitacao): void {
     this.rejectionReason.set('');
-    this.rejectionDialogOpen.set(true);
+    this.rejecting.set(item);
   }
 
   closeRejection(): void {
-    this.rejectionDialogOpen.set(false);
+    this.rejecting.set(null);
   }
 
   reject(): void {
-    if (this.status() !== 'Pendente' || !this.rejectionReason().trim()) return;
-    this.audit.append({ entityId: 'RES-DEMO-APPROVAL', entityType: 'Reserva', fromState: 'Pendente', toState: 'Rejeitada', action: 'Rejeição', description: this.rejectionReason().trim() });
-    this.status.set('Rejeitada');
-    this.pendingCount.update(value => Math.max(0, value - 1));
-    this.rejectionDialogOpen.set(false);
-    this.feedback.set('Solicitação rejeitada nesta demonstração. Motivo: ' + this.rejectionReason().trim());
+    const item = this.rejecting();
+    const motivo = this.rejectionReason().trim();
+    if (!item || !motivo || this.enviando()) return;
+    this.enviando.set(item.codigo);
+    this.api.rejeitar(item.codigo, motivo).subscribe({
+      next: () => {
+        this.enviando.set(null);
+        this.rejecting.set(null);
+        this.feedback.set(`Solicitação #${item.codigo} rejeitada. Motivo: ${motivo}`);
+        this.carregar();
+      },
+      error: e => { this.enviando.set(null); this.feedback.set(mensagemErro(e)); }
+    });
   }
 }
