@@ -3,20 +3,21 @@
 Sistema de reservas de salas, professores e materiais sem conflito de horário.
 
 - **Front-end:** Angular 20 (pasta raiz, código em `src/`)
-- **Back-end:** Java 21 + Spring Boot 4.1 + H2 (dev) ou MySQL (perfil `mysql` e testes com Testcontainers) (pasta `backend/`)
+- **Back-end:** Java 21 + Spring Boot 4.1 + PostgreSQL 17 (Docker Compose na aplicação; Testcontainers nos testes) (pasta `backend/`)
 
 ## Como rodar
 
-Pré-requisitos: **Java 21**, **Maven 3.9+**, **Node 22** e npm.
+Pré-requisitos: **Java 21**, **Maven 3.9+**, **Node 22**, npm e **Docker** (para o PostgreSQL).
 
 **1. Back-end** (porta 8080):
 
 ```bash
 cd backend
+docker compose up -d
 mvn spring-boot:run
 ```
 
-Na primeira execução o banco é criado em `backend/data/` e preenchido com dados de demonstração (datas relativas ao dia de hoje). Para recomeçar do zero, pare o servidor e apague a pasta `backend/data/`.
+O `docker compose` sobe o PostgreSQL na porta 5432 (banco `aloca`, usuário e senha `aloca`). Na primeira execução o back-end cria as tabelas e grava os dados de demonstração (datas relativas ao dia de hoje). Para recomeçar do zero: `docker compose down -v`. Outro banco: variáveis `ALOCA_DB_URL`, `ALOCA_DB_USUARIO` e `ALOCA_DB_SENHA`.
 
 **2. Front-end** (porta 4200), em outro terminal na raiz do projeto:
 
@@ -41,15 +42,11 @@ Todos com a senha **`aloca123`** (as mesmas personas de `src/docs/personas`):
 
 ### Console do banco
 
-http://localhost:8080/h2-console · JDBC URL `jdbc:h2:file:./data/aloca` · usuário `sa` · sem senha.
-
-### Rodar com MySQL (mesmo banco dos testes)
-
 ```bash
-cd backend
-docker compose up -d
-mvn spring-boot:run -Dspring-boot.run.profiles=mysql
+docker compose -f backend/docker-compose.yml exec postgres psql -U aloca -d aloca
 ```
+
+Os testes automáticos (`mvn verify`) não usam esse banco: sobem o próprio PostgreSQL com o Testcontainers.
 
 ## API por tela
 
@@ -93,7 +90,7 @@ Todas as rotas (exceto o login) exigem o cabeçalho `Authorization: Bearer <toke
 - **Histórico (RF-10):** toda mudança registra usuário, data e hora, estado anterior e novo. Reservas em uso não podem ser alteradas nem canceladas.
 - **Ciclo automático:** a cada minuto, reservas aprovadas passam a *Em uso* no início e a *Concluída* no fim.
 - **Materiais (RF-09):** o módulo de materiais reage a eventos das reservas (`ReservaEventos`). A aprovação de uma reserva com materiais cria as movimentações. *Devolução pendente* aparece quando o material está em uso depois do horário previsto.
-- **Persistência (RNF-04):** o H2 grava em arquivo, então os dados continuam após reiniciar o servidor.
+- **Persistência (RNF-04):** o PostgreSQL guarda os dados em volume do Docker, então eles continuam após reiniciar o servidor.
 
 ## Testes e evidências de qualidade
 
@@ -107,7 +104,7 @@ O [plano unificado](src/docs/qualidade/PLANO-TESTES.md) reúne todas as modalida
 # Unitários isolados do backend: Java 21 e Maven, sem Docker
 mvn -f backend/pom.xml -Dgroups=unitario test
 
-# Backend completo, integração MySQL/Testcontainers e JaCoCo: exige Docker
+# Backend completo, integração PostgreSQL/Testcontainers e JaCoCo: exige Docker
 mvn -f backend/pom.xml clean verify
 
 # Frontend
@@ -148,7 +145,7 @@ As propostas anteriores foram preservadas em [arquitetura-historica.md](src/docs
 
 ## Teste de carga (JMeter)
 
-Criação/alteração/cancelamento com massa isolada e disputas simultâneas pela mesma sala, professor e material, sob 50 usuários: [testes/carga](testes/carga/README.md). Resultado com p95/p99, req/s, taxa de erro e comprovação de uma única reserva aceita por disputa: [RELATORIO-CARGA](src/docs/qualidade/RELATORIO-CARGA.md).
+Pesquisa de disponibilidade com 50 usuários, criação/alteração/cancelamento com massa isolada e disputas simultâneas pela mesma sala, professor e material, sob 50 usuários: [testes/carga](testes/carga/README.md). Resultado com p95/p99, req/s, taxa de erro e comprovação de uma única reserva aceita por disputa: [RELATORIO-CARGA](src/docs/qualidade/RELATORIO-CARGA.md).
 
 ## Defeitos, correções e regressões
 
