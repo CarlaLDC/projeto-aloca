@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
-import { AdminRecurso, AdminProfessor, AdminBloqueio } from '../../core/api.models';
+import { AdminUsuario, UsuarioPedido, PerfilCodigo, AdminRecurso, AdminProfessor, AdminBloqueio } from '../../core/api.models';
 import { mensagemErro } from '../../core/formato';
 
 @Component({
@@ -22,7 +22,7 @@ export class Admin implements OnInit {
   readonly erro = signal('');
   readonly feedback = signal('');
   readonly enviando = signal(false);
-  readonly aba = signal<'recursos' | 'professores' | 'bloqueios'>('recursos');
+  readonly aba = signal<'recursos' | 'professores' | 'bloqueios' | 'usuarios'>('recursos');
   recurso: Omit<AdminRecurso, 'id' | 'ativo'> = {
     nome: '', tipo: 'SALA', categoria: '', localizacao: '', capacidade: 1,
     restrito: false, abertura: '07:00', fechamento: '22:00'
@@ -32,9 +32,60 @@ export class Admin implements OnInit {
   editandoRecurso: number | null = null;
   editandoProfessor: number | null = null;
 
+  readonly usuarios = signal<AdminUsuario[]>([]);
+  readonly perfis: PerfilCodigo[] = ['SOLICITANTE', 'PROFESSOR', 'RESPONSAVEL', 'ADMINISTRADOR'];
+  usuario: UsuarioPedido = { nome: '', email: '', unidade: '', perfis: ['SOLICITANTE'], senha: '' };
+  editandoUsuario: number | null = null;
+  senhaNova = '';
+  redefinindo: number | null = null;
+
+  editarUsuario(u: AdminUsuario): void {
+    this.editandoUsuario = u.id;
+    this.usuario = { nome: u.nome, email: u.email, unidade: u.unidade, perfis: [...u.perfis] };
+  }
+  marcarPerfil(p: PerfilCodigo, marcado: boolean): void {
+    this.usuario.perfis = marcado ? [...new Set([...this.usuario.perfis, p])] : this.usuario.perfis.filter(x => x !== p);
+  }
+  limparUsuario(): void {
+    this.editandoUsuario = null;
+    this.usuario = { nome: '', email: '', unidade: '', perfis: ['SOLICITANTE'], senha: '' };
+  }
+  salvarUsuario(): void {
+    if (this.enviando()) return;
+    if (!this.usuario.nome.trim() || !this.usuario.email.trim() || !this.usuario.unidade.trim() ||
+        !this.usuario.perfis.length || (this.editandoUsuario === null && (this.usuario.senha?.length ?? 0) < 8)) {
+      this.erro.set('Informe nome, e-mail, unidade, ao menos um perfil e senha inicial com 8 caracteres.'); return;
+    }
+    this.enviando.set(true); this.erro.set('');
+    const req = this.editandoUsuario === null ? this.api.criarUsuario(this.usuario) : this.api.editarUsuario(this.editandoUsuario, this.usuario);
+    const propria = this.editandoUsuario === this.auth.usuario()?.id;
+    req.subscribe({ next: () => {
+      this.enviando.set(false); this.limparUsuario();
+      if (propria) { this.auth.sair(); return; }
+      this.feedback.set('Usuário salvo. Sessões anteriores foram encerradas após alteração.'); this.carregar();
+    }, error: e => { this.enviando.set(false); this.erro.set(mensagemErro(e)); } });
+  }
+  ativarUsuario(u: AdminUsuario): void {
+    this.api.ativarUsuario(u.id, !u.ativo).subscribe({ next: () => {
+      this.feedback.set('Situação do usuário atualizada.'); this.carregar();
+    }, error: e => this.erro.set(mensagemErro(e)) });
+  }
+  redefinirSenha(): void {
+    if (this.redefinindo === null || this.enviando()) return;
+    if (this.senhaNova.length < 8) { this.erro.set('A senha deve ter ao menos 8 caracteres.'); return; }
+    const propria = this.redefinindo === this.auth.usuario()?.id;
+    this.enviando.set(true);
+    this.api.senhaUsuario(this.redefinindo, this.senhaNova).subscribe({ next: () => {
+      this.enviando.set(false); this.senhaNova = ''; this.redefinindo = null;
+      if (propria) { this.auth.sair(); return; }
+      this.feedback.set('Senha redefinida e sessões anteriores encerradas.');
+    }, error: e => { this.enviando.set(false); this.erro.set(mensagemErro(e)); } });
+  }
+
   ngOnInit(): void { this.carregar(); }
 
   carregar(): void {
+    this.api.adminUsuarios().subscribe({ next: x => this.usuarios.set(x), error: e => this.erro.set(mensagemErro(e)) });
     this.api.adminRecursos().subscribe({ next: x => this.recursos.set(x), error: e => this.erro.set(mensagemErro(e)) });
     this.api.adminProfessores().subscribe({ next: x => this.professores.set(x), error: e => this.erro.set(mensagemErro(e)) });
     this.api.adminBloqueios().subscribe({ next: x => this.bloqueios.set(x), error: e => this.erro.set(mensagemErro(e)) });

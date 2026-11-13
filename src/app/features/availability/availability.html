@@ -61,6 +61,10 @@
           <input type="search" placeholder="Buscar por nome ou localização" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" aria-label="Buscar recurso">
         </label>
         <label class="date-field">
+          <span>Capacidade mínima</span>
+          <input type="number" min="0" step="1" [ngModel]="capacidadeMinima()" (ngModelChange)="setCapacidade($event)" aria-label="Capacidade mínima">
+        </label>
+        <label class="date-field">
           <span>Data</span>
           <input type="date" [ngModel]="selectedDate()" (ngModelChange)="setDate($event)" aria-label="Data da disponibilidade">
         </label>
@@ -141,7 +145,7 @@
           <span>⌕</span>
           <h3>Nenhum recurso encontrado</h3>
           <p>Tente alterar os filtros ou buscar por outro termo.</p>
-          <button type="button" (click)="searchTerm.set(''); selectedType.set('Todos')">Limpar filtros</button>
+          <button type="button" (click)="searchTerm.set(''); selectedType.set('Todos'); setCapacidade(null)">Limpar filtros</button>
         </div>
       }
       <p class="data-note"><span>i</span> Horários livres calculados a partir das reservas e bloqueios de manutenção cadastrados. Horário de Brasília.</p>

@@ -171,13 +171,13 @@ class ReservaApiTest extends ApiTesteBase {
     }
 
     @Test
-    void professorConsultaAgendaMasNaoCriaReservas() throws Exception {
+    void professorConsultaAgendaECriaSomenteReservasProprias() throws Exception {
         String ana = token(ANA), andre = token(ANDRE);
         String codigo = codigoCriado(ana, reserva(diaLivre(), "19:00", "21:00", SALA_204, PROF_ANDRE));
 
         get(andre, "/api/reservas/minhas").andExpect(jsonPath("$[*].codigo", hasItem(codigo)));
         get(andre, "/api/reservas/" + codigo).andExpect(status().isOk()).andExpect(jsonPath("$.podeGerenciar").value(false));
-        criar(andre, reserva(diaLivre(), "09:00", "10:00", SALA_204, null)).andExpect(status().isForbidden());
+        criar(andre, reserva(diaLivre(), "09:00", "10:00", SALA_204, null)).andExpect(status().isCreated());
         postJson(andre, "/api/reservas/" + codigo + "/cancelamento", "{\"motivo\":\"x\"}").andExpect(status().isForbidden());
     }
 

@@ -20,7 +20,7 @@ export class MyReservations implements OnInit {
   readonly reservations = signal<(ReservaResumo & { schedule: string; statusClass: string })[]>([]);
   readonly carregado = signal(false);
   readonly erro = signal('');
-  readonly podeReservar = this.auth.possui('SOLICITANTE', 'RESPONSAVEL', 'ADMINISTRADOR');
+  readonly podeReservar = this.auth.possui('SOLICITANTE', 'RESPONSAVEL', 'ADMINISTRADOR', 'PROFESSOR');
 
   ngOnInit(): void {
     this.api.minhasReservas().subscribe({
