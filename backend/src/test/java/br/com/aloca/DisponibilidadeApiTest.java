@@ -44,6 +44,75 @@ class DisponibilidadeApiTest extends ApiTesteBase {
     }
 
     @Test
+    void buscaIgnoraAcentosEMaiusculas() throws Exception {
+        get(token(ANA), "/api/disponibilidade?busca=SALA DE REUNIOES")
+            .andExpect(jsonPath("$.recursos[*].nome", contains("Sala de reuniões")));
+    }
+
+    // ------------------------------------------------------------------ professores por competência (RF-03)
+
+    @Test
+    void pesquisaProfessoresPorCompetenciaSemAcento() throws Exception {
+        String ana = token(ANA);
+        get(ana, "/api/disponibilidade/professores?competencia=matematica")
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.professores[*].nome", contains("Lucas Oliveira")))
+            .andExpect(jsonPath("$.professores[0].competencia").value("Matemática"));
+        get(ana, "/api/disponibilidade/professores?competencia=QUÍMICA")
+            .andExpect(jsonPath("$.professores[*].nome", contains("Juliana Lima")));
+        get(ana, "/api/disponibilidade/professores?competencia=astronomia")
+            .andExpect(jsonPath("$.professores", hasSize(0)))
+            .andExpect(jsonPath("$.resumo.total").value(greaterThanOrEqualTo(4)));
+    }
+
+    @Test
+    void buscaDeProfessorPorNomeOuCompetencia() throws Exception {
+        String ana = token(ANA);
+        get(ana, "/api/disponibilidade/professores?busca=andre")
+            .andExpect(jsonPath("$.professores[*].nome", contains("André Lima")));
+        get(ana, "/api/disponibilidade/professores?busca=lima")
+            .andExpect(jsonPath("$.professores[*].nome", containsInAnyOrder("André Lima", "Juliana Lima")));
+        get(ana, "/api/disponibilidade/professores?busca=robotica")
+            .andExpect(jsonPath("$.professores[*].nome", contains("Ricardo Alves")));
+        // Os dois filtros juntos: "lima" no nome e competência em química.
+        get(ana, "/api/disponibilidade/professores?busca=lima&competencia=quimica")
+            .andExpect(jsonPath("$.professores[*].nome", contains("Juliana Lima")));
+    }
+
+    @Test
+    void agendaDoProfessorMostraOcupacaoEHorarioLivre() throws Exception {
+        String ana = token(ANA);
+        var dia = diaLivre();
+        codigoCriado(ana, reserva(dia, "07:00", "10:00", SALA_204, PROF_LUCAS));
+
+        get(ana, "/api/disponibilidade/professores?data=" + dia + "&competencia=matematica")
+            .andExpect(jsonPath("$.data").value(dia.toString()))
+            .andExpect(jsonPath("$.professores[0].status").value("Disponível"))
+            .andExpect(jsonPath("$.professores[0].ocupacoes", hasSize(1)))
+            .andExpect(jsonPath("$.professores[0].ocupacoes[0].motivo", containsString("Sala 204")))
+            .andExpect(jsonPath("$.professores[0].livreDe").value("10:00:00"))
+            .andExpect(jsonPath("$.professores[0].livreAte").value("22:00:00"));
+    }
+
+    @Test
+    void professorOcupadoODiaInteiroApareceComoOcupado() throws Exception {
+        String ana = token(ANA);
+        var dia = diaLivre();
+        codigoCriado(ana, reserva(dia, "07:00", "22:00", SALA_108, PROF_ANDRE));
+
+        get(ana, "/api/disponibilidade/professores?data=" + dia + "&busca=andre")
+            .andExpect(jsonPath("$.professores[0].status").value("Ocupado"))
+            .andExpect(jsonPath("$.professores[0].livreDe").doesNotExist())
+            .andExpect(jsonPath("$.resumo.ocupados").value(greaterThanOrEqualTo(1)));
+    }
+
+    @Test
+    void pesquisaDeProfessoresExigeLogin() throws Exception {
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/disponibilidade/professores"))
+            .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void painelMostraContadoresEAgenda() throws Exception {
         get(token(ANA), "/api/painel")
             .andExpect(jsonPath("$.perfil").value("Solicitante"))
