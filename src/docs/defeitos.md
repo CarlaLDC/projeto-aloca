@@ -29,7 +29,7 @@ Estados: Aberto → Triado → Em correção → Corrigido → Validado. Reabrir
 | DEF-001 | Produto: revalidação de cadastro na aprovação; RF-02/07/10 | S2 | P1 | Validado historicamente em H2; correção integrada via PR #34 |
 | AUT-001 | Automação: Bearer null no login BDD | S3 | P1 | Validado historicamente no ciclo BDD |
 | AUT-002 | Automação: contagem global no teste de ciclo; RF-10 | S3 | P2 | Corrigido e suíte posterior aprovada |
-| NC-001 | Conformidade: Spring Boot 4.1.2 versus 3.x exigido | S2 | P1 | Aberto; não alterar framework neste PR documental |
+| NC-001 | Conformidade: Spring Boot 4.1.2 versus 3.x exigido | S2 | P1 | Encerrado: aceite do professor para Spring Boot 4.1.2 (13/11/2026) |
 | IMP-003 | Evidência: resultado JMeter não consolidado em develop | S2 | P1 | Encerrado: PE-01/PE-02/PE-03 executados no PostgreSQL, evidências em `testes/carga/resultados/20261113-campanha-03` ([relatório](qualidade/RELATORIO-CARGA.md)) |
 | DEF-PERF-001 | Produto: 409 de disputa por professor/material leva ~0,9 s (P95 1,6 s) por varrer todos os espaços nas alternativas sob trava; RNF-01 | S3 | P2 | Validado: P95 do 409 caiu de ~1,2 s para 90 ms na campanha 03 |
 | DEF-INT-001 | Produto: em 4xx/5xx do serviço de notificação, o log gravava o corpo da resposta externa e o e-mail do destinatário; EX-03, RNF-03 | S3 | P1 | Validado: testes WireMock ([relatório](qualidade/RELATORIO-WIREMOCK.md)) |
@@ -94,11 +94,11 @@ Fonte histórica: [defeitos.md na branch qa/performance-jmeter](https://github.c
 
 | ID original / atual | Triagem atual | Próxima ação e critério de encerramento |
 |---|---|---|
-| IMP-001 — API/ambiente | Superado para PE-02/PE-03: `executar-carga.sh` sobe API + MySQL descartável e registra commit e máquina em `ambiente.txt` | Ambiente de homologação dedicado continua desejável |
+| IMP-001 — API/ambiente | Superado para PE-01/PE-02/PE-03: `executar-carga.sh` sobe API + PostgreSQL descartável e registra commit e máquina em `ambiente.txt` | Ambiente de homologação dedicado continua desejável |
 | IMP-002 — credenciais/massa | Superado: `preparar_massa.py` cria massa sintética exclusiva por execução (prefixo `CARGA-<RUN_ID>`), senha aleatória fora dos artefatos e banco descartável | — |
 | IMP-003 — JMeter sem resultado | Encerrado: plano, JTL, dashboard, logs, parâmetros, commit, métricas, análise e decisão em [RELATORIO-CARGA](qualidade/RELATORIO-CARGA.md) | PE-01 executado e aprovado (campanha 03, PostgreSQL). Depois do merge, repetir pelo workflow para vincular ao SHA do develop |
 | GAP-004/005 — auditoria em memória/ator fictício | Diagnóstico histórico superado na implementação integrada; ciclo e auditoria têm testes reais vinculados acima | Manter origem histórica; não converter a inspeção antiga em bug de runtime reproduzido nem declarar AUD-01..10 executados |
-| NC-001 — versão Spring Boot | Aberto, S2/P1: [pom.xml](../../backend/pom.xml) declara 4.1.2; enunciado exige 3.x | Alinhar versão ao requisito e executar integração MySQL, unitários, BDD e build; registrar commit/relatórios antes de encerrar |
+| NC-001 — versão Spring Boot | Encerrado: [pom.xml](../../backend/pom.xml) declara 4.1.2; o enunciado pede 3.x, e o professor aceitou a versão 4.1.2 em 13/11/2026 | Manter Java 21/Spring Boot 4.1.2 |
 
 A existência destas pendências impede afirmar que todos os defeitos foram corrigidos ou que a entrega está aprovada. Não há base neste inventário para declarar “zero vulnerabilidades críticas”: isso exige evidência da análise de segurança.
 
@@ -113,7 +113,7 @@ A existência destas pendências impede afirmar que todos os defeitos foram corr
 ### Reprodução das regressões existentes
 
 ```bash
-# Java 21, Maven e Docker; MySQL real por Testcontainers
+# Java 21, Maven e Docker; PostgreSQL real por Testcontainers
 mvn -f backend/pom.xml -Dtest=CicloReservaApiTest test
 ```
 

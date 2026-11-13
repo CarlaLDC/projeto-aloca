@@ -29,7 +29,7 @@ Workflow: **Candidato - persistência, responsividade e cobertura**. No run → 
 
 ## Execução local
 
-Java 21 JDK, Maven, Node 22, Python 3 e Docker para MySQL/Testcontainers:
+Java 21 JDK, Maven, Node 22, Python 3 e Docker para PostgreSQL/Testcontainers:
 
 ```bash
 mvn -B -f backend/pom.xml clean verify
