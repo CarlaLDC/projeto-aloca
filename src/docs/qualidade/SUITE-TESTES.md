@@ -1,0 +1,111 @@
+# Índice unificado da suíte de testes
+
+Snapshot: develop `611c9402c458d395126f014e720fc45a27ceeef8`, em 12/11/2026. Direção e critérios: [Plano](PLANO-TESTES.md). Resultados: [Relatório](RELATORIO-TESTES.md).
+
+## Backend — disponível na base
+
+Diretório: [backend/src/test/java/br/com/aloca](../../../backend/src/test/java/br/com/aloca).
+
+| Modalidade | Classes |
+|---|---|
+| Unitários isolados (tag unitario) | unit/ReservaUnitTest; unit/ReservaServiceUnitTest; unit/MovimentacaoServiceUnitTest |
+| Parametrizados de integração | ReservaParametrizadaApiTest |
+| Autenticação/perfil | AutenticacaoTest; AprovacaoApiTest; AdminRecursosTest; ReservaApiTest |
+| Reservas, conflitos, manutenção, auditoria | ReservaApiTest; QualidadeFuncionalApiTest; AdminRecursosTest |
+| Disponibilidade | DisponibilidadeApiTest |
+| Materiais | MaterialApiTest |
+| Relatórios | RelatorioApiTest |
+| Concorrência | ConcorrenciaReservaTest |
+| Ciclo e ausência | CicloReservaApiTest; NaoComparecimentoApiTest |
+| Inicialização | AlocaApplicationTest |
+
+```bash
+# Java 21 e Maven; não exige Docker
+mvn -f backend/pom.xml -Dgroups=unitario test
+
+# Java 21, Maven e Docker; inclui todas as modalidades backend incorporadas
+mvn -f backend/pom.xml clean verify
+
+# Seleção útil para investigação
+mvn -f backend/pom.xml -Dtest=ReservaParametrizadaApiTest test
+mvn -f backend/pom.xml -Dtest=ConcorrenciaReservaTest test
+```
+
+O clean verify já inclui os unitários; **não somar** a contagem do job exclusivo à suíte completa. Parametrizado é técnica de dados, não um nível adicional de execução.
+
+Relatórios: backend/target/surefire-reports e backend/target/site/jacoco. Documentação: [unitários](../testes-unitarios-backend.md) e [parametrizados](../testes-parametrizados.md).
+
+## API caixa-preta — PR #38, fora da base inspecionada
+
+[RegrasCriticasHttpTest](https://github.com/CarlaLDC/projeto-aloca/blob/test/api-caixa-preta-http/backend/src/test/java/br/com/aloca/http/RegrasCriticasHttpTest.java) usa HTTP real/MySQL e tag http. [Documentação](https://github.com/CarlaLDC/projeto-aloca/blob/test/api-caixa-preta-http/src/docs/testes-api-http.md) e [PR #38](https://github.com/CarlaLDC/projeto-aloca/pull/38).
+
+Após incorporar essa entrega ou no checkout da sua branch:
+
+```bash
+mvn -f backend/pom.xml -Dgroups=http test
+```
+
+A tag http ainda não seleciona uma suíte existente na base deste plano. Não interpretar “zero testes selecionados” como aprovação.
+
+## Frontend e E2E/BDD
+
+Frontend: specs em src/app, incluindo login, formulários, disponibilidade, aprovações, materiais, relatórios e detalhes.
+
+```bash
+npm ci
+npm run build
+npm test -- --watch=false --browsers=ChromeHeadless
+```
+
+E2E integrado: [feature](../../../bdd/features/integracao.feature), [steps](../../../bdd/steps/integracao.cjs), [instruções](../../../bdd/README.md). Em terminais distintos, na raiz:
+
+```bash
+# Terminal 1
+mvn -f backend/pom.xml spring-boot:run "-Dspring-boot.run.arguments=--spring.datasource.url=jdbc:h2:mem:bdd;DB_CLOSE_DELAY=-1"
+
+# Terminal 2
+npm ci
+npm start -- --proxy-config proxy.conf.json
+
+# Terminal 3
+npm install --prefix bdd
+npx --prefix bdd playwright install chromium
+cd bdd
+npm test
+```
+
+O runner padrão descobre features/**/*.feature, support/**/*.cjs e steps/**/*.cjs. Alguns cenários usam navegador, outros chamadas de API; o conjunto não deve ser descrito como inteiramente UI.
+
+BDD de funcionalidade nova: [feature](../../../bdd/features/aprovacao-inativos.feature) e [evidências antes/depois](../../../bdd/EVIDENCIAS-APROVACAO-INATIVOS.md). Com apenas a API na porta 8080:
+
+```bash
+npm install --prefix bdd
+cd bdd
+npx cucumber-js --config aprovacao-inativos.cjs
+```
+
+## Performance e modalidades ainda sem suíte incorporada
+
+| Item | Localização | Uso e pendência |
+|---|---|---|
+| JMeter API leitura | [README da branch](https://github.com/CarlaLDC/projeto-aloca/blob/qa/performance-jmeter/testes/performance/README.md) | Login/GETs; fora de develop; não cobre reservas concorrentes sob carga |
+| JMeter SPA | Mesma branch, plano aloca-spa-load-test.jmx | Mede entrega de rotas, não ações client-side nem regras de reserva |
+| WireMock | Não localizado nesta base | Implementar EX-01..04 do plano |
+| Manual, recuperação e instalação | PLANO-TESTES MA/RE/IN | Executar e anexar registro; não há resultado presumido |
+| SonarCloud / dependências | [Projeto SonarCloud](https://sonarcloud.io/dashboard?id=CarlaLDC_projeto-aloca) | Vincular análise ao SHA da release; dependências precisam de relatório próprio |
+
+Não copiar o relatório antigo da branch JMeter como descrição da arquitetura atual: ele contém referências ao frontend demonstrativo anterior. O plano atual diferencia esse histórico dos testes backend já existentes.
+
+## Workflows e artefatos
+
+| Workflow / job | Artefato |
+|---|---|
+| CI integrado — unitários | backend-unitarios |
+| CI integrado — backend completo | backend-testcontainers-jacoco |
+| Verificação backend — qualidade funcional | qualidade-funcional-relatorios |
+| BDD integrado — Angular + API + H2 | bdd-integrado-evidencias |
+| BDD — ciclo de aprovação de cadastros | bdd-aprovacao-inativos-RUN_ID |
+| API HTTP após #38 | backend-api-http |
+| Angular | Logs do build/Karma no job; não presumir artefato específico |
+
+No GitHub: PR → Checks → job → execução; ou Actions → workflow → execução → Artifacts. Identificar SHA e conclusão; baixar ZIP, extrair e abrir HTML ou consultar XML/JSON/TXT. Artefato presente em execução com falha não significa aprovação, pois a publicação pode usar if: always().
